@@ -10,6 +10,7 @@ import { TaxView } from '@/components/dashboard/TaxView';
 import { BankReconciliationTab } from '@/components/dashboard/BankReconciliationTab';
 import { ReceiptUploadModal } from '@/components/dashboard/ReceiptUploadModal';
 import { InvoiceBuilderModal } from '@/components/dashboard/InvoiceBuilderModal';
+import { InvoicePreviewModal } from '@/components/dashboard/InvoicePreviewModal';
 import { PayMomsModal } from '@/components/dashboard/PayMomsModal';
 import { SkatteverketDeclarationModal } from '@/components/dashboard/SkatteverketDeclarationModal';
 import { OnboardingWizard, BusinessConfig } from '@/components/dashboard/OnboardingWizard';
@@ -68,6 +69,7 @@ export default function DashboardPage() {
   const [isEmailForwardingOpen, setIsEmailForwardingOpen] = useState(false);
   const [isOpenBankingOpen, setIsOpenBankingOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
 
   // Filter items by selected quarter if applicable
   const filteredInvoices = useMemo(() => {
@@ -109,6 +111,7 @@ export default function DashboardPage() {
 
   const handleInvoiceCreated = (newInvoice: Invoice) => {
     setInvoices((prev) => [newInvoice, ...prev]);
+    setPreviewInvoice(newInvoice);
   };
 
   const handleDeleteReceipt = (id: string) => {
@@ -257,6 +260,7 @@ export default function DashboardPage() {
               <InvoicesTable
                 invoices={filteredInvoices}
                 onOpenAddInvoice={() => setIsInvoiceBuilderOpen(true)}
+                onSelectInvoice={(inv) => setPreviewInvoice(inv)}
               />
             </div>
           )}
@@ -309,6 +313,14 @@ export default function DashboardPage() {
         isOpen={isInvoiceBuilderOpen}
         onClose={() => setIsInvoiceBuilderOpen(false)}
         onInvoiceCreated={handleInvoiceCreated}
+        companyName={businessConfig.companyName}
+        orgNr={businessConfig.orgNr}
+      />
+
+      <InvoicePreviewModal
+        isOpen={!!previewInvoice}
+        onClose={() => setPreviewInvoice(null)}
+        invoice={previewInvoice}
         companyName={businessConfig.companyName}
         orgNr={businessConfig.orgNr}
       />

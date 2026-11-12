@@ -3,14 +3,29 @@
 import React, { useState, useMemo } from 'react';
 import { Invoice } from '@/types/database';
 import { formatSEK, formatDate } from '@/lib/utils';
-import { FileCheck, Plus, CheckCircle2, Search, Filter, X } from 'lucide-react';
+import { 
+  FileCheck, 
+  Plus, 
+  CheckCircle2, 
+  Search, 
+  Filter, 
+  X,
+  FileText,
+  Printer,
+  Download
+} from 'lucide-react';
 
 interface InvoicesTableProps {
   invoices: Invoice[];
   onOpenAddInvoice: () => void;
+  onSelectInvoice?: (invoice: Invoice) => void;
 }
 
-export function InvoicesTable({ invoices, onOpenAddInvoice }: InvoicesTableProps) {
+export function InvoicesTable({ 
+  invoices, 
+  onOpenAddInvoice,
+  onSelectInvoice 
+}: InvoicesTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [vatFilter, setVatFilter] = useState<string>('ALL');
 
@@ -33,7 +48,7 @@ export function InvoicesTable({ invoices, onOpenAddInvoice }: InvoicesTableProps
   const hasActiveFilters = searchQuery.length > 0 || vatFilter !== 'ALL';
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-xs space-y-0">
+    <div className="rounded-2xl border border-zinc-200/90 bg-white overflow-hidden shadow-xs space-y-0">
       
       {/* Table Header & Controls Bar */}
       <div className="p-5 border-b border-zinc-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -93,7 +108,7 @@ export function InvoicesTable({ invoices, onOpenAddInvoice }: InvoicesTableProps
           {/* Primary Action Button */}
           <button
             onClick={onOpenAddInvoice}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold transition shadow-xs ml-auto md:ml-2"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0d3829] hover:bg-[#07251a] text-white text-sm font-semibold transition shadow-xs ml-auto md:ml-2"
           >
             <Plus className="w-4 h-4" />
             <span>Skapa faktura</span>
@@ -131,16 +146,21 @@ export function InvoicesTable({ invoices, onOpenAddInvoice }: InvoicesTableProps
                 <th className="py-3 px-4 font-semibold text-right">Utgående Moms</th>
                 <th className="py-3 px-4 font-semibold text-right">Totalt (SEK)</th>
                 <th className="py-3 px-4 font-semibold">Status</th>
+                <th className="py-3 px-4 font-semibold text-right">PDF Faktura</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200/70">
               {filteredInvoices.map((inv) => (
-                <tr key={inv.id} className="hover:bg-zinc-50/60 transition">
+                <tr 
+                  key={inv.id} 
+                  onClick={() => onSelectInvoice && onSelectInvoice(inv)}
+                  className="hover:bg-zinc-50/80 transition cursor-pointer group"
+                >
                   <td className="py-3.5 px-4 whitespace-nowrap text-zinc-600 font-mono text-xs">
                     {formatDate(inv.invoice_date)}
                   </td>
                   <td className="py-3.5 px-4">
-                    <span className="font-bold text-zinc-950 text-sm">
+                    <span className="font-bold text-zinc-950 text-sm group-hover:text-emerald-800 transition">
                       {inv.customer_name}
                     </span>
                   </td>
@@ -166,6 +186,20 @@ export function InvoicesTable({ invoices, onOpenAddInvoice }: InvoicesTableProps
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       Betald
                     </span>
+                  </td>
+                  <td className="py-3.5 px-4 whitespace-nowrap text-right">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onSelectInvoice) onSelectInvoice(inv);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-emerald-50 hover:text-emerald-900 border border-zinc-200 text-zinc-800 text-xs font-semibold transition"
+                      title="Visa och ladda ner svensk PDF faktura"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-700" />
+                      <span>Visa PDF</span>
+                    </button>
                   </td>
                 </tr>
               ))}

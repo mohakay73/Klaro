@@ -141,7 +141,39 @@ export function InvoiceBuilderModal({
   };
 
   const handlePrint = () => {
-    window.print();
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    const previewEl = document.getElementById('printable-invoice-preview');
+    const content = previewEl ? previewEl.innerHTML : '';
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="sv">
+      <head>
+        <meta charset="utf-8">
+        <title>${invoiceNumber} - ${customerName}</title>
+        <style>
+          @page { size: A4; margin: 15mm; }
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #18181b; padding: 20px; font-size: 13px; line-height: 1.5; }
+          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          th, td { padding: 10px 12px; border-bottom: 1px solid #e4e4e7; }
+          th { background: #f4f4f5; text-align: left; }
+          .text-right { text-align: right; }
+          .text-center { text-align: center; }
+          .font-mono { font-family: monospace; }
+        </style>
+      </head>
+      <body>
+        ${content}
+        <script>window.onload = function() { window.print(); setTimeout(function() { window.close(); }, 500); };</script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   return (
@@ -458,7 +490,7 @@ export function InvoiceBuilderModal({
           </div>
         ) : (
           /* View Mode: High-End Swedish Invoice Layout View */
-          <div className="bg-white text-zinc-900 rounded-lg p-8 space-y-8 font-sans shadow-sm border border-zinc-200">
+          <div id="printable-invoice-preview" className="bg-white text-zinc-900 rounded-lg p-8 space-y-8 font-sans shadow-sm border border-zinc-200">
             {/* Header: Company & Faktura title */}
             <div className="flex justify-between items-start border-b border-zinc-200 pb-6">
               <div>
@@ -590,10 +622,10 @@ export function InvoiceBuilderModal({
             <button
               type="button"
               onClick={handleSaveAndSend}
-              className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-xs"
+              className="px-4 py-2 rounded-xl bg-[#0d3829] hover:bg-[#07251a] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
             >
               <Check className="w-3.5 h-3.5" />
-              <span>Spara faktura</span>
+              <span>Spara & Se PDF</span>
             </button>
           </div>
         </div>
