@@ -78,6 +78,8 @@ export interface ConnectedBankAccount {
   status: 'active' | 'disconnected' | 'expired';
 }
 
+export type ReconciliationStatus = 'reconciled' | 'missing_receipt' | 'pending' | 'private_draw';
+
 export interface PSD2Transaction {
   id: string;
   accountId: string;
@@ -89,16 +91,28 @@ export interface PSD2Transaction {
   merchantName?: string;
   reference?: string; // OCR or invoice reference
   category?: string;
+  basAccount?: string; // e.g. 2013 (Eget uttag), 5420 (Programvaror), 1510 (Kundfordran)
   matchedReceiptId?: string;
   matchedInvoiceId?: string;
-  reconciliationStatus: 'reconciled' | 'missing_receipt' | 'pending';
+  reconciliationStatus: ReconciliationStatus;
+  note?: string;
   rawPsd2Data?: Record<string, any>;
+}
+
+export interface EstimatedTaxLoss {
+  totalMissingAmount: number;
+  estimatedVatLoss: number;
+  estimatedIncomeTaxLoss: number;
+  totalEstimatedLoss: number;
+  missingCount: number;
 }
 
 export interface ReconciliationResult {
   reconciledCount: number;
   unreconciledExpensesCount: number;
   unreconciledRevenueCount: number;
+  privateDrawCount: number;
+  estimatedTaxLoss: EstimatedTaxLoss;
   matchedInvoices: Array<{ transactionId: string; invoiceId: string; amount: number }>;
   matchedReceipts: Array<{ transactionId: string; receiptId: string; amount: number }>;
 }

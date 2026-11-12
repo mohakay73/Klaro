@@ -156,6 +156,12 @@ export default function DashboardPage() {
     setBankTransactions(txs);
   };
 
+  const handleUpdateTransaction = (updatedTx: PSD2Transaction) => {
+    setBankTransactions((prev) =>
+      prev.map((t) => (t.id === updatedTx.id ? updatedTx : t))
+    );
+  };
+
   const handleSyncTransactions = async () => {
     try {
       const res = await fetch('/api/open-banking/sync', {
@@ -175,6 +181,10 @@ export default function DashboardPage() {
       console.error('Error syncing transactions:', err);
     }
   };
+
+  const missingBankReceiptsCount = useMemo(() => {
+    return bankTransactions.filter((t) => t.reconciliationStatus === 'missing_receipt').length;
+  }, [bankTransactions]);
 
   return (
     <div className="min-h-screen bg-[#f8f7f4] text-zinc-900 flex font-sans selection:bg-zinc-200">
@@ -201,6 +211,7 @@ export default function DashboardPage() {
         onOpenSettings={() => setIsOnboardingOpen(true)}
         receiptsCount={filteredReceipts.length}
         invoicesCount={filteredInvoices.length}
+        missingBankReceiptsCount={missingBankReceiptsCount}
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
@@ -233,9 +244,11 @@ export default function DashboardPage() {
               companyType={businessConfig.companyType}
               receipts={filteredReceipts}
               invoices={filteredInvoices}
+              bankTransactions={bankTransactions}
               onNavigateToExpenses={() => setActiveView('expenses')}
               onNavigateToInvoices={() => setActiveView('invoices')}
               onNavigateToTax={() => setActiveView('tax')}
+              onNavigateToBank={() => setActiveView('bank')}
               onOpenUpload={() => setIsUploadOpen(true)}
               onOpenPayMoms={() => setIsPayMomsOpen(true)}
             />
@@ -283,9 +296,14 @@ export default function DashboardPage() {
               <BankReconciliationTab
                 transactions={bankTransactions}
                 connectedAccount={connectedAccount}
+                receipts={filteredReceipts}
+                invoices={filteredInvoices}
+                companyType={businessConfig.companyType}
                 onOpenUpload={() => setIsUploadOpen(true)}
                 onOpenConnectBank={() => setIsOpenBankingOpen(true)}
                 onSyncTransactions={handleSyncTransactions}
+                onUpdateTransaction={handleUpdateTransaction}
+                onAddReceipt={handleReceiptAdded}
               />
             </div>
           )}

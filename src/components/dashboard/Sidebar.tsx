@@ -36,6 +36,7 @@ interface SidebarProps {
   onOpenSettings: () => void;
   receiptsCount: number;
   invoicesCount: number;
+  missingBankReceiptsCount?: number;
   isMobileOpen: boolean;
   onCloseMobile: () => void;
 }
@@ -54,6 +55,7 @@ export function Sidebar({
   onOpenSettings,
   receiptsCount,
   invoicesCount,
+  missingBankReceiptsCount,
   isMobileOpen,
   onCloseMobile,
 }: SidebarProps) {
@@ -79,12 +81,18 @@ export function Sidebar({
     setTimeout(() => setCopiedBankgiro(false), 2000);
   };
 
-  const navItems: { id: ActiveView; label: string; icon: React.ElementType; badge?: number }[] = [
+  const navItems: { id: ActiveView; label: string; icon: React.ElementType; badge?: number; isAlert?: boolean }[] = [
     { id: 'overview', label: 'Översikt', icon: LayoutDashboard },
     { id: 'expenses', label: 'Utgifter & Kvitton', icon: Receipt, badge: receiptsCount },
     { id: 'invoices', label: 'Kundfakturor', icon: FileCheck, badge: invoicesCount },
     { id: 'tax', label: 'Skatt & Deklaration', icon: Calculator },
-    { id: 'bank', label: 'Bank (PSD2)', icon: Landmark },
+    { 
+      id: 'bank', 
+      label: 'Bank & Avstämning', 
+      icon: Landmark, 
+      badge: missingBankReceiptsCount && missingBankReceiptsCount > 0 ? missingBankReceiptsCount : undefined,
+      isAlert: Boolean(missingBankReceiptsCount && missingBankReceiptsCount > 0)
+    },
   ];
 
   const handleNavClick = (view: ActiveView) => {
@@ -279,9 +287,11 @@ export function Sidebar({
                   {item.badge !== undefined && (
                     <span
                       className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full ${
-                        isActive
-                          ? 'bg-zinc-200/80 text-zinc-800'
-                          : 'bg-zinc-100 text-zinc-600'
+                        item.isAlert
+                          ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                          : isActive
+                            ? 'bg-zinc-200/80 text-zinc-800'
+                            : 'bg-zinc-100 text-zinc-600'
                       }`}
                     >
                       {item.badge}

@@ -3,6 +3,8 @@
 import React from 'react';
 import { SwedishTaxBuffer } from '@/types/tax';
 import { Receipt, Invoice } from '@/types/database';
+import { PSD2Transaction } from '@/lib/open-banking/types';
+import { calculateTaxDeductionLoss } from '@/lib/open-banking/reconciliation-engine';
 import { formatSEK, formatDate } from '@/lib/utils';
 import { SafeToSpendWidget } from './SafeToSpendWidget';
 import { RevenueExpenseCards } from './RevenueExpenseCards';
@@ -16,7 +18,8 @@ import {
   ShieldCheck, 
   Check,
   Building2,
-  FileText
+  FileText,
+  AlertCircle
 } from 'lucide-react';
 
 interface OverviewViewProps {
@@ -24,9 +27,11 @@ interface OverviewViewProps {
   companyType: 'enskild_firma' | 'aktiebolag';
   receipts: Receipt[];
   invoices: Invoice[];
+  bankTransactions?: PSD2Transaction[];
   onNavigateToExpenses: () => void;
   onNavigateToInvoices: () => void;
   onNavigateToTax: () => void;
+  onNavigateToBank?: () => void;
   onOpenUpload: () => void;
   onOpenPayMoms: () => void;
 }
@@ -36,14 +41,20 @@ export function OverviewView({
   companyType,
   receipts,
   invoices,
+  bankTransactions = [],
   onNavigateToExpenses,
   onNavigateToInvoices,
   onNavigateToTax,
+  onNavigateToBank,
   onOpenUpload,
   onOpenPayMoms,
 }: OverviewViewProps) {
   const recentReceipts = receipts.slice(0, 4);
   const { moms, nextMomsDeadline, nextFSkattDeadline } = taxBuffer;
+
+  const missingBankTxs = bankTransactions.filter((t) => t.reconciliationStatus === 'missing_receipt');
+  const missingBankCount = missingBankTxs.length;
+  const taxLoss = calculateTaxDeductionLoss(missingBankTxs);
 
   const getVendorIcon = (name: string) => {
     const lower = name.toLowerCase();
@@ -61,6 +72,37 @@ export function OverviewView({
 
       {/* 2. Top 3 Stat Cards with Financial Trend Sparklines */}
       <RevenueExpenseCards taxBuffer={taxBuffer} />
+
+      {/* 2.5 Bank Reconciliation Alert Callout if missing receipts exist */}
+      {missingBankCount > 0 && onNavigateToBank && (
+        <div className="rounded-2xl border border-amber-200/90 bg-amber-50/70 p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-800 shrink-0">
+              <Landmark className="w-5 h-5 text-amber-700" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-bold text-sm text-amber-950">
+                  {missingBankCount} banktransaktioner saknar verifikat ({formatSEK(taxLoss.totalMissingAmount)})
+                </h4>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
+                  Åtgärd krävs
+                </span>
+              </div>
+              <p className="text-xs text-amber-800 mt-0.5">
+                Du riskerar <strong>{formatSEK(taxLoss.totalEstimatedLoss)} i förlorat skatteavdrag</strong> (moms & egenavgifter) om underlag inte kopplas eller markeras som eget uttag.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onNavigateToBank}
+            className="px-4 py-2 rounded-xl bg-amber-900 hover:bg-amber-950 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-xs shrink-0 self-start sm:self-center cursor-pointer"
+          >
+            <span>Öppna Avstämning</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* 3. Operational Split Grid (Mockup Style) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

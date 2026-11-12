@@ -2,6 +2,7 @@ export type SourceType = 'email_forward' | 'web_upload' | 'mobile_scan';
 export type ReceiptStatus = 'parsed' | 'verified' | 'exported';
 export type VatPeriod = 'monthly' | 'quarterly' | 'yearly';
 export type SwedishVatRate = 25 | 12 | 6 | 0;
+export type CompanyType = 'enskild_firma' | 'aktiebolag';
 
 export interface Profile {
   id: string;
