@@ -148,12 +148,12 @@ export function OverviewView({
                 </span>
               </div>
 
-              <div className="flex justify-between items-center p-3.5 rounded-xl bg-zinc-900 text-white shadow-xs">
+              <div className="flex justify-between items-center p-4 rounded-xl bg-emerald-950 text-white shadow-xs border border-emerald-800/40">
                 <div>
-                  <span className="font-bold text-sm block">Netto moms att inbetala</span>
-                  <span className="text-xs text-zinc-400">Ruta 49 Skatteverket</span>
+                  <span className="font-bold text-sm block text-emerald-50">Netto moms att inbetala</span>
+                  <span className="text-xs text-emerald-300/80">Ruta 49 Skatteverket</span>
                 </div>
-                <span className="font-mono font-black text-base text-emerald-400 tabular-nums">
+                <span className="font-mono font-black text-lg text-emerald-300 tabular-nums">
                   {formatSEK(moms.netMoms)}
                 </span>
               </div>

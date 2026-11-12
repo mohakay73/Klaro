@@ -159,7 +159,7 @@ export function TaxSimulatorWidget({
                 onClick={() => setAdditionalRevenue(val)}
                 className={`px-2.5 py-1 rounded-md text-xs font-mono border transition ${
                   additionalRevenue === val
-                    ? 'bg-zinc-900 text-white border-zinc-900 font-bold'
+                    ? 'bg-emerald-700 text-white border-emerald-700 font-bold'
                     : 'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-100'
                 }`}
               >
@@ -200,7 +200,7 @@ export function TaxSimulatorWidget({
                   onClick={() => setAdditionalExpense(val)}
                   className={`px-2.5 py-1 rounded-md text-xs font-mono border transition ${
                     additionalExpense === val
-                      ? 'bg-zinc-900 text-white border-zinc-900 font-bold'
+                      ? 'bg-emerald-700 text-white border-emerald-700 font-bold'
                       : 'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-100'
                   }`}
                 >

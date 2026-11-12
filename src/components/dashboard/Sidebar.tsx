@@ -274,19 +274,19 @@ export function Sidebar({
                   onClick={() => handleNavClick(item.id)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition ${
                     isActive
-                      ? 'bg-zinc-900 text-white shadow-xs'
-                      : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/80'
+                      ? 'bg-emerald-50 text-emerald-950 border border-emerald-200/90 shadow-2xs font-bold'
+                      : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/80 border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-zinc-500'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-700' : 'text-zinc-500'}`} />
                     <span>{item.label}</span>
                   </div>
                   {item.badge !== undefined && (
                     <span
-                      className={`text-xs font-mono font-medium px-2 py-0.5 rounded-full ${
+                      className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full ${
                         isActive
-                          ? 'bg-zinc-800 text-zinc-300'
+                          ? 'bg-emerald-100 text-emerald-800'
                           : 'bg-zinc-100 text-zinc-600'
                       }`}
                     >
