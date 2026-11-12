@@ -57,48 +57,48 @@ export function OverviewView({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left (7 cols): Recent Receipts */}
-        <div className="lg:col-span-7 rounded-xl border border-zinc-200 bg-white p-5 shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-            <div className="flex items-center gap-2">
-              <ReceiptIcon className="w-4 h-4 text-emerald-700" />
-              <h3 className="text-sm font-bold text-zinc-900">Senaste utgifter & kvitton</h3>
+        <div className="lg:col-span-7 rounded-xl border border-zinc-200 bg-white p-6 shadow-xs space-y-5">
+          <div className="flex items-center justify-between pb-3.5 border-b border-zinc-100">
+            <div className="flex items-center gap-2.5">
+              <ReceiptIcon className="w-5 h-5 text-emerald-700" />
+              <h3 className="text-base font-bold text-zinc-950">Senaste utgifter & kvitton</h3>
             </div>
             <button
               onClick={onNavigateToExpenses}
-              className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1 group transition"
+              className="text-sm font-semibold text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1.5 group transition"
             >
               <span>Visa alla ({receipts.length})</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
 
           {receipts.length === 0 ? (
-            <div className="p-8 text-center text-zinc-400 text-xs">
+            <div className="p-10 text-center text-zinc-400 text-sm">
               Inga kvitton registrerade än.
             </div>
           ) : (
             <div className="divide-y divide-zinc-100">
               {recentReceipts.map((rec) => (
-                <div key={rec.id} className="py-2.5 flex items-center justify-between text-xs hover:bg-zinc-50/60 rounded-lg px-2 -mx-2 transition">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-7 h-7 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-600 font-mono text-[10px] shrink-0 font-bold">
+                <div key={rec.id} className="py-3 flex items-center justify-between hover:bg-zinc-50/80 rounded-xl px-2.5 -mx-2.5 transition">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700 font-mono text-xs shrink-0 font-bold">
                       {rec.vat_rate}%
                     </div>
                     <div className="min-w-0">
-                      <div className="font-semibold text-zinc-900 truncate">
+                      <div className="font-bold text-zinc-950 truncate text-sm">
                         {rec.vendor_name}
                       </div>
-                      <div className="text-[11px] text-zinc-500 font-mono">
+                      <div className="text-xs text-zinc-500 font-mono mt-0.5">
                         {formatDate(rec.invoice_date)} • {rec.category}
                       </div>
                     </div>
                   </div>
 
                   <div className="text-right shrink-0">
-                    <div className="font-mono font-bold text-zinc-950 tabular-nums">
+                    <div className="font-mono font-black text-zinc-950 tabular-nums text-sm">
                       {formatSEK(rec.total_amount)}
                     </div>
-                    <div className="text-[10px] text-zinc-500 font-mono">
+                    <div className="text-xs text-zinc-500 font-mono mt-0.5">
                       varav moms {formatSEK(rec.vat_amount)}
                     </div>
                   </div>
@@ -107,13 +107,13 @@ export function OverviewView({
             </div>
           )}
 
-          <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
-            <span className="text-[11px] text-zinc-500">
+          <div className="pt-3 border-t border-zinc-100 flex items-center justify-between">
+            <span className="text-xs text-zinc-500">
               Kvitto-AI tolkar automatiskt moms och BAS-konto.
             </span>
             <button
               onClick={onOpenUpload}
-              className="text-xs font-semibold text-zinc-900 hover:text-emerald-700 transition"
+              className="text-sm font-semibold text-zinc-900 hover:text-emerald-700 transition"
             >
               + Tolka nytt kvitto
             </button>
@@ -121,66 +121,66 @@ export function OverviewView({
         </div>
 
         {/* Right (5 cols): Moms & Tax Deadline Snapshot */}
-        <div className="lg:col-span-5 rounded-xl border border-zinc-200 bg-white p-5 shadow-xs space-y-4 flex flex-col justify-between">
+        <div className="lg:col-span-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-xs space-y-5 flex flex-col justify-between">
           <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-              <div className="flex items-center gap-2">
-                <Landmark className="w-4 h-4 text-emerald-700" />
-                <h3 className="text-sm font-bold text-zinc-900">Momsdeklaration Status</h3>
+            <div className="flex items-center justify-between pb-3.5 border-b border-zinc-100">
+              <div className="flex items-center gap-2.5">
+                <Landmark className="w-5 h-5 text-emerald-700" />
+                <h3 className="text-base font-bold text-zinc-950">Momsdeklaration Status</h3>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
                 Skatteverket
               </span>
             </div>
 
-            <div className="space-y-2.5">
-              <div className="flex justify-between items-center text-xs p-2.5 rounded-lg bg-zinc-50 border border-zinc-200/70">
-                <span className="text-zinc-600 font-medium">Utgående moms (kundfakturor)</span>
-                <span className="font-mono font-bold text-zinc-900 tabular-nums">
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-50 border border-zinc-200/80">
+                <span className="text-zinc-700 font-medium text-sm">Utgående moms (kundfakturor)</span>
+                <span className="font-mono font-bold text-zinc-950 tabular-nums text-sm">
                   {formatSEK(moms.utgaendeMoms)}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center text-xs p-2.5 rounded-lg bg-zinc-50 border border-zinc-200/70">
-                <span className="text-zinc-600 font-medium">Avdragsgill ingående moms</span>
-                <span className="font-mono font-bold text-emerald-800 tabular-nums">
+              <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-50 border border-zinc-200/80">
+                <span className="text-zinc-700 font-medium text-sm">Avdragsgill ingående moms</span>
+                <span className="font-mono font-bold text-emerald-800 tabular-nums text-sm">
                   -{formatSEK(moms.ingaendeMoms)}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center text-xs p-3 rounded-lg bg-zinc-900 text-white shadow-xs">
+              <div className="flex justify-between items-center p-3.5 rounded-xl bg-zinc-900 text-white shadow-xs">
                 <div>
-                  <span className="font-bold text-xs block">Netto moms att inbetala</span>
-                  <span className="text-[10px] text-zinc-400">Ruta 49 Skatteverket</span>
+                  <span className="font-bold text-sm block">Netto moms att inbetala</span>
+                  <span className="text-xs text-zinc-400">Ruta 49 Skatteverket</span>
                 </div>
-                <span className="font-mono font-black text-sm text-emerald-400 tabular-nums">
+                <span className="font-mono font-black text-base text-emerald-400 tabular-nums">
                   {formatSEK(moms.netMoms)}
                 </span>
               </div>
             </div>
 
-            <div className="space-y-1.5 pt-1 text-xs text-zinc-600">
-              <div className="flex items-center justify-between text-[11px] font-mono">
+            <div className="space-y-2 pt-1 text-sm text-zinc-600">
+              <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-zinc-500">Inlämningsdag:</span>
                 <span className="font-bold text-zinc-900">{nextMomsDeadline}</span>
               </div>
-              <div className="flex items-center justify-between text-[11px] font-mono">
+              <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-zinc-500">Inbetalning Bankgiro:</span>
                 <span className="font-bold text-zinc-900">5050-1055</span>
               </div>
             </div>
           </div>
 
-          <div className="pt-3 border-t border-zinc-100 flex items-center gap-2">
+          <div className="pt-3 border-t border-zinc-100 flex items-center gap-3">
             <button
               onClick={onNavigateToTax}
-              className="flex-1 py-2 px-3 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-zinc-800 text-xs font-semibold text-center transition"
+              className="flex-1 py-2.5 px-3.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-800 text-sm font-semibold text-center transition"
             >
-              Öppna Skattedeklaration
+              Öppna Deklaration
             </button>
             <button
               onClick={onOpenPayMoms}
-              className="py-2 px-3 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold text-center transition shadow-xs"
+              className="py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold text-center transition shadow-xs"
             >
               Betala moms
             </button>

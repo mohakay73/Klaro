@@ -36,37 +36,36 @@ export function InvoicesTable({ invoices, onOpenAddInvoice }: InvoicesTableProps
     <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-xs space-y-0">
       
       {/* Table Header & Controls Bar */}
-      <div className="p-4 border-b border-zinc-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <FileCheck className="w-4 h-4 text-emerald-700" />
-          <h4 className="text-sm font-bold text-zinc-900">Fakturerade Intäkter</h4>
-          <span className="text-[11px] px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 font-mono font-medium border border-zinc-200">
+      <div className="p-5 border-b border-zinc-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-2.5">
+          <FileCheck className="w-5 h-5 text-emerald-700" />
+          <h3 className="text-base font-bold text-zinc-950">Fakturerade Intäkter</h3>
+          <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-700 font-mono font-semibold border border-zinc-200">
             {filteredInvoices.length} av {invoices.length}
           </span>
         </div>
 
         {/* Filter Controls Row */}
-        <div className="flex flex-wrap items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-2.5 text-sm">
           
           {/* Search Box */}
           <div className="relative">
-            <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-2.5" />
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Sök kund, fakturanr..."
-              className="pl-8 pr-3 py-1.5 rounded-lg border border-zinc-200 bg-zinc-50/70 text-zinc-900 placeholder:text-zinc-400 text-xs focus:outline-hidden focus:ring-1 focus:ring-zinc-900 focus:bg-white transition w-44 sm:w-56"
+              className="pl-9 pr-3 py-2 rounded-lg border border-zinc-200 bg-zinc-50/70 text-zinc-900 placeholder:text-zinc-400 text-sm focus:outline-hidden focus:ring-1 focus:ring-zinc-900 focus:bg-white transition w-44 sm:w-56"
             />
           </div>
 
           {/* Moms Filter Dropdown */}
           <div className="relative flex items-center">
-            <Filter className="w-3 h-3 text-zinc-400 absolute left-2 pointer-events-none" />
             <select
               value={vatFilter}
               onChange={(e) => setVatFilter(e.target.value)}
-              className="pl-6 pr-6 py-1.5 rounded-lg border border-zinc-200 bg-zinc-50/70 text-zinc-800 text-xs focus:outline-hidden focus:ring-1 focus:ring-zinc-900 focus:bg-white transition appearance-none cursor-pointer"
+              className="py-2 px-3 rounded-lg border border-zinc-200 bg-zinc-50/70 text-zinc-800 text-sm focus:outline-hidden focus:ring-1 focus:ring-zinc-900 focus:bg-white transition cursor-pointer font-medium"
             >
               <option value="ALL">Alla momssatser</option>
               <option value="25">25% (Standard)</option>
@@ -83,10 +82,10 @@ export function InvoicesTable({ invoices, onOpenAddInvoice }: InvoicesTableProps
                 setSearchQuery('');
                 setVatFilter('ALL');
               }}
-              className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition text-xs"
+              className="inline-flex items-center gap-1 px-2.5 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition text-sm font-medium"
               title="Rensa filter"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-4 h-4" />
               <span>Rensa</span>
             </button>
           )}
@@ -94,77 +93,77 @@ export function InvoicesTable({ invoices, onOpenAddInvoice }: InvoicesTableProps
           {/* Primary Action Button */}
           <button
             onClick={onOpenAddInvoice}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold transition shadow-xs ml-auto md:ml-2"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold transition shadow-xs ml-auto md:ml-2"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" />
             <span>Skapa faktura</span>
           </button>
         </div>
       </div>
 
       {invoices.length === 0 ? (
-        <div className="p-12 text-center text-zinc-500 text-xs">
+        <div className="p-14 text-center text-zinc-500 text-sm">
           Inga fakturor registrerade. Skapa en faktura för att simulera intäkt och momsreserv.
         </div>
       ) : filteredInvoices.length === 0 ? (
-        <div className="p-10 text-center text-zinc-500 text-xs">
+        <div className="p-12 text-center text-zinc-500 text-sm">
           Inga fakturor matchar sökningen &quot;{searchQuery}&quot;.
           <button
             onClick={() => {
               setSearchQuery('');
               setVatFilter('ALL');
             }}
-            className="block mx-auto mt-2 text-emerald-700 hover:underline font-medium"
+            className="block mx-auto mt-2 text-emerald-700 hover:underline font-semibold"
           >
             Återställ filter
           </button>
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-zinc-50/80 text-zinc-600 border-b border-zinc-200">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-zinc-50/80 text-zinc-600 border-b border-zinc-200 text-xs uppercase tracking-wider font-bold">
               <tr>
-                <th className="py-2.5 px-4 font-semibold">Datum</th>
-                <th className="py-2.5 px-4 font-semibold">Kund</th>
-                <th className="py-2.5 px-4 font-semibold">Fakturanr</th>
-                <th className="py-2.5 px-4 font-semibold">Moms</th>
-                <th className="py-2.5 px-4 font-semibold text-right">Netto (exkl. moms)</th>
-                <th className="py-2.5 px-4 font-semibold text-right">Utgående Moms</th>
-                <th className="py-2.5 px-4 font-semibold text-right">Totalt (SEK)</th>
-                <th className="py-2.5 px-4 font-semibold">Status</th>
+                <th className="py-3 px-4 font-semibold">Datum</th>
+                <th className="py-3 px-4 font-semibold">Kund</th>
+                <th className="py-3 px-4 font-semibold">Fakturanr</th>
+                <th className="py-3 px-4 font-semibold">Moms</th>
+                <th className="py-3 px-4 font-semibold text-right">Netto (exkl. moms)</th>
+                <th className="py-3 px-4 font-semibold text-right">Utgående Moms</th>
+                <th className="py-3 px-4 font-semibold text-right">Totalt (SEK)</th>
+                <th className="py-3 px-4 font-semibold">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200/70">
               {filteredInvoices.map((inv) => (
                 <tr key={inv.id} className="hover:bg-zinc-50/60 transition">
-                  <td className="py-3 px-4 whitespace-nowrap text-zinc-600 font-mono text-[11px]">
+                  <td className="py-3.5 px-4 whitespace-nowrap text-zinc-600 font-mono text-xs">
                     {formatDate(inv.invoice_date)}
                   </td>
-                  <td className="py-3 px-4">
-                    <span className="font-semibold text-zinc-900">
+                  <td className="py-3.5 px-4">
+                    <span className="font-bold text-zinc-950 text-sm">
                       {inv.customer_name}
                     </span>
                   </td>
-                  <td className="py-3 px-4 whitespace-nowrap font-mono text-zinc-500 text-[11px]">
+                  <td className="py-3.5 px-4 whitespace-nowrap font-mono text-zinc-500 text-xs">
                     {inv.invoice_number || 'FAKTURA-001'}
                   </td>
-                  <td className="py-3 px-4 whitespace-nowrap">
-                    <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-zinc-100 text-zinc-800 border border-zinc-200">
+                  <td className="py-3.5 px-4 whitespace-nowrap">
+                    <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-zinc-100 text-zinc-800 border border-zinc-200">
                       {inv.vat_rate}%
                     </span>
                   </td>
-                  <td className="py-3 px-4 whitespace-nowrap text-right font-mono text-zinc-700 tabular-nums">
+                  <td className="py-3.5 px-4 whitespace-nowrap text-right font-mono text-zinc-700 tabular-nums font-semibold text-sm">
                     {formatSEK(inv.subtotal_amount)}
                   </td>
-                  <td className="py-3 px-4 whitespace-nowrap text-right font-mono text-zinc-700 tabular-nums">
+                  <td className="py-3.5 px-4 whitespace-nowrap text-right font-mono text-zinc-700 tabular-nums font-semibold text-sm">
                     {formatSEK(inv.vat_amount)}
                   </td>
-                  <td className="py-3 px-4 whitespace-nowrap text-right font-mono font-bold text-zinc-950 tabular-nums">
+                  <td className="py-3.5 px-4 whitespace-nowrap text-right font-mono font-black text-zinc-950 tabular-nums text-sm">
                     {formatSEK(inv.total_amount)}
                   </td>
-                  <td className="py-3 px-4 whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-800 font-medium px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <td className="py-3.5 px-4 whitespace-nowrap">
+                    <span className="inline-flex items-center gap-1.5 text-xs text-emerald-800 font-bold px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       Betald
                     </span>
                   </td>
