@@ -1,20 +1,19 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { Sidebar, ActiveView } from '@/components/dashboard/Sidebar';
 import { Header, QuarterPeriod } from '@/components/dashboard/Header';
-import { SafeToSpendWidget } from '@/components/dashboard/SafeToSpendWidget';
-import { MomsSummaryCard } from '@/components/dashboard/MomsSummaryCard';
-import { RevenueExpenseCards } from '@/components/dashboard/RevenueExpenseCards';
+import { OverviewView } from '@/components/dashboard/OverviewView';
 import { ReceiptsTable } from '@/components/dashboard/ReceiptsTable';
 import { InvoicesTable } from '@/components/dashboard/InvoicesTable';
+import { TaxView } from '@/components/dashboard/TaxView';
+import { BankReconciliationTab } from '@/components/dashboard/BankReconciliationTab';
 import { ReceiptUploadModal } from '@/components/dashboard/ReceiptUploadModal';
 import { InvoiceBuilderModal } from '@/components/dashboard/InvoiceBuilderModal';
 import { PayMomsModal } from '@/components/dashboard/PayMomsModal';
 import { SkatteverketDeclarationModal } from '@/components/dashboard/SkatteverketDeclarationModal';
 import { OnboardingWizard, BusinessConfig } from '@/components/dashboard/OnboardingWizard';
-import { BankReconciliationTab } from '@/components/dashboard/BankReconciliationTab';
 import { OpenBankingModal } from '@/components/dashboard/OpenBankingModal';
-import { TaxSimulatorWidget } from '@/components/dashboard/TaxSimulatorWidget';
 import { KivraInboxModal } from '@/components/dashboard/KivraInboxModal';
 import { EmailForwardingModal } from '@/components/dashboard/EmailForwardingModal';
 import { AuthModal } from '@/components/dashboard/AuthModal';
@@ -24,16 +23,12 @@ import { tinkClient } from '@/lib/open-banking/tink-client';
 import { calculateSwedishTaxBuffer } from '@/lib/tax-calculator';
 import { generateSIE4File, downloadSIE4File } from '@/lib/sie-exporter';
 import { Receipt, Invoice, SwedishVatRate } from '@/types/database';
-import { 
-  Receipt as ReceiptIcon, 
-  FileCheck, 
-  BookOpen, 
-  Landmark, 
-  Calculator,
-  ShieldCheck
-} from 'lucide-react';
 
 export default function DashboardPage() {
+  // Active Navigation View (Left Sidebar)
+  const [activeView, setActiveView] = useState<ActiveView>('overview');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   // Business Profile & Tax Settings
   const [businessConfig, setBusinessConfig] = useState<BusinessConfig>({
     companyType: 'enskild_firma',
@@ -62,9 +57,6 @@ export default function DashboardPage() {
   // Data collections
   const [invoices, setInvoices] = useState<Invoice[]>(INITIAL_INVOICES);
   const [receipts, setReceipts] = useState<Receipt[]>(INITIAL_RECEIPTS);
-
-  // Active Tab
-  const [activeTab, setActiveTab] = useState<'receipts' | 'invoices' | 'bank_feed' | 'simulator' | 'tax_guide'>('receipts');
 
   // Modals state
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -182,23 +174,15 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fbfbfa] text-zinc-900 flex flex-col font-sans selection:bg-zinc-200">
+    <div className="min-h-screen bg-[#fbfbfa] text-zinc-900 flex font-sans selection:bg-zinc-200">
       
-      {/* Top Header */}
-      <Header
-        onOpenUpload={() => setIsUploadOpen(true)}
-        onOpenInvoiceBuilder={() => setIsInvoiceBuilderOpen(true)}
-        onOpenPayMoms={() => setIsPayMomsOpen(true)}
-        onOpenDeclaration={() => setIsDeclarationOpen(true)}
-        onOpenSettings={() => setIsOnboardingOpen(true)}
-        onOpenKivra={() => setIsKivraOpen(true)}
-        onOpenEmailForwarding={() => setIsEmailForwardingOpen(true)}
-        selectedPeriod={selectedPeriod}
-        onSelectPeriod={setSelectedPeriod}
+      {/* 1. Left Navigation Sidebar (Stripe / Linear style) */}
+      <Sidebar
+        activeView={activeView}
+        onSelectView={setActiveView}
         companyType={businessConfig.companyType}
         companyName={businessConfig.companyName}
         orgNr={businessConfig.orgNr}
-        netMoms={taxBuffer.moms.netMoms}
         onSwitchCompanyType={(newType) => {
           setBusinessConfig((prev) => ({
             ...prev,
@@ -207,211 +191,114 @@ export default function DashboardPage() {
             orgNr: newType === 'aktiebolag' ? '559123-4567' : '19890412-1234',
           }));
         }}
+        onOpenUpload={() => setIsUploadOpen(true)}
+        onOpenInvoiceBuilder={() => setIsInvoiceBuilderOpen(true)}
+        onOpenKivra={() => setIsKivraOpen(true)}
+        onOpenEmailForwarding={() => setIsEmailForwardingOpen(true)}
+        onOpenSettings={() => setIsOnboardingOpen(true)}
+        receiptsCount={filteredReceipts.length}
+        invoicesCount={filteredInvoices.length}
+        isMobileOpen={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
-      {/* Main Dashboard Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* 2. Main Content Canvas */}
+      <div className="flex-1 lg:pl-64 flex flex-col min-w-0">
         
-        {/* Hero Section: Safe to Spend & Tax Buffer Widget */}
-        <SafeToSpendWidget taxBuffer={taxBuffer} companyType={businessConfig.companyType} />
+        {/* Top Header Bar */}
+        <Header
+          activeView={activeView}
+          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+          selectedPeriod={selectedPeriod}
+          onSelectPeriod={setSelectedPeriod}
+          netMoms={taxBuffer.moms.netMoms}
+          onOpenUpload={() => setIsUploadOpen(true)}
+          onOpenInvoiceBuilder={() => setIsInvoiceBuilderOpen(true)}
+          onOpenPayMoms={() => setIsPayMomsOpen(true)}
+          onOpenDeclaration={() => setIsDeclarationOpen(true)}
+          onExportSIE={handleExportSIE}
+          onSyncBank={handleSyncTransactions}
+        />
 
-        {/* Top 3 Stat Cards: Revenue, Expenses, Profit */}
-        <RevenueExpenseCards taxBuffer={taxBuffer} />
-
-        {/* Swedish Skatteverket Momsdeklaration Card */}
-        <MomsSummaryCard moms={taxBuffer.moms} />
-
-        {/* Tab Navigation for Data Tables & Bank Integration */}
-        <div className="space-y-4">
-          <div className="flex border-b border-zinc-200 text-xs font-medium overflow-x-auto">
-            
-            <button
-              onClick={() => setActiveTab('receipts')}
-              className={`pb-2.5 px-3 flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
-                activeTab === 'receipts'
-                  ? 'border-zinc-900 text-zinc-950 font-semibold'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
-              }`}
-            >
-              <ReceiptIcon className="w-3.5 h-3.5 text-zinc-500" />
-              <span>Utgifter & Kvitton ({filteredReceipts.length})</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('invoices')}
-              className={`pb-2.5 px-3 flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
-                activeTab === 'invoices'
-                  ? 'border-zinc-900 text-zinc-950 font-semibold'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
-              }`}
-            >
-              <FileCheck className="w-3.5 h-3.5 text-zinc-500" />
-              <span>Kundfakturor ({filteredInvoices.length})</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('bank_feed')}
-              className={`pb-2.5 px-3 flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
-                activeTab === 'bank_feed'
-                  ? 'border-zinc-900 text-zinc-950 font-semibold'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
-              }`}
-            >
-              <Landmark className="w-3.5 h-3.5 text-zinc-500" />
-              <span>Bankavstämning (PSD2)</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('simulator')}
-              className={`pb-2.5 px-3 flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
-                activeTab === 'simulator'
-                  ? 'border-zinc-900 text-zinc-950 font-semibold'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
-              }`}
-            >
-              <Calculator className="w-3.5 h-3.5 text-zinc-500" />
-              <span>Simulator</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('tax_guide')}
-              className={`pb-2.5 px-3 flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
-                activeTab === 'tax_guide'
-                  ? 'border-zinc-900 text-zinc-950 font-semibold'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
-              }`}
-            >
-              <BookOpen className="w-3.5 h-3.5 text-zinc-500" />
-              <span>Regler & Beräkning</span>
-            </button>
-
-          </div>
-
-          {/* Tab 1: Receipts Table (with BAS-kontoplan & SIE export) */}
-          {activeTab === 'receipts' && (
-            <ReceiptsTable
-              receipts={filteredReceipts}
-              onDeleteReceipt={handleDeleteReceipt}
-              onVerifyReceipt={handleVerifyReceipt}
-              onUpdateReceiptVatRate={handleUpdateReceiptVatRate}
-              onExportSIE={handleExportSIE}
-            />
-          )}
-
-          {/* Tab 2: Invoices Table */}
-          {activeTab === 'invoices' && (
-            <InvoicesTable
-              invoices={filteredInvoices}
-              onOpenAddInvoice={() => setIsInvoiceBuilderOpen(true)}
-            />
-          )}
-
-          {/* Tab 3: Open Banking PSD2 Feed */}
-          {activeTab === 'bank_feed' && (
-            <BankReconciliationTab
-              transactions={bankTransactions}
-              connectedAccount={connectedAccount}
-              onOpenUpload={() => setIsUploadOpen(true)}
-              onOpenConnectBank={() => setIsOpenBankingOpen(true)}
-              onSyncTransactions={handleSyncTransactions}
-            />
-          )}
-
-          {/* Tab 4: Tax Scenario Forecaster */}
-          {activeTab === 'simulator' && (
-            <TaxSimulatorWidget
-              currentInvoices={filteredInvoices}
-              currentReceipts={filteredReceipts}
+        {/* Dynamic View Body */}
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          
+          {/* View 1: Översikt (Cockpit) */}
+          {activeView === 'overview' && (
+            <OverviewView
+              taxBuffer={taxBuffer}
               companyType={businessConfig.companyType}
-              municipalTaxRate={businessConfig.municipalTaxRate}
+              receipts={filteredReceipts}
+              invoices={filteredInvoices}
+              onNavigateToExpenses={() => setActiveView('expenses')}
+              onNavigateToInvoices={() => setActiveView('invoices')}
+              onNavigateToTax={() => setActiveView('tax')}
+              onOpenUpload={() => setIsUploadOpen(true)}
+              onOpenPayMoms={() => setIsPayMomsOpen(true)}
             />
           )}
 
-          {/* Tab 5: Swedish Tax Guide & Transparency */}
-          {activeTab === 'tax_guide' && (
-            <div className="rounded-xl border border-zinc-200 bg-white p-6 space-y-6 text-xs text-zinc-700 shadow-xs">
-              <div className="flex items-center gap-2 pb-3 border-b border-zinc-100">
-                <ShieldCheck className="w-4 h-4 text-zinc-600" />
-                <h3 className="text-sm font-bold text-zinc-900">
-                  Hur beräknar Klaro skattebuffert och säkert disponibelt belopp?
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                {/* Enskild Firma Rules */}
-                <div className="space-y-3 p-4 rounded-xl bg-zinc-50 border border-zinc-200/80">
-                  <h4 className="font-semibold text-zinc-900 text-xs">
-                    Enskild Firma (F-skatt & Egenavgifter)
-                  </h4>
-                  <p className="text-zinc-600 leading-relaxed text-[11px]">
-                    I en enskild firma beskattas du på <strong>verksamhetens skattemässiga överskott</strong> (nettointäkter minus avdragsgilla kostnader exkl. moms):
-                  </p>
-                  <ul className="list-disc list-inside space-y-1 text-zinc-600 text-[11px]">
-                    <li>
-                      <strong className="text-zinc-900">Schablonavdrag (25%):</strong> Automatiskt avdrag på 25% av vinsten före sociala avgifter.
-                    </li>
-                    <li>
-                      <strong className="text-zinc-900">Egenavgifter (28,97%):</strong> Beräknas på överskottet efter schablonavdrag.
-                    </li>
-                    <li>
-                      <strong className="text-zinc-900">Kommunalskatt (~{Math.round(businessConfig.municipalTaxRate * 100)}%):</strong> Dras på vinsten minus egenavgifterna.
-                    </li>
-                    <li>
-                      <strong className="text-zinc-900">Total F-skatt:</strong> Reserveras automatiskt för att undvika kvarskatt.
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Moms Rules */}
-                <div className="space-y-3 p-4 rounded-xl bg-zinc-50 border border-zinc-200/80">
-                  <h4 className="font-semibold text-zinc-900 text-xs">
-                    Mervärdesskatt (Momsdeklaration)
-                  </h4>
-                  <p className="text-zinc-600 leading-relaxed text-[11px]">
-                    Moms är statens skatt som ditt företag kräver in och redovisar periodiskt:
-                  </p>
-                  <ul className="list-disc list-inside space-y-1 text-zinc-600 text-[11px]">
-                    <li>
-                      <strong className="text-zinc-900">Utgående moms:</strong> Moms på dina utställda kundfakturor (25%, 12%, 6%).
-                    </li>
-                    <li>
-                      <strong className="text-zinc-900">Ingående moms:</strong> Moms du betalat på verifierade utgiftskvitton (Ruta 48).
-                    </li>
-                    <li>
-                      <strong className="text-zinc-900">Netto moms:</strong> Mellanskillnaden som reserveras och inbetalas till Skatteverkets Bankgiro 5050-1055.
-                    </li>
-                  </ul>
-                </div>
-
-              </div>
-
-              {/* Safe to Spend formula summary */}
-              <div className="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/80 text-xs">
-                <span className="font-semibold text-zinc-900 block mb-1">
-                  Klaros formel för "Säkert att ta ut":
-                </span>
-                <p className="text-zinc-700 font-mono text-[11px] leading-relaxed">
-                  Säkert att ta ut = Nettointäkter - Verifierade nettoutgifter - Beräknad F-skatt (Egenavgifter + Kommunalskatt) - Netto moms
-                </p>
-              </div>
-
+          {/* View 2: Utgifter & Kvitton (Dedicated full workspace) */}
+          {activeView === 'expenses' && (
+            <div className="space-y-4 animate-in fade-in duration-200">
+              <ReceiptsTable
+                receipts={filteredReceipts}
+                onDeleteReceipt={handleDeleteReceipt}
+                onVerifyReceipt={handleVerifyReceipt}
+                onUpdateReceiptVatRate={handleUpdateReceiptVatRate}
+                onExportSIE={handleExportSIE}
+              />
             </div>
           )}
 
-        </div>
+          {/* View 3: Kundfakturor (Dedicated invoicing workspace) */}
+          {activeView === 'invoices' && (
+            <div className="space-y-4 animate-in fade-in duration-200">
+              <InvoicesTable
+                invoices={filteredInvoices}
+                onOpenAddInvoice={() => setIsInvoiceBuilderOpen(true)}
+              />
+            </div>
+          )}
 
-      </main>
+          {/* View 4: Skatt & Deklaration (Momsdeklaration, simulator & guide) */}
+          {activeView === 'tax' && (
+            <TaxView
+              taxBuffer={taxBuffer}
+              businessConfig={businessConfig}
+              invoices={filteredInvoices}
+              receipts={filteredReceipts}
+              onOpenDeclaration={() => setIsDeclarationOpen(true)}
+              onOpenPayMoms={() => setIsPayMomsOpen(true)}
+            />
+          )}
 
-      {/* Footer */}
-      <footer className="border-t border-zinc-200 bg-white py-6 text-center text-xs text-zinc-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>Klaro — Automatiserad skattebuffert & fakturering för svenska frilansare.</span>
-          <span className="font-mono text-zinc-400">SIE-4 Standard • Mervärdesskattelagen • Skatteverket 2026</span>
-        </div>
-      </footer>
+          {/* View 5: Bank & Avstämning (Open Banking PSD2 feed) */}
+          {activeView === 'bank' && (
+            <div className="space-y-4 animate-in fade-in duration-200">
+              <BankReconciliationTab
+                transactions={bankTransactions}
+                connectedAccount={connectedAccount}
+                onOpenUpload={() => setIsUploadOpen(true)}
+                onOpenConnectBank={() => setIsOpenBankingOpen(true)}
+                onSyncTransactions={handleSyncTransactions}
+              />
+            </div>
+          )}
 
-      {/* All Modals */}
+        </main>
+
+        {/* Global Footer */}
+        <footer className="border-t border-zinc-200 bg-white py-6 text-center text-xs text-zinc-500 mt-auto">
+          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>Klaro — Automatiserad skattebuffert & fakturering för svenska företagare.</span>
+            <span className="font-mono text-zinc-400">SIE-4 Standard • Skatteverket 2026 • F-skatt</span>
+          </div>
+        </footer>
+
+      </div>
+
+      {/* Modals & Dialogs */}
       <ReceiptUploadModal
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
