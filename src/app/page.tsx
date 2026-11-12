@@ -16,6 +16,7 @@ import { BankReconciliationTab } from '@/components/dashboard/BankReconciliation
 import { OpenBankingModal } from '@/components/dashboard/OpenBankingModal';
 import { TaxSimulatorWidget } from '@/components/dashboard/TaxSimulatorWidget';
 import { KivraInboxModal } from '@/components/dashboard/KivraInboxModal';
+import { EmailForwardingModal } from '@/components/dashboard/EmailForwardingModal';
 import { AuthModal } from '@/components/dashboard/AuthModal';
 import { INITIAL_INVOICES, INITIAL_RECEIPTS } from '@/lib/mock-data';
 import { ConnectedBankAccount, PSD2Transaction } from '@/lib/open-banking/types';
@@ -72,6 +73,7 @@ export default function DashboardPage() {
   const [isDeclarationOpen, setIsDeclarationOpen] = useState(false);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [isKivraOpen, setIsKivraOpen] = useState(false);
+  const [isEmailForwardingOpen, setIsEmailForwardingOpen] = useState(false);
   const [isOpenBankingOpen, setIsOpenBankingOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
@@ -190,6 +192,7 @@ export default function DashboardPage() {
         onOpenDeclaration={() => setIsDeclarationOpen(true)}
         onOpenSettings={() => setIsOnboardingOpen(true)}
         onOpenKivra={() => setIsKivraOpen(true)}
+        onOpenEmailForwarding={() => setIsEmailForwardingOpen(true)}
         selectedPeriod={selectedPeriod}
         onSelectPeriod={setSelectedPeriod}
         companyType={businessConfig.companyType}
@@ -447,6 +450,12 @@ export default function DashboardPage() {
         isOpen={isKivraOpen}
         onClose={() => setIsKivraOpen(false)}
         onImportReceipt={handleReceiptAdded}
+      />
+
+      <EmailForwardingModal
+        isOpen={isEmailForwardingOpen}
+        onClose={() => setIsEmailForwardingOpen(false)}
+        onReceiptIngested={handleReceiptAdded}
       />
 
       <OpenBankingModal

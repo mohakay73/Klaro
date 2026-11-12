@@ -52,21 +52,110 @@ const SWEDISH_RECEIPT_SCHEMA = {
 export async function parseReceiptWithAI(
   input: { text?: string; base64Image?: string; mimeType?: string }
 ): Promise<ParsedReceiptData> {
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   const openAiKey = process.env.OPENAI_API_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const provider = process.env.AI_PROVIDER || (anthropicKey && !openAiKey ? 'anthropic' : 'openai');
+  
+  const provider = process.env.AI_PROVIDER || (
+    geminiKey && !geminiKey.startsWith('mock-') ? 'gemini' :
+    openAiKey && !openAiKey.startsWith('mock-') ? 'openai' :
+    anthropicKey && !anthropicKey.startsWith('mock-') ? 'anthropic' : 'heuristics'
+  );
 
-  // If live keys are available, use LLM
-  if (provider === 'openai' && openAiKey && !openAiKey.startsWith('mock-')) {
-    return parseWithOpenAI(input, openAiKey);
+  // 1. Google Gemini (Free Tier via Google AI Studio)
+  if ((provider === 'gemini' || geminiKey) && geminiKey && !geminiKey.startsWith('mock-')) {
+    try {
+      return await parseWithGemini(input, geminiKey);
+    } catch (err) {
+      console.error('Gemini API call failed, falling back:', err);
+    }
   }
 
-  if (provider === 'anthropic' && anthropicKey && !anthropicKey.startsWith('mock-')) {
-    return parseWithAnthropic(input, anthropicKey);
+  // 2. OpenAI (GPT-4o-mini)
+  if ((provider === 'openai' || openAiKey) && openAiKey && !openAiKey.startsWith('mock-')) {
+    try {
+      return await parseWithOpenAI(input, openAiKey);
+    } catch (err) {
+      console.error('OpenAI API call failed, falling back:', err);
+    }
   }
 
-  // Fallback to high-accuracy Swedish deterministic heuristic parser
+  // 3. Anthropic (Claude 3.5)
+  if ((provider === 'anthropic' || anthropicKey) && anthropicKey && !anthropicKey.startsWith('mock-')) {
+    try {
+      return await parseWithAnthropic(input, anthropicKey);
+    } catch (err) {
+      console.error('Anthropic API call failed, falling back:', err);
+    }
+  }
+
+  // 4. Fallback to high-accuracy Swedish deterministic heuristic parser
   return parseWithSwedishHeuristics(input.text || '');
+}
+
+async function parseWithGemini(
+  input: { text?: string; base64Image?: string; mimeType?: string },
+  apiKey: string
+): Promise<ParsedReceiptData> {
+  const parts: any[] = [
+    {
+      text: `${SWEDISH_TAX_SYSTEM_PROMPT}
+
+Vänligen analysera detta svenska kvitto/faktura och extrahera strukturerad redovisningsdata.
+Svara med ett giltigt JSON-objekt som strikt följer detta schema:
+${JSON.stringify(SWEDISH_RECEIPT_SCHEMA, null, 2)}`
+    }
+  ];
+
+  if (input.base64Image) {
+    parts.push({
+      inline_data: {
+        mime_type: input.mimeType || 'image/jpeg',
+        data: input.base64Image,
+      }
+    });
+  }
+
+  if (input.text) {
+    parts.push({
+      text: `Kvittotext att analysera:\n${input.text}`
+    });
+  }
+
+  const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts,
+        }
+      ],
+      generationConfig: {
+        response_mime_type: 'application/json',
+        temperature: 0.1,
+      }
+    })
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Google Gemini API error (${res.status}): ${errorText}`);
+  }
+
+  const data = await res.json();
+  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!rawText) {
+    throw new Error('Inget giltigt svar mottogs från Gemini API.');
+  }
+
+  const parsed = JSON.parse(rawText);
+  return normalizeVatRate(parsed);
 }
 
 async function parseWithOpenAI(
