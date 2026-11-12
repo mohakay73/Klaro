@@ -199,6 +199,14 @@ export default function DashboardPage() {
         companyName={businessConfig.companyName}
         orgNr={businessConfig.orgNr}
         netMoms={taxBuffer.moms.netMoms}
+        onSwitchCompanyType={(newType) => {
+          setBusinessConfig((prev) => ({
+            ...prev,
+            companyType: newType,
+            companyName: newType === 'aktiebolag' ? 'Nordic Tech Solutions AB' : 'Mohak Konsulting EF',
+            orgNr: newType === 'aktiebolag' ? '559123-4567' : '19890412-1234',
+          }));
+        }}
       />
 
       {/* Main Dashboard Content */}
