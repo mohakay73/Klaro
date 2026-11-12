@@ -170,20 +170,20 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl max-w-xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white border border-zinc-200 rounded-xl max-w-xl w-full p-6 shadow-xl space-y-5 max-h-[90vh] overflow-y-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-300">
+            <div className="w-8 h-8 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700">
               <ReceiptIcon className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-semibold text-sm text-zinc-100">
+              <h3 className="font-bold text-sm text-zinc-900">
                 {parsedPreview ? 'Tolkat underlag' : 'Läs in kvitto'}
               </h3>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-zinc-500">
                 {parsedPreview 
                   ? 'Kontrollera tolkade uppgifter mot originalkvittot' 
                   : 'Automatisk tolkning av momssats (25%, 12%, 6%, 0%) och BAS-konto'}
@@ -192,7 +192,7 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-200 p-1 rounded-md hover:bg-zinc-800 transition"
+            className="text-zinc-400 hover:text-zinc-700 p-1 rounded-md hover:bg-zinc-100 transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -204,8 +204,8 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
             
             {/* Quick presets row */}
             <div className="space-y-2">
-              <span className="text-[11px] font-medium text-zinc-400">
-                Exempelunderlag för test:
+              <span className="text-[11px] font-medium text-zinc-500">
+                Exempelunderlag för snabbtest:
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                 {PRESET_RECEIPTS.map((preset, idx) => (
@@ -213,9 +213,9 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
                     key={idx}
                     type="button"
                     onClick={() => handleSelectPreset(preset.text)}
-                    className="text-left p-2 rounded-lg border border-zinc-800 bg-zinc-950/60 hover:bg-zinc-800/80 hover:border-zinc-700 transition"
+                    className="text-left p-2 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 transition shadow-2xs"
                   >
-                    <div className="font-medium text-xs text-zinc-200">
+                    <div className="font-semibold text-xs text-zinc-800">
                       {preset.label}
                     </div>
                     <div className="text-[10px] text-zinc-500 line-clamp-1 mt-0.5">
@@ -227,13 +227,13 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
             </div>
 
             {/* Tab switch */}
-            <div className="flex border-b border-zinc-800 text-xs">
+            <div className="flex border-b border-zinc-200 text-xs">
               <button
                 onClick={() => setActiveTab('upload')}
-                className={`pb-2.5 px-3 font-medium transition flex items-center gap-1.5 border-b-2 ${
+                className={`pb-2 px-3 font-semibold transition flex items-center gap-1.5 border-b-2 ${
                   activeTab === 'upload'
-                    ? 'border-zinc-200 text-zinc-100'
-                    : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                    ? 'border-zinc-900 text-zinc-950'
+                    : 'border-transparent text-zinc-500 hover:text-zinc-800'
                 }`}
               >
                 <Upload className="w-3.5 h-3.5" />
@@ -241,10 +241,10 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
               </button>
               <button
                 onClick={() => setActiveTab('text')}
-                className={`pb-2.5 px-3 font-medium transition flex items-center gap-1.5 border-b-2 ${
+                className={`pb-2 px-3 font-semibold transition flex items-center gap-1.5 border-b-2 ${
                   activeTab === 'text'
-                    ? 'border-zinc-200 text-zinc-100'
-                    : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                    ? 'border-zinc-900 text-zinc-950'
+                    : 'border-transparent text-zinc-500 hover:text-zinc-800'
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" />
@@ -255,7 +255,7 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
             {activeTab === 'upload' ? (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border border-dashed border-zinc-700/80 hover:border-zinc-500 rounded-lg p-7 text-center cursor-pointer transition bg-zinc-950/30 group"
+                className="border-2 border-dashed border-zinc-200 hover:border-zinc-400 rounded-lg p-7 text-center cursor-pointer transition bg-zinc-50/50 group"
               >
                 <input
                   type="file"
@@ -264,17 +264,17 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
                   accept="image/*,application/pdf"
                   className="hidden"
                 />
-                <div className="w-10 h-10 rounded-full bg-zinc-800/80 border border-zinc-700/60 mx-auto flex items-center justify-center text-zinc-400 group-hover:text-zinc-200 transition">
+                <div className="w-10 h-10 rounded-full bg-white border border-zinc-200 mx-auto flex items-center justify-center text-zinc-500 group-hover:text-zinc-900 transition shadow-2xs">
                   <Upload className="w-4 h-4" />
                 </div>
-                <div className="mt-3 text-xs font-medium text-zinc-200">
-                  {selectedFile ? selectedFile.name : 'Välj kvittofil eller släpp här'}
+                <div className="mt-3 text-xs font-semibold text-zinc-800">
+                  {selectedFile ? selectedFile.name : 'Välj kvittofil eller dra och släpp här'}
                 </div>
                 <p className="mt-1 text-[11px] text-zinc-500">
                   JPG, PNG, WEBP eller PDF
                 </p>
                 {selectedFile && (
-                  <span className="mt-2 inline-block px-2 py-0.5 rounded text-[11px] font-mono bg-zinc-800 text-zinc-300 border border-zinc-700">
+                  <span className="mt-2 inline-block px-2.5 py-0.5 rounded text-[11px] font-mono bg-zinc-100 text-zinc-700 border border-zinc-200">
                     {(selectedFile.size / 1024).toFixed(1)} KB vald
                   </span>
                 )}
@@ -286,23 +286,23 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
                   onChange={(e) => setPastedText(e.target.value)}
                   placeholder="Klistra in kvitto, fakturatext eller e-post här..."
                   rows={6}
-                  className="w-full rounded-lg bg-zinc-950 border border-zinc-800 p-3 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 font-mono leading-relaxed"
+                  className="w-full rounded-lg bg-zinc-50 border border-zinc-200 p-3 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-600 focus:bg-white font-mono leading-relaxed transition"
                 />
               </div>
             )}
 
             {errorMsg && (
-              <div className="p-3 rounded-lg bg-red-950/20 border border-red-900/40 text-xs text-red-300 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800/80">
+            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3.5 py-1.5 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 text-xs font-medium transition"
+                className="px-3.5 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-zinc-700 text-xs font-medium transition"
               >
                 Avbryt
               </button>
@@ -310,7 +310,7 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
                 type="button"
                 onClick={handleParse}
                 disabled={isLoading || (activeTab === 'upload' && !selectedFile) || (activeTab === 'text' && !pastedText.trim())}
-                className="px-4 py-1.5 rounded-lg bg-white hover:bg-zinc-200 disabled:opacity-50 text-zinc-950 text-xs font-medium transition flex items-center gap-2 shadow-sm"
+                className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white text-xs font-semibold transition flex items-center gap-2 shadow-xs"
               >
                 {isLoading ? (
                   <>
@@ -327,22 +327,22 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
             </div>
           </div>
         ) : (
-          /* Parsed Result Preview Card - Clean, High-End Linear/Mercury Style */
+          /* Parsed Result Preview Card - Clean Light Mode */
           <div className="space-y-4 animate-in fade-in">
-            <div className="p-4 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-4">
+            <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 space-y-4">
               
               {/* Top row: Vendor & Date & Amount */}
-              <div className="flex items-start justify-between pb-3 border-b border-zinc-800/80">
+              <div className="flex items-start justify-between pb-3 border-b border-zinc-200/80">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700/60">
+                    <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-white text-zinc-700 border border-zinc-200 shadow-2xs">
                       Tolkad
                     </span>
-                    <span className="text-xs text-zinc-400 font-mono">
+                    <span className="text-xs text-zinc-500 font-mono">
                       {parsedPreview.invoice_date}
                     </span>
                   </div>
-                  <h4 className="text-base font-semibold text-zinc-100">
+                  <h4 className="text-base font-bold text-zinc-950">
                     {parsedPreview.vendor_name}
                   </h4>
                   {parsedPreview.vendor_org_nr && (
@@ -354,7 +354,7 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
 
                 <div className="text-right">
                   <span className="text-[11px] text-zinc-500 block">Totalt belopp</span>
-                  <div className="text-xl font-bold font-mono text-white tabular-nums">
+                  <div className="text-xl font-bold font-mono text-zinc-950 tabular-nums">
                     {formatSEK(parsedPreview.total_amount)}
                   </div>
                 </div>
@@ -362,39 +362,39 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
 
               {/* Financial & Tax Breakdown Ledger */}
               <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800/80">
+                <div className="p-3 rounded-lg bg-white border border-zinc-200 shadow-2xs">
                   <span className="text-zinc-500 text-[11px] block">Momssats</span>
-                  <div className="text-sm font-semibold font-mono text-zinc-200 mt-1 tabular-nums">
+                  <div className="text-sm font-bold font-mono text-zinc-900 mt-1 tabular-nums">
                     {parsedPreview.vat_rate}%
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800/80">
+                <div className="p-3 rounded-lg bg-white border border-zinc-200 shadow-2xs">
                   <span className="text-zinc-500 text-[11px] block">Avdragsgill moms</span>
-                  <div className="text-sm font-semibold font-mono text-zinc-100 mt-1 tabular-nums">
+                  <div className="text-sm font-bold font-mono text-zinc-900 mt-1 tabular-nums">
                     {formatSEK(parsedPreview.vat_amount)}
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800/80">
+                <div className="p-3 rounded-lg bg-white border border-zinc-200 shadow-2xs">
                   <span className="text-zinc-500 text-[11px] block">Netto exkl. moms</span>
-                  <div className="text-sm font-semibold font-mono text-zinc-300 mt-1 tabular-nums">
+                  <div className="text-sm font-bold font-mono text-zinc-900 mt-1 tabular-nums">
                     {formatSEK(parsedPreview.total_amount - parsedPreview.vat_amount)}
                   </div>
                 </div>
               </div>
 
               {/* Category & BAS Account */}
-              <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800/80 flex items-center justify-between text-xs">
+              <div className="p-3 rounded-lg bg-white border border-zinc-200 shadow-2xs flex items-center justify-between text-xs">
                 <div>
                   <span className="text-[11px] text-zinc-500 block">Kategori</span>
-                  <span className="font-medium text-zinc-200 mt-0.5 block">
+                  <span className="font-semibold text-zinc-800 mt-0.5 block">
                     {parsedPreview.category}
                   </span>
                 </div>
                 <div className="text-right">
                   <span className="text-[11px] text-zinc-500 block">Kontoplan</span>
-                  <span className="font-mono text-xs text-zinc-300 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">
+                  <span className="font-mono text-xs font-semibold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200">
                     BAS {parsedPreview.bas_account || '6990'}
                   </span>
                 </div>
@@ -402,11 +402,11 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
 
               {/* Tax Justification */}
               {parsedPreview.reasoning && (
-                <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800/60 text-xs space-y-1">
-                  <span className="text-[11px] font-medium text-zinc-400 block">
+                <div className="p-3 rounded-lg bg-white border border-zinc-200 shadow-2xs text-xs space-y-1">
+                  <span className="text-[11px] font-semibold text-zinc-700 block">
                     Skattemässig bedömning:
                   </span>
-                  <p className="text-zinc-400 text-[11px] leading-relaxed">
+                  <p className="text-zinc-600 text-[11px] leading-relaxed">
                     {parsedPreview.reasoning}
                   </p>
                 </div>
@@ -414,18 +414,18 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800/80">
+            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
               <button
                 type="button"
                 onClick={handleReset}
-                className="px-3.5 py-1.5 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 text-xs font-medium transition"
+                className="px-3.5 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-zinc-700 text-xs font-medium transition"
               >
                 Tolka annat kvitto
               </button>
               <button
                 type="button"
                 onClick={handleConfirmAdd}
-                className="px-4 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-semibold transition flex items-center gap-1.5 shadow-sm"
+                className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-xs"
               >
                 <Check className="w-3.5 h-3.5" />
                 <span>Spara underlag</span>

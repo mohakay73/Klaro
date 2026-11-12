@@ -9,8 +9,7 @@ import {
   Check, 
   Send, 
   X, 
-  Loader2, 
-  AlertCircle
+  Loader2
 } from 'lucide-react';
 
 interface EmailForwardingModalProps {
@@ -152,23 +151,23 @@ export function EmailForwardingModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white border border-zinc-200 rounded-xl max-w-2xl w-full p-6 shadow-xl space-y-5 max-h-[92vh] overflow-y-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-300">
+            <div className="w-8 h-8 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700">
               <Mail className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-sm text-zinc-100">E-postvidarebefordran</h3>
-                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700/60">
+                <h3 className="font-bold text-sm text-zinc-900">E-postvidarebefordran</h3>
+                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 border border-zinc-200">
                   Automatisk Inläsning
                 </span>
               </div>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-zinc-500">
                 Vidarebefordra e-postkvitton direkt till din personliga Klaro-adress
               </p>
             </div>
@@ -176,26 +175,26 @@ export function EmailForwardingModal({
 
           <button
             onClick={onClose}
-            className="p-1 text-zinc-400 hover:text-zinc-200 rounded-md hover:bg-zinc-800 transition"
+            className="p-1 text-zinc-400 hover:text-zinc-700 rounded-md hover:bg-zinc-100 transition"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Address Card */}
-        <div className="p-4 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-2">
-          <span className="text-xs text-zinc-400 block font-medium">Din unika mottagaradress för kvitton:</span>
-          <div className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-zinc-900 border border-zinc-800">
-            <code className="text-zinc-100 font-mono text-xs font-medium select-all">
+        <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 space-y-2">
+          <span className="text-xs text-zinc-600 block font-semibold">Din unika mottagaradress för kvitton:</span>
+          <div className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-white border border-zinc-200 shadow-2xs">
+            <code className="text-zinc-950 font-mono text-xs font-bold select-all">
               {inboundAddress}
             </code>
             <button
               onClick={copyAddress}
-              className="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium flex items-center gap-1.5 transition border border-zinc-700/60"
+              className="px-3 py-1.5 rounded-md bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold flex items-center gap-1.5 transition border border-zinc-200"
             >
               {copied ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-zinc-300" />
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Kopierat</span>
                 </>
               ) : (
@@ -214,7 +213,7 @@ export function EmailForwardingModal({
         {/* Simulator */}
         <div className="space-y-3 pt-1">
           <div className="flex items-center justify-between">
-            <h4 className="text-xs font-medium text-zinc-300">
+            <h4 className="text-xs font-bold text-zinc-800">
               Testa simulering av inkommande e-post:
             </h4>
           </div>
@@ -227,50 +226,50 @@ export function EmailForwardingModal({
                 onClick={() => handleSelectSample(sample)}
                 className={`p-2.5 rounded-lg border text-left transition ${
                   selectedSample.sender === sample.sender
-                    ? 'border-zinc-500 bg-zinc-800 text-zinc-100'
-                    : 'border-zinc-800 bg-zinc-950/70 text-zinc-400 hover:border-zinc-700'
+                    ? 'border-zinc-800 bg-white shadow-xs font-semibold text-zinc-950'
+                    : 'border-zinc-200 bg-zinc-50 text-zinc-600 hover:border-zinc-300'
                 }`}
               >
-                <div className="font-medium text-zinc-200 truncate">{sample.sender.split('@')[1]}</div>
+                <div className="truncate font-semibold">{sample.sender.split('@')[1]}</div>
                 <div className="text-[10px] text-zinc-500 line-clamp-1 mt-0.5">{sample.subject}</div>
               </button>
             ))}
           </div>
 
-          <div className="p-3.5 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-2 text-xs">
+          <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200 space-y-2 text-xs">
             <div>
-              <span className="text-[11px] text-zinc-500 block mb-1">Avsändare</span>
+              <span className="text-[11px] text-zinc-600 font-medium block mb-1">Avsändare</span>
               <input
                 type="text"
                 value={customSender}
                 onChange={(e) => setCustomSender(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-200 font-mono text-xs focus:outline-none focus:border-zinc-500"
+                className="w-full px-2.5 py-1.5 rounded-md bg-white border border-zinc-300 text-zinc-900 font-mono text-xs focus:outline-none focus:border-zinc-600"
               />
             </div>
 
             <div>
-              <span className="text-[11px] text-zinc-500 block mb-1">Ämne</span>
+              <span className="text-[11px] text-zinc-600 font-medium block mb-1">Ämne</span>
               <input
                 type="text"
                 value={customSubject}
                 onChange={(e) => setCustomSubject(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs focus:outline-none focus:border-zinc-500"
+                className="w-full px-2.5 py-1.5 rounded-md bg-white border border-zinc-300 text-zinc-900 text-xs focus:outline-none focus:border-zinc-600"
               />
             </div>
 
             <div>
-              <span className="text-[11px] text-zinc-500 block mb-1">Meddelandeinnehåll</span>
+              <span className="text-[11px] text-zinc-600 font-medium block mb-1">Meddelandeinnehåll</span>
               <textarea
                 value={customBody}
                 onChange={(e) => setCustomBody(e.target.value)}
                 rows={4}
-                className="w-full px-2.5 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-200 font-mono text-xs focus:outline-none focus:border-zinc-500"
+                className="w-full px-2.5 py-1.5 rounded-md bg-white border border-zinc-300 text-zinc-900 font-mono text-xs focus:outline-none focus:border-zinc-600"
               />
             </div>
 
             {successMsg && (
-              <div className="p-2.5 rounded-md bg-zinc-900 border border-zinc-700 text-xs text-zinc-200 flex items-center gap-2">
-                <Check className="w-3.5 h-3.5 text-zinc-300" />
+              <div className="p-2.5 rounded-md bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
                 <span>{successMsg}</span>
               </div>
             )}
@@ -278,17 +277,17 @@ export function EmailForwardingModal({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-between items-center pt-2 border-t border-zinc-800">
+        <div className="flex justify-between items-center pt-2 border-t border-zinc-100">
           <button
             onClick={onClose}
-            className="px-3.5 py-1.5 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 text-xs font-medium transition"
+            className="px-3.5 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-zinc-700 text-xs font-medium transition"
           >
             Stäng
           </button>
           <button
             onClick={handleSimulateWebhook}
             disabled={isSending}
-            className="px-4 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 font-semibold text-xs transition flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+            className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs disabled:opacity-50"
           >
             {isSending ? (
               <>

@@ -182,7 +182,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-[#fbfbfa] text-zinc-900 flex flex-col font-sans selection:bg-zinc-200">
       
       {/* Top Header */}
       <Header
@@ -215,17 +215,17 @@ export default function DashboardPage() {
 
         {/* Tab Navigation for Data Tables & Bank Integration */}
         <div className="space-y-4">
-          <div className="flex border-b border-zinc-800 text-xs font-medium overflow-x-auto">
+          <div className="flex border-b border-zinc-200 text-xs font-medium overflow-x-auto">
             
             <button
               onClick={() => setActiveTab('receipts')}
               className={`pb-2.5 px-3 flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
                 activeTab === 'receipts'
-                  ? 'border-zinc-100 text-zinc-100 font-medium'
-                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                  ? 'border-zinc-900 text-zinc-950 font-semibold'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
               }`}
             >
-              <ReceiptIcon className="w-3.5 h-3.5 text-zinc-400" />
+              <ReceiptIcon className="w-3.5 h-3.5 text-zinc-500" />
               <span>Utgifter & Kvitton ({filteredReceipts.length})</span>
             </button>
 
@@ -233,11 +233,11 @@ export default function DashboardPage() {
               onClick={() => setActiveTab('invoices')}
               className={`pb-2.5 px-3 flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
                 activeTab === 'invoices'
-                  ? 'border-zinc-100 text-zinc-100 font-medium'
-                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                  ? 'border-zinc-900 text-zinc-950 font-semibold'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
               }`}
             >
-              <FileCheck className="w-3.5 h-3.5 text-zinc-400" />
+              <FileCheck className="w-3.5 h-3.5 text-zinc-500" />
               <span>Kundfakturor ({filteredInvoices.length})</span>
             </button>
 
@@ -245,11 +245,11 @@ export default function DashboardPage() {
               onClick={() => setActiveTab('bank_feed')}
               className={`pb-2.5 px-3 flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
                 activeTab === 'bank_feed'
-                  ? 'border-zinc-100 text-zinc-100 font-medium'
-                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                  ? 'border-zinc-900 text-zinc-950 font-semibold'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
               }`}
             >
-              <Landmark className="w-3.5 h-3.5 text-zinc-400" />
+              <Landmark className="w-3.5 h-3.5 text-zinc-500" />
               <span>Bankavstämning (PSD2)</span>
             </button>
 
@@ -257,11 +257,11 @@ export default function DashboardPage() {
               onClick={() => setActiveTab('simulator')}
               className={`pb-2.5 px-3 flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
                 activeTab === 'simulator'
-                  ? 'border-zinc-100 text-zinc-100 font-medium'
-                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                  ? 'border-zinc-900 text-zinc-950 font-semibold'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
               }`}
             >
-              <Calculator className="w-3.5 h-3.5 text-zinc-400" />
+              <Calculator className="w-3.5 h-3.5 text-zinc-500" />
               <span>Simulator</span>
             </button>
 
@@ -269,11 +269,11 @@ export default function DashboardPage() {
               onClick={() => setActiveTab('tax_guide')}
               className={`pb-2.5 px-3 flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
                 activeTab === 'tax_guide'
-                  ? 'border-zinc-100 text-zinc-100 font-medium'
-                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                  ? 'border-zinc-900 text-zinc-950 font-semibold'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
               }`}
             >
-              <BookOpen className="w-3.5 h-3.5 text-zinc-400" />
+              <BookOpen className="w-3.5 h-3.5 text-zinc-500" />
               <span>Regler & Beräkning</span>
             </button>
 
@@ -321,10 +321,10 @@ export default function DashboardPage() {
 
           {/* Tab 5: Swedish Tax Guide & Transparency */}
           {activeTab === 'tax_guide' && (
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-6 text-xs text-zinc-300">
-              <div className="flex items-center gap-2 pb-3 border-b border-zinc-800">
-                <ShieldCheck className="w-4 h-4 text-zinc-400" />
-                <h3 className="text-sm font-semibold text-zinc-100">
+            <div className="rounded-xl border border-zinc-200 bg-white p-6 space-y-6 text-xs text-zinc-700 shadow-xs">
+              <div className="flex items-center gap-2 pb-3 border-b border-zinc-100">
+                <ShieldCheck className="w-4 h-4 text-zinc-600" />
+                <h3 className="text-sm font-bold text-zinc-900">
                   Hur beräknar Klaro skattebuffert och säkert disponibelt belopp?
                 </h3>
               </div>
@@ -332,46 +332,46 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
                 {/* Enskild Firma Rules */}
-                <div className="space-y-3 p-4 rounded-xl bg-zinc-950/70 border border-zinc-800">
-                  <h4 className="font-semibold text-zinc-100 text-xs">
+                <div className="space-y-3 p-4 rounded-xl bg-zinc-50 border border-zinc-200/80">
+                  <h4 className="font-semibold text-zinc-900 text-xs">
                     Enskild Firma (F-skatt & Egenavgifter)
                   </h4>
-                  <p className="text-zinc-400 leading-relaxed text-[11px]">
+                  <p className="text-zinc-600 leading-relaxed text-[11px]">
                     I en enskild firma beskattas du på <strong>verksamhetens skattemässiga överskott</strong> (nettointäkter minus avdragsgilla kostnader exkl. moms):
                   </p>
-                  <ul className="list-disc list-inside space-y-1 text-zinc-400 text-[11px]">
+                  <ul className="list-disc list-inside space-y-1 text-zinc-600 text-[11px]">
                     <li>
-                      <strong className="text-zinc-300">Schablonavdrag (25%):</strong> Automatiskt avdrag på 25% av vinsten före sociala avgifter.
+                      <strong className="text-zinc-900">Schablonavdrag (25%):</strong> Automatiskt avdrag på 25% av vinsten före sociala avgifter.
                     </li>
                     <li>
-                      <strong className="text-zinc-300">Egenavgifter (28,97%):</strong> Beräknas på överskottet efter schablonavdrag.
+                      <strong className="text-zinc-900">Egenavgifter (28,97%):</strong> Beräknas på överskottet efter schablonavdrag.
                     </li>
                     <li>
-                      <strong className="text-zinc-300">Kommunalskatt (~{Math.round(businessConfig.municipalTaxRate * 100)}%):</strong> Dras på vinsten minus egenavgifterna.
+                      <strong className="text-zinc-900">Kommunalskatt (~{Math.round(businessConfig.municipalTaxRate * 100)}%):</strong> Dras på vinsten minus egenavgifterna.
                     </li>
                     <li>
-                      <strong className="text-zinc-300">Total F-skatt:</strong> Reserveras automatiskt för att undvika kvarskatt.
+                      <strong className="text-zinc-900">Total F-skatt:</strong> Reserveras automatiskt för att undvika kvarskatt.
                     </li>
                   </ul>
                 </div>
 
                 {/* Moms Rules */}
-                <div className="space-y-3 p-4 rounded-xl bg-zinc-950/70 border border-zinc-800">
-                  <h4 className="font-semibold text-zinc-100 text-xs">
+                <div className="space-y-3 p-4 rounded-xl bg-zinc-50 border border-zinc-200/80">
+                  <h4 className="font-semibold text-zinc-900 text-xs">
                     Mervärdesskatt (Momsdeklaration)
                   </h4>
-                  <p className="text-zinc-400 leading-relaxed text-[11px]">
+                  <p className="text-zinc-600 leading-relaxed text-[11px]">
                     Moms är statens skatt som ditt företag kräver in och redovisar periodiskt:
                   </p>
-                  <ul className="list-disc list-inside space-y-1 text-zinc-400 text-[11px]">
+                  <ul className="list-disc list-inside space-y-1 text-zinc-600 text-[11px]">
                     <li>
-                      <strong className="text-zinc-300">Utgående moms:</strong> Moms på dina utställda kundfakturor (25%, 12%, 6%).
+                      <strong className="text-zinc-900">Utgående moms:</strong> Moms på dina utställda kundfakturor (25%, 12%, 6%).
                     </li>
                     <li>
-                      <strong className="text-zinc-300">Ingående moms:</strong> Moms du betalat på verifierade utgiftskvitton (Ruta 48).
+                      <strong className="text-zinc-900">Ingående moms:</strong> Moms du betalat på verifierade utgiftskvitton (Ruta 48).
                     </li>
                     <li>
-                      <strong className="text-zinc-300">Netto moms:</strong> Mellanskillnaden som reserveras och inbetalas till Skatteverkets Bankgiro 5050-1055.
+                      <strong className="text-zinc-900">Netto moms:</strong> Mellanskillnaden som reserveras och inbetalas till Skatteverkets Bankgiro 5050-1055.
                     </li>
                   </ul>
                 </div>
@@ -379,11 +379,11 @@ export default function DashboardPage() {
               </div>
 
               {/* Safe to Spend formula summary */}
-              <div className="p-3.5 rounded-lg bg-zinc-950/70 border border-zinc-800 text-xs">
-                <span className="font-medium text-zinc-300 block mb-1">
+              <div className="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/80 text-xs">
+                <span className="font-semibold text-zinc-900 block mb-1">
                   Klaros formel för "Säkert att ta ut":
                 </span>
-                <p className="text-zinc-400 font-mono text-[11px] leading-relaxed">
+                <p className="text-zinc-700 font-mono text-[11px] leading-relaxed">
                   Säkert att ta ut = Nettointäkter - Verifierade nettoutgifter - Beräknad F-skatt (Egenavgifter + Kommunalskatt) - Netto moms
                 </p>
               </div>
@@ -396,10 +396,10 @@ export default function DashboardPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-900 bg-zinc-950 py-6 text-center text-xs text-zinc-600">
+      <footer className="border-t border-zinc-200 bg-white py-6 text-center text-xs text-zinc-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>Klaro — Automatiserad skattebuffert & fakturering för svenska frilansare.</span>
-          <span className="font-mono text-zinc-500">SIE-4 Standard • Mervärdesskattelagen • Skatteverket 2026</span>
+          <span className="font-mono text-zinc-400">SIE-4 Standard • Mervärdesskattelagen • Skatteverket 2026</span>
         </div>
       </footer>
 

@@ -82,7 +82,6 @@ export function AuthModal({
       });
 
       if (error) {
-        // Try sign up if user not found
         const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
           email,
           password,
@@ -129,23 +128,23 @@ export function AuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white border border-zinc-200 rounded-xl max-w-md w-full p-6 shadow-xl space-y-5">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-300">
+            <div className="w-8 h-8 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-semibold text-sm text-zinc-100">Konto & Inloggning</h3>
-              <p className="text-xs text-zinc-400">Säker krypterad databas (Supabase RLS)</p>
+              <h3 className="font-bold text-sm text-zinc-900">Konto & Inloggning</h3>
+              <p className="text-xs text-zinc-500">Säker krypterad databas (Supabase RLS)</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-zinc-400 hover:text-zinc-200 rounded-md hover:bg-zinc-800 transition"
+            className="p-1 text-zinc-400 hover:text-zinc-700 rounded-md hover:bg-zinc-100 transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -154,22 +153,22 @@ export function AuthModal({
         {currentUser ? (
           /* User Profile & Logout View */
           <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-2">
+            <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 space-y-2">
               <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-zinc-400" />
-                <span className="font-medium text-zinc-200">Inloggad användare:</span>
+                <User className="w-4 h-4 text-zinc-600" />
+                <span className="font-semibold text-zinc-800">Inloggad användare:</span>
               </div>
-              <div className="font-mono text-white text-sm">{currentUser.email}</div>
+              <div className="font-mono text-zinc-950 text-sm font-bold">{currentUser.email}</div>
               <div className="text-[11px] text-zinc-500 font-mono">
                 ID: {currentUser.id}
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
+            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3.5 py-1.5 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 font-medium transition"
+                className="px-3.5 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-zinc-700 font-medium transition"
               >
                 Stäng
               </button>
@@ -177,7 +176,7 @@ export function AuthModal({
                 type="button"
                 onClick={handleSignOut}
                 disabled={isLoading}
-                className="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-red-300 border border-zinc-700 text-xs font-medium transition flex items-center gap-1.5"
+                className="px-3.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold transition flex items-center gap-1.5"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Logga ut</span>
@@ -188,14 +187,14 @@ export function AuthModal({
           /* Sign In Form */
           <div className="space-y-4 text-xs">
             {/* Mode toggle */}
-            <div className="flex rounded-lg bg-zinc-950 border border-zinc-800 p-0.5">
+            <div className="flex rounded-lg bg-zinc-100 border border-zinc-200 p-0.5">
               <button
                 type="button"
                 onClick={() => setMode('magic_link')}
                 className={`flex-1 py-1.5 rounded-md font-medium transition text-center ${
                   mode === 'magic_link'
-                    ? 'bg-zinc-800 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-white text-zinc-950 shadow-xs font-semibold'
+                    : 'text-zinc-500 hover:text-zinc-900'
                 }`}
               >
                 E-postlänk (Magic link)
@@ -205,8 +204,8 @@ export function AuthModal({
                 onClick={() => setMode('password')}
                 className={`flex-1 py-1.5 rounded-md font-medium transition text-center ${
                   mode === 'password'
-                    ? 'bg-zinc-800 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-white text-zinc-950 shadow-xs font-semibold'
+                    : 'text-zinc-500 hover:text-zinc-900'
                 }`}
               >
                 Lösenord
@@ -215,32 +214,32 @@ export function AuthModal({
 
             <form onSubmit={mode === 'magic_link' ? handleMagicLink : handlePasswordSignIn} className="space-y-3">
               <div>
-                <label className="text-zinc-400 font-medium block mb-1">E-postadress</label>
+                <label className="text-zinc-700 font-semibold block mb-1">E-postadress</label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
+                  <Mail className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="din.epost@foretag.se"
-                    className="w-full pl-9 pr-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
+                    className="w-full pl-9 pr-3 py-2 rounded-lg bg-white border border-zinc-300 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-700"
                   />
                 </div>
               </div>
 
               {mode === 'password' && (
                 <div>
-                  <label className="text-zinc-400 font-medium block mb-1">Lösenord</label>
+                  <label className="text-zinc-700 font-semibold block mb-1">Lösenord</label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
+                    <Lock className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
                     <input
                       type="password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Minst 6 tecken"
-                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
+                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-white border border-zinc-300 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-700"
                     />
                   </div>
                 </div>
@@ -249,30 +248,30 @@ export function AuthModal({
               {message && (
                 <div className={`p-3 rounded-lg border flex items-center gap-2 ${
                   message.type === 'success'
-                    ? 'bg-zinc-950 border-zinc-700 text-zinc-200'
-                    : 'bg-red-950/20 border-red-900/40 text-red-300'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                    : 'bg-rose-50 border-rose-200 text-rose-800'
                 }`}>
                   {message.type === 'success' ? (
-                    <Check className="w-4 h-4 shrink-0 text-zinc-300" />
+                    <Check className="w-4 h-4 shrink-0 text-emerald-600" />
                   ) : (
-                    <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
                   )}
                   <span>{message.text}</span>
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
+              <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-3.5 py-1.5 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 font-medium transition"
+                  className="px-3.5 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-zinc-700 font-medium transition"
                 >
                   Avbryt
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading || !email}
-                  className="px-4 py-1.5 rounded-lg bg-white hover:bg-zinc-200 disabled:opacity-50 text-zinc-950 font-semibold transition flex items-center gap-1.5 shadow-sm"
+                  className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white font-semibold transition flex items-center gap-1.5 shadow-xs"
                 >
                   {isLoading ? (
                     <>
