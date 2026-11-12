@@ -66,8 +66,11 @@ export async function parseReceiptWithAI(
   if ((provider === 'gemini' || geminiKey) && geminiKey && !geminiKey.startsWith('mock-')) {
     try {
       return await parseWithGemini(input, geminiKey);
-    } catch (err) {
-      console.error('Gemini API call failed, falling back:', err);
+    } catch (err: any) {
+      console.error('Gemini API call failed:', err);
+      if (input.base64Image) {
+        throw new Error(`Gemini AI-tolkning misslyckades: ${err.message}`);
+      }
     }
   }
 
@@ -75,8 +78,11 @@ export async function parseReceiptWithAI(
   if ((provider === 'openai' || openAiKey) && openAiKey && !openAiKey.startsWith('mock-')) {
     try {
       return await parseWithOpenAI(input, openAiKey);
-    } catch (err) {
-      console.error('OpenAI API call failed, falling back:', err);
+    } catch (err: any) {
+      console.error('OpenAI API call failed:', err);
+      if (input.base64Image) {
+        throw new Error(`OpenAI tolkning misslyckades: ${err.message}`);
+      }
     }
   }
 
@@ -84,12 +90,15 @@ export async function parseReceiptWithAI(
   if ((provider === 'anthropic' || anthropicKey) && anthropicKey && !anthropicKey.startsWith('mock-')) {
     try {
       return await parseWithAnthropic(input, anthropicKey);
-    } catch (err) {
-      console.error('Anthropic API call failed, falling back:', err);
+    } catch (err: any) {
+      console.error('Anthropic API call failed:', err);
+      if (input.base64Image) {
+        throw new Error(`Anthropic tolkning misslyckades: ${err.message}`);
+      }
     }
   }
 
-  // 4. Fallback to high-accuracy Swedish deterministic heuristic parser
+  // 4. Fallback to Swedish deterministic heuristic parser for text
   return parseWithSwedishHeuristics(input.text || '');
 }
 
@@ -122,40 +131,54 @@ ${JSON.stringify(SWEDISH_RECEIPT_SCHEMA, null, 2)}`
     });
   }
 
-  const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const candidateModels = [
+    process.env.GEMINI_MODEL,
+    'gemini-3-flash-preview',
+    'gemini-2.5-flash',
+    'gemini-flash-latest',
+  ].filter(Boolean) as string[];
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts,
-        }
-      ],
-      generationConfig: {
-        response_mime_type: 'application/json',
-        temperature: 0.1,
+  let lastError: any = null;
+
+  for (const model of candidateModels) {
+    const cleanModel = model.replace(/^models\//, '');
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${apiKey}`;
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: {
+            response_mime_type: 'application/json',
+            temperature: 0.1,
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Google Gemini API error (${res.status}) on model ${cleanModel}: ${errorText}`);
       }
-    })
-  });
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Google Gemini API error (${res.status}): ${errorText}`);
+      const data = await res.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawText) {
+        throw new Error('Inget giltigt textinnehåll mottogs från Gemini.');
+      }
+
+      const parsed = JSON.parse(rawText);
+      return normalizeVatRate(parsed);
+    } catch (err) {
+      lastError = err;
+      console.warn(`Model ${cleanModel} failed, trying next candidate:`, err);
+    }
   }
 
-  const data = await res.json();
-  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) {
-    throw new Error('Inget giltigt svar mottogs från Gemini API.');
-  }
-
-  const parsed = JSON.parse(rawText);
-  return normalizeVatRate(parsed);
+  throw lastError || new Error('Alla Gemini-modeller misslyckades.');
 }
 
 async function parseWithOpenAI(
