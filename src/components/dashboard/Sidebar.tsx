@@ -16,7 +16,6 @@ import {
   Inbox,
   Settings,
   X,
-  ExternalLink,
   Copy,
   Check
 } from 'lucide-react';
@@ -85,7 +84,7 @@ export function Sidebar({
     { id: 'expenses', label: 'Utgifter & Kvitton', icon: Receipt, badge: receiptsCount },
     { id: 'invoices', label: 'Kundfakturor', icon: FileCheck, badge: invoicesCount },
     { id: 'tax', label: 'Skatt & Deklaration', icon: Calculator },
-    { id: 'bank', label: 'Bank & Avstämning', icon: Landmark },
+    { id: 'bank', label: 'Bank (PSD2)', icon: Landmark },
   ];
 
   const handleNavClick = (view: ActiveView) => {
@@ -115,15 +114,12 @@ export function Sidebar({
           {/* Brand header + Mobile Close */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-lg bg-emerald-700 flex items-center justify-center text-white font-extrabold text-sm shadow-xs tracking-tight">
+              <div className="h-8 w-8 rounded-lg bg-[#0d3829] flex items-center justify-center text-white font-extrabold text-sm shadow-xs tracking-tight">
                 K
               </div>
               <div>
-                <span className="font-black text-lg tracking-tight text-zinc-950 block leading-tight">
+                <span className="font-black text-xl tracking-tight text-zinc-950 block leading-tight">
                   Klaro
-                </span>
-                <span className="text-xs uppercase font-bold tracking-wider text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60 inline-block">
-                  Svensk Skattemotor
                 </span>
               </div>
             </div>
@@ -137,24 +133,25 @@ export function Sidebar({
             </button>
           </div>
 
-          {/* Company Switcher Dropdown */}
+          {/* Company Switcher Pill (Mockup Style with initial avatar and F-skatt badge) */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsCompanyDropdownOpen(!isCompanyDropdownOpen)}
               className="w-full flex items-center justify-between p-2.5 rounded-xl border border-zinc-200/80 bg-zinc-50/70 hover:bg-zinc-100 hover:border-zinc-300 text-left transition group shadow-2xs"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-white border border-zinc-200 flex items-center justify-center text-emerald-700 shrink-0">
-                  <Building2 className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-800 font-bold text-xs shrink-0 shadow-2xs">
+                  M
                 </div>
                 <div className="min-w-0">
                   <div className="text-sm font-bold text-zinc-900 truncate">
                     {companyName}
                   </div>
                   <div className="text-xs text-zinc-500 font-mono flex items-center gap-1.5">
-                    <span>{companyType === 'enskild_firma' ? 'Enskild Firma' : 'Aktiebolag'}</span>
-                    <span>•</span>
-                    <span className="text-emerald-700 font-semibold">F-skatt</span>
+                    <span className="inline-flex items-center gap-0.5 text-emerald-800 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 text-[10px]">
+                      <Check className="w-2.5 h-2.5 text-emerald-700" />
+                      F-skatt
+                    </span>
                   </div>
                 </div>
               </div>
@@ -248,23 +245,20 @@ export function Sidebar({
             )}
           </div>
 
-          {/* Primary Action Button */}
+          {/* Primary Action Button (Deep Swedish Pine) */}
           <button
             onClick={() => {
               onOpenUpload();
               onCloseMobile();
             }}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm transition shadow-xs"
+            className="w-full flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-[#0d3829] hover:bg-[#07241a] text-white font-bold text-sm transition shadow-xs"
           >
             <Plus className="w-4 h-4" />
-            <span>Skanna kvitto / utgift</span>
+            <span>+ Skanna kvitto</span>
           </button>
 
           {/* Main Navigation List */}
-          <nav className="space-y-1 pt-2">
-            <span className="text-xs uppercase font-bold tracking-wider text-zinc-400 px-3 block mb-1.5">
-              Huvudmeny
-            </span>
+          <nav className="space-y-1.5 pt-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeView === item.id;
@@ -272,21 +266,21 @@ export function Sidebar({
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition ${
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
                     isActive
-                      ? 'bg-emerald-50 text-emerald-950 border border-emerald-200/90 shadow-2xs font-bold'
-                      : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/80 border border-transparent'
+                      ? 'bg-[#f2efe9] text-zinc-950 font-bold border border-zinc-200/80 shadow-2xs'
+                      : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70 border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-700' : 'text-zinc-500'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-zinc-950' : 'text-zinc-500'}`} />
                     <span>{item.label}</span>
                   </div>
                   {item.badge !== undefined && (
                     <span
                       className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full ${
                         isActive
-                          ? 'bg-emerald-100 text-emerald-800'
+                          ? 'bg-zinc-200/80 text-zinc-800'
                           : 'bg-zinc-100 text-zinc-600'
                       }`}
                     >
@@ -297,66 +291,56 @@ export function Sidebar({
               );
             })}
           </nav>
+        </div>
 
-          {/* Integrations & Secondary Tools */}
-          <div className="space-y-1 pt-4 border-t border-zinc-100">
-            <span className="text-xs uppercase font-bold tracking-wider text-zinc-400 px-3 block mb-1.5">
-              Verktyg & Inkorg
-            </span>
-            
-            <button
-              onClick={() => {
-                onOpenKivra();
-                onCloseMobile();
-              }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/80 transition"
-            >
-              <div className="flex items-center gap-2.5">
-                <Inbox className="w-4 h-4 text-zinc-500" />
-                <span>Kivra Företag</span>
+        {/* Bottom Area: Docked Kivra Digital Post Card (Mockup Style) + Settings */}
+        <div className="p-4 space-y-3 border-t border-zinc-200/80 bg-zinc-50/40">
+          
+          {/* Kivra Digital Post Docked Card */}
+          <button
+            onClick={() => {
+              onOpenKivra();
+              onCloseMobile();
+            }}
+            className="w-full p-2.5 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50/90 flex items-center gap-3 transition shadow-xs text-left group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-[#5cc971] flex items-center justify-center text-white shrink-0 shadow-xs">
+              <Inbox className="w-4 h-4 text-white" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-bold text-zinc-900 leading-tight">
+                Kivra
               </div>
-              <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                Aktiv
-              </span>
-            </button>
+              <div className="text-[11px] text-zinc-500 font-medium">
+                digital post
+              </div>
+            </div>
+            <span className="ml-auto w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Kopplad" />
+          </button>
 
+          {/* Quick Settings Link */}
+          <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
             <button
               onClick={() => {
                 onOpenEmailForwarding();
                 onCloseMobile();
               }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/80 transition"
+              className="hover:text-zinc-900 transition flex items-center gap-1.5"
             >
-              <div className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-zinc-500" />
-                <span>Vidarebefordra e-post</span>
-              </div>
+              <Mail className="w-3.5 h-3.5 text-zinc-400" />
+              <span>E-post</span>
             </button>
-
+            <span>•</span>
             <button
               onClick={() => {
                 onOpenSettings();
                 onCloseMobile();
               }}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/80 transition"
+              className="hover:text-zinc-900 transition flex items-center gap-1.5"
             >
-              <Settings className="w-4 h-4 text-zinc-500" />
-              <span>Företagsinställningar</span>
+              <Settings className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Inställningar</span>
             </button>
-          </div>
-        </div>
-
-        {/* Bottom Area: Skattekonto & Security status */}
-        <div className="p-4 border-t border-zinc-200/80 bg-zinc-50/50 space-y-1.5">
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-600" />
-              <span className="font-semibold text-zinc-800 text-xs">Skatteverket Synk</span>
-            </div>
-            <span className="text-xs font-mono font-medium text-zinc-500">Live</span>
-          </div>
-          <div className="text-xs text-zinc-500 leading-normal">
-            Bankgiro 5050-1055 reserveras automatiskt för moms & F-skatt.
           </div>
         </div>
       </aside>

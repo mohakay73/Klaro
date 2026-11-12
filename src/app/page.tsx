@@ -174,7 +174,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fbfbfa] text-zinc-900 flex font-sans selection:bg-zinc-200">
+    <div className="min-h-screen bg-[#f8f7f4] text-zinc-900 flex font-sans selection:bg-zinc-200">
       
       {/* 1. Left Navigation Sidebar (Stripe / Linear style) */}
       <Sidebar

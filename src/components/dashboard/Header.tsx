@@ -85,10 +85,11 @@ export function Header({
             <div className="flex items-center gap-2 text-sm text-zinc-400">
               <span className="font-semibold text-zinc-500">Klaro</span>
               <span>/</span>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
-                <span className="font-bold text-zinc-900 text-base">{currentViewMeta.title}</span>
-              </div>
+              <span className="font-bold text-zinc-950 text-base">{currentViewMeta.title}</span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                Live
+              </span>
             </div>
             <p className="hidden md:block text-xs text-zinc-500 font-normal truncate max-w-sm mt-0.5">
               {currentViewMeta.subtitle}

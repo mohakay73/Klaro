@@ -18,47 +18,86 @@ export function RevenueExpenseCards({ taxBuffer }: RevenueExpenseCardsProps) {
   } = taxBuffer;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       
-      {/* 1. Intäkter */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 space-y-2.5 shadow-xs">
-        <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
-          Fakturerade Intäkter
-        </span>
-        <div className="text-3xl font-black font-mono tracking-tight text-zinc-950 tabular-nums">
-          {formatSEK(totalGrossRevenue)}
+      {/* 1. Fakturerade Intäkter */}
+      <div className="rounded-2xl border border-zinc-200/90 bg-white p-6 space-y-3 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between overflow-hidden">
+        <div>
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
+            Fakturerade Intäkter:
+          </span>
+          <div className="text-3xl font-black font-mono tracking-tight text-zinc-950 tabular-nums mt-1">
+            {formatSEK(totalGrossRevenue)}
+          </div>
+          <div className="text-xs text-zinc-500 font-mono mt-1">
+            Netto exkl. moms: <strong className="text-zinc-900 font-semibold">{formatSEK(netRevenue)}</strong>
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-sm text-zinc-500 font-mono pt-1">
-          <span>Netto exkl. moms:</span>
-          <span className="text-zinc-900 font-bold">{formatSEK(netRevenue)}</span>
+
+        {/* Elegant Emerald Trend Sparkline */}
+        <div className="pt-2">
+          <svg className="w-full h-9 stroke-emerald-600 fill-none" viewBox="0 0 200 40">
+            <path
+              d="M 0 32 Q 30 35, 60 22 T 120 18 T 160 26 T 200 12"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
       </div>
 
-      {/* 2. Utgifter */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 space-y-2.5 shadow-xs">
-        <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
-          Företagskostnader (Kvitton)
-        </span>
-        <div className="text-3xl font-black font-mono tracking-tight text-zinc-950 tabular-nums">
-          {formatSEK(totalGrossExpenses)}
+      {/* 2. Avdragsgilla Kostnader */}
+      <div className="rounded-2xl border border-zinc-200/90 bg-white p-6 space-y-3 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between overflow-hidden">
+        <div>
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
+            Avdragsgilla Kostnader:
+          </span>
+          <div className="text-3xl font-black font-mono tracking-tight text-zinc-950 tabular-nums mt-1">
+            {formatSEK(totalGrossExpenses)}
+          </div>
+          <div className="text-xs text-zinc-500 font-mono mt-1">
+            Exkl. moms: <strong className="text-zinc-900 font-semibold">{formatSEK(deductibleExpenses)}</strong>
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-sm text-zinc-500 font-mono pt-1">
-          <span>Avdragsgillt (exkl. moms):</span>
-          <span className="text-zinc-900 font-bold">{formatSEK(deductibleExpenses)}</span>
+
+        {/* Elegant Amber Trend Sparkline */}
+        <div className="pt-2">
+          <svg className="w-full h-9 stroke-amber-500 fill-none" viewBox="0 0 200 40">
+            <path
+              d="M 0 28 Q 40 18, 70 30 T 130 16 T 170 28 T 200 20"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
       </div>
 
-      {/* 3. Vinstbas */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 space-y-2.5 shadow-xs">
-        <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
-          Rörelseresultat före skatt
-        </span>
-        <div className="text-3xl font-black font-mono tracking-tight text-zinc-950 tabular-nums">
-          {formatSEK(taxableProfit)}
+      {/* 3. Rörelsevinst */}
+      <div className="rounded-2xl border border-zinc-200/90 bg-white p-6 space-y-3 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between overflow-hidden">
+        <div>
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
+            Rörelsevinst:
+          </span>
+          <div className="text-3xl font-black font-mono tracking-tight text-zinc-950 tabular-nums mt-1">
+            {formatSEK(taxableProfit)}
+          </div>
+          <div className="text-xs text-zinc-500 mt-1">
+            Skattemässig vinst: <strong className="text-zinc-900 font-mono font-semibold">{formatSEK(netRevenue - deductibleExpenses)}</strong>
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-sm text-zinc-500 pt-1">
-          <span>Skattemässig vinst:</span>
-          <span className="text-zinc-900 font-bold font-mono">{formatSEK(netRevenue - deductibleExpenses)}</span>
+
+        {/* Elegant Deep Pine Trend Sparkline */}
+        <div className="pt-2">
+          <svg className="w-full h-9 stroke-emerald-700 fill-none" viewBox="0 0 200 40">
+            <path
+              d="M 0 34 Q 35 25, 75 30 T 125 15 T 165 24 T 200 10"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
       </div>
 
