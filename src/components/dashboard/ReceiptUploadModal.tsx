@@ -1,20 +1,18 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { ParsedReceiptData, SwedishVatRate } from '@/types/tax';
+import { ParsedReceiptData } from '@/types/tax';
 import { Receipt } from '@/types/database';
 import { formatSEK } from '@/lib/utils';
 import { 
   Upload, 
-  Sparkles, 
   Check, 
   AlertCircle, 
   X, 
   FileText, 
-  Building2, 
-  Layers, 
   Loader2,
-  Zap
+  FileCheck2,
+  Receipt as ReceiptIcon
 } from 'lucide-react';
 
 interface ReceiptUploadModalProps {
@@ -25,8 +23,8 @@ interface ReceiptUploadModalProps {
 
 const PRESET_RECEIPTS = [
   {
-    label: 'SJ Tåg (6% moms)',
-    description: 'Inrikes persontransport Stockholm C - Göteborg',
+    label: 'SJ Tåg (6%)',
+    description: 'Stockholm C - Göteborg (Persontransport)',
     text: `SJ AB (Org.nr: 556196-1599)
 Bokningsnummer: SJ-892147
 Datum: 2026-04-14
@@ -38,8 +36,8 @@ Betalt med Visa **** 4912
 Tack för att du reser klimatsmart med SJ!`,
   },
   {
-    label: 'Restaurangfika (12% moms)',
-    description: 'Representation & kundlunch på Espresso House',
+    label: 'Restaurangfika (12%)',
+    description: 'Representation / kundlunch',
     text: `Espresso House Sweden AB
 Org.nr: 556555-5555
 Datum: 2026-04-16 11:24
@@ -53,8 +51,8 @@ Netto exkl moms:       165,18 SEK
 Betalning: Kort godkänd`,
   },
   {
-    label: 'Adobe CC (25% moms)',
-    description: 'Programvarulicens för grafisk design & kod',
+    label: 'Adobe CC (25%)',
+    description: 'Programvarulicens för design',
     text: `Adobe Systems Software Ireland Limited
 4-6 Riverwalk, Citywest Business Campus, Dublin 24, Ireland
 Momsnr / VAT ID: SE502075123401
@@ -67,8 +65,8 @@ Totalbelopp: 720,00 SEK
 Betald via Mastercard **** 8821`,
   },
   {
-    label: 'Stripe Avgifter (0% moms)',
-    description: 'Finansiella transaktionsavgifter & banktjänster',
+    label: 'Stripe Avgifter (0%)',
+    description: 'Momsfri finansiell tjänst',
     text: `Stripe Payments Europe, Ltd.
 1 Grand Canal Street Lower, Dublin 2, Ireland
 Månadsrapport: Transaktionsavgifter och utbetalningskostnader
@@ -172,86 +170,92 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl max-w-xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
         
-        {/* Modal Header */}
+        {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <Sparkles className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-300">
+              <ReceiptIcon className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-semibold text-base text-white">AI Kvittoinläsning & Svensk Momstolkning</h3>
-              <p className="text-xs text-zinc-400">Automatisk kategorisering till 25%, 12%, 6% eller 0% moms</p>
+              <h3 className="font-semibold text-sm text-zinc-100">
+                {parsedPreview ? 'Tolkat underlag' : 'Läs in kvitto'}
+              </h3>
+              <p className="text-xs text-zinc-400">
+                {parsedPreview 
+                  ? 'Kontrollera tolkade uppgifter mot originalkvittot' 
+                  : 'Automatisk tolkning av momssats (25%, 12%, 6%, 0%) och BAS-konto'}
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition"
+            className="text-zinc-400 hover:text-zinc-200 p-1 rounded-md hover:bg-zinc-800 transition"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Quick presets row */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
-            <span className="font-medium text-zinc-300">Snabbtesta svenska momssatser:</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {PRESET_RECEIPTS.map((preset, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleSelectPreset(preset.text)}
-                className="text-left p-2 rounded-lg border border-zinc-800 bg-zinc-950 hover:bg-zinc-800/80 hover:border-zinc-700 transition group"
-              >
-                <div className="font-medium text-xs text-emerald-400 group-hover:text-emerald-300">
-                  {preset.label}
-                </div>
-                <div className="text-[10px] text-zinc-500 line-clamp-1 mt-0.5">
-                  {preset.description}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Tab switch */}
-        <div className="flex border-b border-zinc-800 text-xs">
-          <button
-            onClick={() => setActiveTab('upload')}
-            className={`pb-2.5 px-3 font-medium transition flex items-center gap-1.5 border-b-2 ${
-              activeTab === 'upload'
-                ? 'border-emerald-500 text-white'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <Upload className="w-3.5 h-3.5" />
-            <span>Filuppladdning (PDF / Bild)</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('text')}
-            className={`pb-2.5 px-3 font-medium transition flex items-center gap-1.5 border-b-2 ${
-              activeTab === 'text'
-                ? 'border-emerald-500 text-white'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Klistra in kvittotext</span>
-          </button>
-        </div>
-
-        {/* Tab content */}
+        {/* Tab content when NOT parsed */}
         {!parsedPreview ? (
           <div className="space-y-4">
+            
+            {/* Quick presets row */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-medium text-zinc-400">
+                Exempelunderlag för test:
+              </span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                {PRESET_RECEIPTS.map((preset, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleSelectPreset(preset.text)}
+                    className="text-left p-2 rounded-lg border border-zinc-800 bg-zinc-950/60 hover:bg-zinc-800/80 hover:border-zinc-700 transition"
+                  >
+                    <div className="font-medium text-xs text-zinc-200">
+                      {preset.label}
+                    </div>
+                    <div className="text-[10px] text-zinc-500 line-clamp-1 mt-0.5">
+                      {preset.description}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tab switch */}
+            <div className="flex border-b border-zinc-800 text-xs">
+              <button
+                onClick={() => setActiveTab('upload')}
+                className={`pb-2.5 px-3 font-medium transition flex items-center gap-1.5 border-b-2 ${
+                  activeTab === 'upload'
+                    ? 'border-zinc-200 text-zinc-100'
+                    : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Ladda upp fil</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('text')}
+                className={`pb-2.5 px-3 font-medium transition flex items-center gap-1.5 border-b-2 ${
+                  activeTab === 'text'
+                    ? 'border-zinc-200 text-zinc-100'
+                    : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Klistra in text</span>
+              </button>
+            </div>
+
             {activeTab === 'upload' ? (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-zinc-700 hover:border-emerald-500/50 rounded-xl p-8 text-center cursor-pointer transition bg-zinc-950/40 group"
+                className="border border-dashed border-zinc-700/80 hover:border-zinc-500 rounded-lg p-7 text-center cursor-pointer transition bg-zinc-950/30 group"
               >
                 <input
                   type="file"
@@ -260,18 +264,18 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
                   accept="image/*,application/pdf"
                   className="hidden"
                 />
-                <div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 mx-auto flex items-center justify-center text-zinc-400 group-hover:text-emerald-400 group-hover:border-emerald-500/30 transition">
-                  <Upload className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-full bg-zinc-800/80 border border-zinc-700/60 mx-auto flex items-center justify-center text-zinc-400 group-hover:text-zinc-200 transition">
+                  <Upload className="w-4 h-4" />
                 </div>
-                <div className="mt-3 text-sm font-medium text-zinc-200">
-                  {selectedFile ? selectedFile.name : 'Dra och släpp kvitto här, eller klicka för att välja'}
+                <div className="mt-3 text-xs font-medium text-zinc-200">
+                  {selectedFile ? selectedFile.name : 'Välj kvittofil eller släpp här'}
                 </div>
-                <p className="mt-1 text-xs text-zinc-500">
-                  Stödjer PNG, JPG, WEBP och PDF-fakturor
+                <p className="mt-1 text-[11px] text-zinc-500">
+                  JPG, PNG, WEBP eller PDF
                 </p>
                 {selectedFile && (
-                  <span className="mt-2 inline-block px-2.5 py-0.5 rounded-full text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    Vald fil: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                  <span className="mt-2 inline-block px-2 py-0.5 rounded text-[11px] font-mono bg-zinc-800 text-zinc-300 border border-zinc-700">
+                    {(selectedFile.size / 1024).toFixed(1)} KB vald
                   </span>
                 )}
               </div>
@@ -280,25 +284,25 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
                 <textarea
                   value={pastedText}
                   onChange={(e) => setPastedText(e.target.value)}
-                  placeholder="Klistra in text från en e-faktura, kvitto från ICA, SJ, Adobe eller e-post här..."
+                  placeholder="Klistra in kvitto, fakturatext eller e-post här..."
                   rows={6}
-                  className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500 font-mono leading-relaxed"
+                  className="w-full rounded-lg bg-zinc-950 border border-zinc-800 p-3 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 font-mono leading-relaxed"
                 />
               </div>
             )}
 
             {errorMsg && (
-              <div className="p-3 rounded-lg bg-rose-950/30 border border-rose-800/50 text-xs text-rose-300 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
+              <div className="p-3 rounded-lg bg-red-950/20 border border-red-900/40 text-xs text-red-300 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800/80">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 text-xs font-medium transition"
+                className="px-3.5 py-1.5 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 text-xs font-medium transition"
               >
                 Avbryt
               </button>
@@ -306,104 +310,125 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
                 type="button"
                 onClick={handleParse}
                 disabled={isLoading || (activeTab === 'upload' && !selectedFile) || (activeTab === 'text' && !pastedText.trim())}
-                className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-zinc-950 text-xs font-semibold transition flex items-center gap-2 shadow-sm shadow-emerald-950"
+                className="px-4 py-1.5 rounded-lg bg-white hover:bg-zinc-200 disabled:opacity-50 text-zinc-950 text-xs font-medium transition flex items-center gap-2 shadow-sm"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Analyserar med svensk skattelogik...</span>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Tolkar underlag...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4" />
-                    <span>Tolka Kvitto med AI</span>
+                    <FileCheck2 className="w-3.5 h-3.5" />
+                    <span>Tolka underlag</span>
                   </>
                 )}
               </button>
             </div>
           </div>
         ) : (
-          /* Parsed Result Preview Card */
+          /* Parsed Result Preview Card - Clean, High-End Linear/Mercury Style */
           <div className="space-y-4 animate-in fade-in">
-            <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-                <div>
-                  <span className="text-[10px] uppercase font-semibold text-emerald-400 tracking-wider">
-                    Tolkningsresultat (Godkänd)
-                  </span>
-                  <h4 className="text-base font-bold text-white mt-0.5">{parsedPreview.vendor_name}</h4>
+            <div className="p-4 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-4">
+              
+              {/* Top row: Vendor & Date & Amount */}
+              <div className="flex items-start justify-between pb-3 border-b border-zinc-800/80">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700/60">
+                      Tolkad
+                    </span>
+                    <span className="text-xs text-zinc-400 font-mono">
+                      {parsedPreview.invoice_date}
+                    </span>
+                  </div>
+                  <h4 className="text-base font-semibold text-zinc-100">
+                    {parsedPreview.vendor_name}
+                  </h4>
+                  {parsedPreview.vendor_org_nr && (
+                    <div className="text-[11px] font-mono text-zinc-500">
+                      Org.nr: {parsedPreview.vendor_org_nr}
+                    </div>
+                  )}
                 </div>
+
                 <div className="text-right">
-                  <div className="text-lg font-bold font-mono text-white">
+                  <span className="text-[11px] text-zinc-500 block">Totalt belopp</span>
+                  <div className="text-xl font-bold font-mono text-white tabular-nums">
                     {formatSEK(parsedPreview.total_amount)}
                   </div>
-                  <span className="text-xs font-mono text-zinc-400">{parsedPreview.invoice_date}</span>
                 </div>
               </div>
 
-              {/* Tax logic grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                <div className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800">
-                  <span className="text-zinc-500 text-[11px]">Svensk momssats:</span>
-                  <div className="text-sm font-bold font-mono text-white mt-0.5">
-                    {parsedPreview.vat_rate}% moms
+              {/* Financial & Tax Breakdown Ledger */}
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800/80">
+                  <span className="text-zinc-500 text-[11px] block">Momssats</span>
+                  <div className="text-sm font-semibold font-mono text-zinc-200 mt-1 tabular-nums">
+                    {parsedPreview.vat_rate}%
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800">
-                  <span className="text-zinc-500 text-[11px]">Avdragsgill moms:</span>
-                  <div className="text-sm font-bold font-mono text-emerald-400 mt-0.5">
+                <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800/80">
+                  <span className="text-zinc-500 text-[11px] block">Avdragsgill moms</span>
+                  <div className="text-sm font-semibold font-mono text-zinc-100 mt-1 tabular-nums">
                     {formatSEK(parsedPreview.vat_amount)}
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 col-span-2 sm:col-span-1">
-                  <span className="text-zinc-500 text-[11px]">Netto kostnad:</span>
-                  <div className="text-sm font-bold font-mono text-zinc-300 mt-0.5">
+                <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800/80">
+                  <span className="text-zinc-500 text-[11px] block">Netto exkl. moms</span>
+                  <div className="text-sm font-semibold font-mono text-zinc-300 mt-1 tabular-nums">
                     {formatSEK(parsedPreview.total_amount - parsedPreview.vat_amount)}
                   </div>
                 </div>
               </div>
 
               {/* Category & BAS Account */}
-              <div className="p-3 rounded-lg bg-zinc-900/80 border border-zinc-800 space-y-1 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-zinc-300">Bokföringskategori:</span>
-                  <span className="font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                    BAS-konto {parsedPreview.bas_account || '6990'}
+              <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800/80 flex items-center justify-between text-xs">
+                <div>
+                  <span className="text-[11px] text-zinc-500 block">Kategori</span>
+                  <span className="font-medium text-zinc-200 mt-0.5 block">
+                    {parsedPreview.category}
                   </span>
                 </div>
-                <p className="text-zinc-400">{parsedPreview.category}</p>
+                <div className="text-right">
+                  <span className="text-[11px] text-zinc-500 block">Kontoplan</span>
+                  <span className="font-mono text-xs text-zinc-300 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">
+                    BAS {parsedPreview.bas_account || '6990'}
+                  </span>
+                </div>
               </div>
 
-              {/* Skatteverket justification */}
-              <div className="p-3 rounded-lg bg-emerald-950/20 border border-emerald-800/30 text-xs">
-                <span className="font-semibold text-emerald-400 flex items-center gap-1.5 mb-1">
-                  <Check className="w-3.5 h-3.5" />
-                  Skatteverket Motivering:
-                </span>
-                <p className="text-zinc-300 leading-relaxed">
-                  {parsedPreview.reasoning}
-                </p>
-              </div>
+              {/* Tax Justification */}
+              {parsedPreview.reasoning && (
+                <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800/60 text-xs space-y-1">
+                  <span className="text-[11px] font-medium text-zinc-400 block">
+                    Skattemässig bedömning:
+                  </span>
+                  <p className="text-zinc-400 text-[11px] leading-relaxed">
+                    {parsedPreview.reasoning}
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* Confirm Actions */}
-            <div className="flex justify-end gap-2 pt-2">
+            {/* Actions */}
+            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800/80">
               <button
                 type="button"
                 onClick={handleReset}
-                className="px-4 py-2 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 text-xs font-medium transition"
+                className="px-3.5 py-1.5 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 text-xs font-medium transition"
               >
-                Tolka ett annat kvitto
+                Tolka annat kvitto
               </button>
               <button
                 type="button"
                 onClick={handleConfirmAdd}
-                className="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-950"
+                className="px-4 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-semibold transition flex items-center gap-1.5 shadow-sm"
               >
-                <Check className="w-4 h-4" />
-                <span>Lägg till i skattebufferten</span>
+                <Check className="w-3.5 h-3.5" />
+                <span>Spara underlag</span>
               </button>
             </div>
           </div>

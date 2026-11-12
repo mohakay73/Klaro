@@ -6,11 +6,6 @@ import { Invoice, Receipt } from '@/types/database';
 import { formatSEK } from '@/lib/utils';
 import { 
   Calculator, 
-  ArrowRight, 
-  TrendingUp, 
-  TrendingDown, 
-  Sparkles, 
-  ShieldCheck, 
   RotateCcw,
   ShoppingBag,
   Briefcase
@@ -99,23 +94,23 @@ export function TaxSimulatorWidget({
   };
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-6">
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-6">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-800">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-300">
             <Calculator className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-sm text-white">Skatte- & Vinstsimulator ("Vad händer om?")</h3>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono">
-                Interaktiv Prognos
+              <h3 className="font-semibold text-sm text-zinc-100">Skatte- & Vinstsimulator</h3>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono border border-zinc-700/60">
+                Prognos
               </span>
             </div>
             <p className="text-xs text-zinc-400">
-              Se exakt hur ett nytt kunduppdrag eller datorinköp förändrar ditt säkra disponibla belopp i realtid.
+              Simulera hur nytt kunduppdrag eller inköp förändrar ditt disponibla belopp och skattebuffert
             </p>
           </div>
         </div>
@@ -123,25 +118,25 @@ export function TaxSimulatorWidget({
         {(additionalRevenue > 0 || additionalExpense > 0) && (
           <button
             onClick={handleReset}
-            className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 transition"
+            className="text-xs text-zinc-300 hover:text-white flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 transition border border-zinc-700/60"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-3.5 h-3.5 text-zinc-400" />
             <span>Återställ</span>
           </button>
         )}
       </div>
 
       {/* Sliders and Quick Inputs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
         
         {/* Additional Revenue Slider */}
-        <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-3">
+        <div className="p-4 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-3">
           <div className="flex items-center justify-between">
-            <label className="font-semibold text-zinc-200 flex items-center gap-1.5">
-              <Briefcase className="w-4 h-4 text-emerald-400" />
-              <span>Simulera ny fakturering (inkl. 25% moms)</span>
+            <label className="font-medium text-zinc-200 flex items-center gap-1.5">
+              <Briefcase className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Simulera ny fakturering (inkl. moms)</span>
             </label>
-            <span className="font-mono font-bold text-sm text-emerald-400">
+            <span className="font-mono font-semibold text-sm text-zinc-100 tabular-nums">
               +{formatSEK(additionalRevenue)}
             </span>
           </div>
@@ -153,10 +148,10 @@ export function TaxSimulatorWidget({
             step="5000"
             value={additionalRevenue}
             onChange={(e) => setAdditionalRevenue(Number(e.target.value))}
-            className="w-full accent-emerald-500 cursor-pointer"
+            className="w-full accent-zinc-200 cursor-pointer"
           />
 
-          <div className="flex gap-2 pt-1">
+          <div className="flex gap-1.5 pt-1">
             {[25000, 50000, 80000, 100000].map((val) => (
               <button
                 key={val}
@@ -164,7 +159,7 @@ export function TaxSimulatorWidget({
                 onClick={() => setAdditionalRevenue(val)}
                 className={`px-2 py-1 rounded text-[11px] font-mono border transition ${
                   additionalRevenue === val
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    ? 'bg-zinc-800 text-zinc-100 border-zinc-600'
                     : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'
                 }`}
               >
@@ -175,13 +170,13 @@ export function TaxSimulatorWidget({
         </div>
 
         {/* Additional Expense Slider */}
-        <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-3">
+        <div className="p-4 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-3">
           <div className="flex items-center justify-between">
-            <label className="font-semibold text-zinc-200 flex items-center gap-1.5">
-              <ShoppingBag className="w-4 h-4 text-rose-400" />
-              <span>Simulera nytt inköp (t.ex. MacBook, kurs)</span>
+            <label className="font-medium text-zinc-200 flex items-center gap-1.5">
+              <ShoppingBag className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Simulera nytt inköp</span>
             </label>
-            <span className="font-mono font-bold text-sm text-rose-400">
+            <span className="font-mono font-semibold text-sm text-zinc-100 tabular-nums">
               -{formatSEK(additionalExpense)}
             </span>
           </div>
@@ -193,7 +188,7 @@ export function TaxSimulatorWidget({
             step="2000"
             value={additionalExpense}
             onChange={(e) => setAdditionalExpense(Number(e.target.value))}
-            className="w-full accent-rose-500 cursor-pointer"
+            className="w-full accent-zinc-200 cursor-pointer"
           />
 
           <div className="flex items-center justify-between pt-1">
@@ -205,7 +200,7 @@ export function TaxSimulatorWidget({
                   onClick={() => setAdditionalExpense(val)}
                   className={`px-2 py-1 rounded text-[11px] font-mono border transition ${
                     additionalExpense === val
-                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                      ? 'bg-zinc-800 text-zinc-100 border-zinc-600'
                       : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'
                   }`}
                 >
@@ -230,55 +225,52 @@ export function TaxSimulatorWidget({
       </div>
 
       {/* Real-time comparison display */}
-      <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
+      <div className="p-4 rounded-xl bg-zinc-950/70 border border-zinc-800 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
         
         {/* Safe to spend impact */}
-        <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-1">
-          <span className="text-zinc-500 text-[11px] uppercase tracking-wider block font-sans">
-            Säkert att ta ut (Disponibelt)
+        <div className="p-3.5 rounded-lg bg-zinc-900 border border-zinc-800 space-y-1">
+          <span className="text-zinc-500 text-[11px] block font-sans">
+            Säkert att ta ut
           </span>
-          <div className="text-xl font-bold text-white">
+          <div className="text-xl font-bold text-white tabular-nums">
             {formatSEK(simulated.safeToSpend)}
           </div>
           <div className="text-[11px] flex items-center gap-1 font-sans">
             <span className="text-zinc-500">Förändring:</span>
-            <span className={`font-mono font-bold ${
-              safeDiff >= 0 ? 'text-emerald-400' : 'text-rose-400'
-            }`}>
+            <span className="font-mono font-medium text-zinc-200 tabular-nums">
               {safeDiff >= 0 ? `+${formatSEK(safeDiff)}` : formatSEK(safeDiff)}
             </span>
           </div>
         </div>
 
         {/* Skattebuffert impact */}
-        <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-1">
-          <span className="text-zinc-500 text-[11px] uppercase tracking-wider block font-sans">
-            Skattebuffert (Skatteverket)
+        <div className="p-3.5 rounded-lg bg-zinc-900 border border-zinc-800 space-y-1">
+          <span className="text-zinc-500 text-[11px] block font-sans">
+            Skattebuffert (Totalt)
           </span>
-          <div className="text-xl font-bold text-amber-300">
+          <div className="text-xl font-bold text-zinc-100 tabular-nums">
             {formatSEK(simulated.totalTaxBuffer)}
           </div>
           <div className="text-[11px] flex items-center gap-1 font-sans">
-            <span className="text-zinc-500">Moms + F-skatt:</span>
-            <span className="font-mono text-zinc-300">
+            <span className="text-zinc-500">Förändring:</span>
+            <span className="font-mono text-zinc-400 tabular-nums">
               {bufferDiff >= 0 ? `+${formatSEK(bufferDiff)}` : formatSEK(bufferDiff)}
             </span>
           </div>
         </div>
 
-        {/* Resultat efter skatt insikt */}
-        <div className="p-3 rounded-lg bg-emerald-950/20 border border-emerald-800/30 space-y-1">
-          <span className="text-emerald-400 text-[11px] uppercase tracking-wider block font-sans font-semibold flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5" />
-            Klaro Ekonomisk Insikt
+        {/* Ekonomisk analys */}
+        <div className="p-3.5 rounded-lg bg-zinc-900 border border-zinc-800 space-y-1">
+          <span className="text-zinc-400 text-[11px] block font-sans font-medium">
+            Klaro Analys
           </span>
-          <p className="text-zinc-300 text-[11px] font-sans leading-relaxed pt-0.5">
+          <p className="text-zinc-400 text-[11px] font-sans leading-relaxed pt-0.5">
             {additionalExpense > 0 && additionalRevenue === 0 ? (
-              `Inköpet minskar din vinstskatt och moms med ca ${formatSEK(additionalExpense * 0.55)}. Effektiv kostnad för dig blir endast ${formatSEK(additionalExpense * 0.45)}!`
+              `Inköpet minskar din skatt med ca ${formatSEK(additionalExpense * 0.55)}. Effektiv nettokostnad blir ca ${formatSEK(additionalExpense * 0.45)}.`
             ) : additionalRevenue > 0 ? (
-              `Av ${formatSEK(additionalRevenue)} kan du säkert ta ut ${formatSEK(safeDiff)} till privatkontot. Resterande ${formatSEK(bufferDiff)} skyddas automatiskt i skattebufferten.`
+              `Av ${formatSEK(additionalRevenue)} disponeras ${formatSEK(safeDiff)} säkert till privatkontot efter skatt och moms.`
             ) : (
-              'Dra i reglagen ovan för att se hur inköp eller extra fakturering slår på din disponibla kassa.'
+              'Justera reglagen ovan för att se hur inköp eller ny fakturering slår på din disponibla kassa.'
             )}
           </p>
         </div>

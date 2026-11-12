@@ -7,7 +7,6 @@ import {
   Mail, 
   Lock, 
   ShieldCheck, 
-  Sparkles, 
   Check, 
   AlertCircle, 
   LogOut, 
@@ -57,7 +56,7 @@ export function AuthModal({
 
       setMessage({
         type: 'success',
-        text: `En inloggningslänk har skickats till ${email}. Kontrollera din inkorg!`,
+        text: `En inloggningslänk har skickats till ${email}. Kontrollera din inkorg.`,
       });
     } catch (err: any) {
       setMessage({
@@ -130,47 +129,47 @@ export function AuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-5">
         
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-300">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-white">Supabase Säker Inloggning</h3>
-              <p className="text-xs text-zinc-400">PostgreSQL med Row Level Security (RLS)</p>
+              <h3 className="font-semibold text-sm text-zinc-100">Konto & Inloggning</h3>
+              <p className="text-xs text-zinc-400">Säker krypterad databas (Supabase RLS)</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition"
+            className="p-1 text-zinc-400 hover:text-zinc-200 rounded-md hover:bg-zinc-800 transition"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {currentUser ? (
           /* User Profile & Logout View */
           <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2">
+            <div className="p-4 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-2">
               <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-emerald-400" />
-                <span className="font-semibold text-zinc-200">Inloggad användare:</span>
+                <User className="w-4 h-4 text-zinc-400" />
+                <span className="font-medium text-zinc-200">Inloggad användare:</span>
               </div>
               <div className="font-mono text-white text-sm">{currentUser.email}</div>
-              <div className="text-[11px] text-zinc-500">
-                Användar-ID: {currentUser.id}
+              <div className="text-[11px] text-zinc-500 font-mono">
+                ID: {currentUser.id}
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 font-medium transition"
+                className="px-3.5 py-1.5 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 font-medium transition"
               >
                 Stäng
               </button>
@@ -178,9 +177,9 @@ export function AuthModal({
                 type="button"
                 onClick={handleSignOut}
                 disabled={isLoading}
-                className="px-4 py-2 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold transition flex items-center gap-1.5"
+                className="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-red-300 border border-zinc-700 text-xs font-medium transition flex items-center gap-1.5"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5" />
                 <span>Logga ut</span>
               </button>
             </div>
@@ -199,7 +198,7 @@ export function AuthModal({
                     : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
-                Magic Link (E-postlänk)
+                E-postlänk (Magic link)
               </button>
               <button
                 type="button"
@@ -225,7 +224,7 @@ export function AuthModal({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="din.epost@foretag.se"
-                    className="w-full pl-9 pr-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                    className="w-full pl-9 pr-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
                   />
                 </div>
               </div>
@@ -241,7 +240,7 @@ export function AuthModal({
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Minst 6 tecken"
-                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
                     />
                   </div>
                 </div>
@@ -250,41 +249,38 @@ export function AuthModal({
               {message && (
                 <div className={`p-3 rounded-lg border flex items-center gap-2 ${
                   message.type === 'success'
-                    ? 'bg-emerald-950/30 border-emerald-800/50 text-emerald-300'
-                    : 'bg-rose-950/30 border-rose-800/50 text-rose-300'
+                    ? 'bg-zinc-950 border-zinc-700 text-zinc-200'
+                    : 'bg-red-950/20 border-red-900/40 text-red-300'
                 }`}>
                   {message.type === 'success' ? (
-                    <Check className="w-4 h-4 shrink-0 text-emerald-400" />
+                    <Check className="w-4 h-4 shrink-0 text-zinc-300" />
                   ) : (
-                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
                   )}
                   <span>{message.text}</span>
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 font-medium transition"
+                  className="px-3.5 py-1.5 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 font-medium transition"
                 >
                   Avbryt
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading || !email}
-                  className="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-zinc-950 font-bold transition flex items-center gap-1.5 shadow-sm shadow-emerald-950"
+                  className="px-4 py-1.5 rounded-lg bg-white hover:bg-zinc-200 disabled:opacity-50 text-zinc-950 font-semibold transition flex items-center gap-1.5 shadow-sm"
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       <span>Bearbetar...</span>
                     </>
                   ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      <span>{mode === 'magic_link' ? 'Skicka Magic Link' : 'Logga in'}</span>
-                    </>
+                    <span>{mode === 'magic_link' ? 'Skicka länk' : 'Logga in'}</span>
                   )}
                 </button>
               </div>

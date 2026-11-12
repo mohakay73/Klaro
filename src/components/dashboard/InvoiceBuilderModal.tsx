@@ -10,12 +10,10 @@ import {
   Printer, 
   Building2, 
   Calendar, 
-  ShieldCheck, 
   FileText, 
   Check, 
   Eye, 
-  Edit3,
-  Sparkles
+  Edit3
 } from 'lucide-react';
 
 interface InvoiceItem {
@@ -134,7 +132,7 @@ export function InvoiceBuilderModal({
       vat_amount: Math.round(totalVat * 100) / 100,
       total_amount: Math.round(totalAmount * 100) / 100,
       vat_rate: primaryVatRate,
-      status: 'paid', // Mark as active/paid to update tax buffer
+      status: 'paid',
       created_at: new Date().toISOString(),
     };
 
@@ -147,24 +145,24 @@ export function InvoiceBuilderModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-4xl w-full p-6 shadow-2xl space-y-5 max-h-[94vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl max-w-4xl w-full p-6 shadow-2xl space-y-5 max-h-[94vh] overflow-y-auto">
         
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <FileText className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-300">
+              <FileText className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-base text-white">Svensk Kundfaktura Builder</h3>
-                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                  F-skatt Godkänd
+                <h3 className="font-semibold text-sm text-zinc-100">Kundfaktura</h3>
+                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700/60">
+                  Godkänd för F-skatt
                 </span>
               </div>
               <p className="text-xs text-zinc-400">
-                Skapa och skicka faktura som automatiskt justerar din moms- och skattebuffert
+                Skapa faktura som automatiskt reserverar moms och skatt i din buffert
               </p>
             </div>
           </div>
@@ -193,15 +191,15 @@ export function InvoiceBuilderModal({
                 }`}
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span>Fakturalayout</span>
+                <span>Förhandsgranska</span>
               </button>
             </div>
 
             <button
               onClick={onClose}
-              className="p-1 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition"
+              className="p-1 text-zinc-400 hover:text-zinc-200 rounded-md hover:bg-zinc-800 transition"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -214,10 +212,10 @@ export function InvoiceBuilderModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               
               {/* Customer Box */}
-              <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-3">
+              <div className="p-4 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-3">
                 <h4 className="font-semibold text-zinc-200 flex items-center gap-1.5 text-xs">
-                  <Building2 className="w-4 h-4 text-emerald-400" />
-                  Kunduppgifter (Faktureras till)
+                  <Building2 className="w-3.5 h-3.5 text-zinc-400" />
+                  Mottagare (Kund)
                 </h4>
                 
                 <div>
@@ -226,30 +224,30 @@ export function InvoiceBuilderModal({
                     type="text"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="T.ex. Spotify AB"
-                    className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-emerald-500 font-medium"
+                    placeholder="Spotify AB"
+                    className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-zinc-500 font-medium"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-zinc-400 block mb-1">Kundens Org.nr</label>
+                    <label className="text-zinc-400 block mb-1">Org.nr</label>
                     <input
                       type="text"
                       value={customerOrgNr}
                       onChange={(e) => setCustomerOrgNr(e.target.value)}
                       placeholder="556703-7485"
-                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 font-mono focus:outline-none focus:border-emerald-500"
+                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 font-mono focus:outline-none focus:border-zinc-500"
                     />
                   </div>
                   <div>
-                    <label className="text-zinc-400 block mb-1">Er referens (Kund)</label>
+                    <label className="text-zinc-400 block mb-1">Er referens</label>
                     <input
                       type="text"
                       value={customerReference}
                       onChange={(e) => setCustomerReference(e.target.value)}
                       placeholder="Anna Bergman"
-                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-emerald-500"
+                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-zinc-500"
                     />
                   </div>
                 </div>
@@ -261,15 +259,15 @@ export function InvoiceBuilderModal({
                     value={customerAddress}
                     onChange={(e) => setCustomerAddress(e.target.value)}
                     placeholder="Gata, Postnr, Stad"
-                    className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-zinc-500"
                   />
                 </div>
               </div>
 
               {/* Invoice Meta Box */}
-              <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-3">
+              <div className="p-4 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-3">
                 <h4 className="font-semibold text-zinc-200 flex items-center gap-1.5 text-xs">
-                  <Calendar className="w-4 h-4 text-sky-400" />
+                  <Calendar className="w-3.5 h-3.5 text-zinc-400" />
                   Fakturainformation
                 </h4>
 
@@ -280,7 +278,7 @@ export function InvoiceBuilderModal({
                       type="text"
                       value={invoiceNumber}
                       onChange={(e) => setInvoiceNumber(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 font-mono font-bold focus:outline-none focus:border-emerald-500"
+                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 font-mono font-medium focus:outline-none focus:border-zinc-500"
                     />
                   </div>
                   <div>
@@ -289,7 +287,7 @@ export function InvoiceBuilderModal({
                       type="text"
                       value={ourReference}
                       onChange={(e) => setOurReference(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-emerald-500"
+                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-zinc-500"
                     />
                   </div>
                 </div>
@@ -301,29 +299,29 @@ export function InvoiceBuilderModal({
                       type="date"
                       value={invoiceDate}
                       onChange={(e) => setInvoiceDate(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 font-mono focus:outline-none focus:border-emerald-500"
+                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 font-mono focus:outline-none focus:border-zinc-500"
                     />
                   </div>
                   <div>
-                    <label className="text-zinc-400 block mb-1">Förfallodatum (30 dagar)</label>
+                    <label className="text-zinc-400 block mb-1">Förfallodatum</label>
                     <input
                       type="date"
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 font-mono focus:outline-none focus:border-emerald-500"
+                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 font-mono focus:outline-none focus:border-zinc-500"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-zinc-400 block mb-1">Bankgiro för inbetalning</label>
+                    <label className="text-zinc-400 block mb-1">Bankgiro</label>
                     <input
                       type="text"
                       value={senderBankgiro}
                       onChange={(e) => setSenderBankgiro(e.target.value)}
                       placeholder="5123-4567"
-                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 font-mono focus:outline-none focus:border-emerald-500"
+                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 font-mono focus:outline-none focus:border-zinc-500"
                     />
                   </div>
                   <div>
@@ -332,7 +330,7 @@ export function InvoiceBuilderModal({
                       type="text"
                       value={paymentTerms}
                       onChange={(e) => setPaymentTerms(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-emerald-500"
+                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-zinc-500"
                     />
                   </div>
                 </div>
@@ -343,27 +341,27 @@ export function InvoiceBuilderModal({
             {/* Line items table */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <h4 className="font-semibold text-zinc-200">Fakturarader & Tjänster</h4>
+                <h4 className="font-semibold text-zinc-200">Fakturarader</h4>
                 <button
                   type="button"
                   onClick={addItem}
-                  className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 flex items-center gap-1 font-medium transition"
+                  className="px-2.5 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 flex items-center gap-1 font-medium transition text-xs"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Lägg till rad</span>
                 </button>
               </div>
 
-              <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-950">
+              <div className="border border-zinc-800 rounded-lg overflow-hidden bg-zinc-950/70">
                 <table className="w-full text-left">
                   <thead className="bg-zinc-900 text-zinc-400 border-b border-zinc-800">
                     <tr>
-                      <th className="py-2.5 px-3">Beskrivning</th>
-                      <th className="py-2.5 px-3 w-24">Antal/Tim</th>
-                      <th className="py-2.5 px-3 w-32">À-pris (SEK)</th>
-                      <th className="py-2.5 px-3 w-28">Momssats</th>
-                      <th className="py-2.5 px-3 w-32 text-right">Belopp</th>
-                      <th className="py-2.5 px-3 w-10"></th>
+                      <th className="py-2 px-3">Beskrivning</th>
+                      <th className="py-2 px-3 w-24">Antal</th>
+                      <th className="py-2 px-3 w-32">À-pris (SEK)</th>
+                      <th className="py-2 px-3 w-28">Moms</th>
+                      <th className="py-2 px-3 w-32 text-right">Belopp</th>
+                      <th className="py-2 px-3 w-10"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800">
@@ -376,7 +374,7 @@ export function InvoiceBuilderModal({
                               type="text"
                               value={item.description}
                               onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                              className="w-full px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 focus:outline-none focus:border-emerald-500"
+                              className="w-full px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 focus:outline-none focus:border-zinc-500"
                             />
                           </td>
                           <td className="py-2 px-3">
@@ -385,7 +383,7 @@ export function InvoiceBuilderModal({
                               min="1"
                               value={item.quantity}
                               onChange={(e) => updateItem(item.id, 'quantity', Number(e.target.value))}
-                              className="w-full px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 font-mono focus:outline-none focus:border-emerald-500"
+                              className="w-full px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 font-mono tabular-nums focus:outline-none focus:border-zinc-500"
                             />
                           </td>
                           <td className="py-2 px-3">
@@ -394,22 +392,22 @@ export function InvoiceBuilderModal({
                               min="0"
                               value={item.unitPrice}
                               onChange={(e) => updateItem(item.id, 'unitPrice', Number(e.target.value))}
-                              className="w-full px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 font-mono focus:outline-none focus:border-emerald-500"
+                              className="w-full px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 font-mono tabular-nums focus:outline-none focus:border-zinc-500"
                             />
                           </td>
                           <td className="py-2 px-3">
                             <select
                               value={item.vatRate}
                               onChange={(e) => updateItem(item.id, 'vatRate', Number(e.target.value))}
-                              className="w-full px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 focus:outline-none focus:border-emerald-500"
+                              className="w-full px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 focus:outline-none focus:border-zinc-500"
                             >
-                              <option value={25}>25% Moms</option>
-                              <option value={12}>12% Moms</option>
-                              <option value={6}>6% Moms</option>
-                              <option value={0}>0% Moms</option>
+                              <option value={25}>25% moms</option>
+                              <option value={12}>12% moms</option>
+                              <option value={6}>6% moms</option>
+                              <option value={0}>0% moms</option>
                             </select>
                           </td>
-                          <td className="py-2 px-3 text-right font-mono font-medium text-zinc-200">
+                          <td className="py-2 px-3 text-right font-mono font-medium text-zinc-200 tabular-nums">
                             {formatSEK(lineTotal)}
                           </td>
                           <td className="py-2 px-3 text-center">
@@ -417,7 +415,7 @@ export function InvoiceBuilderModal({
                               type="button"
                               onClick={() => removeItem(item.id)}
                               disabled={items.length <= 1}
-                              className="text-zinc-500 hover:text-rose-400 disabled:opacity-30 transition"
+                              className="text-zinc-600 hover:text-red-400 disabled:opacity-30 transition"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -430,51 +428,50 @@ export function InvoiceBuilderModal({
               </div>
             </div>
 
-            {/* Totals & Tax Split Box */}
+            {/* Totals Box */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 space-y-1.5 text-zinc-400">
-                <span className="font-semibold text-emerald-400 flex items-center gap-1">
-                  <ShieldCheck className="w-4 h-4" />
-                  Automatisk skattedelning i Klaro:
+              <div className="p-3.5 rounded-xl bg-zinc-950/70 border border-zinc-800 text-zinc-400 space-y-1">
+                <span className="font-medium text-zinc-300 block">
+                  Automatisk skattedelning
                 </span>
                 <p className="text-[11px] leading-relaxed">
-                  Så fort denna faktura markeras som skickad/betald, avskiljs automatiskt <strong>{formatSEK(totalVat)}</strong> till momsreserven och ca <strong>{formatSEK(subtotal * 0.43)}</strong> till F-skatt, så du exakt ser ditt säkra disponibla belopp.
+                  Vid registrering avskiljs automatiskt <strong>{formatSEK(totalVat)}</strong> till momsreserven och ca <strong>{formatSEK(subtotal * 0.43)}</strong> till F-skatt, vilket uppdaterar ditt säkra disponibla belopp.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2 font-mono">
+              <div className="p-4 rounded-xl bg-zinc-950/70 border border-zinc-800 space-y-2 font-mono text-xs">
                 <div className="flex justify-between text-zinc-400">
-                  <span>Netto (exkl. moms):</span>
-                  <span className="text-zinc-200">{formatSEK(subtotal)}</span>
+                  <span>Netto exkl. moms:</span>
+                  <span className="text-zinc-200 tabular-nums">{formatSEK(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-zinc-400">
                   <span>Utgående moms ({primaryVatRate}%):</span>
-                  <span className="text-amber-400 font-semibold">{formatSEK(totalVat)}</span>
+                  <span className="text-zinc-200 tabular-nums">{formatSEK(totalVat)}</span>
                 </div>
-                <div className="border-t border-zinc-800 pt-2 flex justify-between text-sm font-bold text-white">
-                  <span>Att betala (SEK):</span>
-                  <span className="text-emerald-400">{formatSEK(totalAmount)}</span>
+                <div className="border-t border-zinc-800 pt-2 flex justify-between text-sm font-semibold text-white">
+                  <span>Totalt att betala:</span>
+                  <span className="tabular-nums">{formatSEK(totalAmount)}</span>
                 </div>
               </div>
             </div>
 
           </div>
         ) : (
-          /* View Mode: High-End Swedish Invoice Print / Layout View */
-          <div className="bg-white text-zinc-900 rounded-xl p-8 space-y-8 font-sans shadow-xl">
+          /* View Mode: High-End Swedish Invoice Layout View */
+          <div className="bg-white text-zinc-900 rounded-lg p-8 space-y-8 font-sans shadow-lg border border-zinc-200">
             {/* Header: Company & Faktura title */}
             <div className="flex justify-between items-start border-b border-zinc-200 pb-6">
               <div>
-                <h2 className="text-2xl font-black tracking-tight text-zinc-950">{senderName}</h2>
+                <h2 className="text-xl font-bold tracking-tight text-zinc-950">{senderName}</h2>
                 <div className="text-xs text-zinc-600 mt-1 space-y-0.5">
-                  <p>Org.nr: <strong className="font-mono">{senderOrgNr}</strong></p>
-                  <p>Momsreg.nr: <strong className="font-mono">{senderVatNo}</strong></p>
-                  <p className="text-emerald-700 font-semibold">Innehar F-skattsedel (Godkänd för F-skatt)</p>
+                  <p>Org.nr: <span className="font-mono">{senderOrgNr}</span></p>
+                  <p>Momsreg.nr: <span className="font-mono">{senderVatNo}</span></p>
+                  <p className="text-zinc-700 font-medium">Godkänd för F-skatt</p>
                 </div>
               </div>
 
               <div className="text-right">
-                <h1 className="text-3xl font-black text-zinc-900 tracking-wider">FAKTURA</h1>
+                <h1 className="text-2xl font-bold text-zinc-950 tracking-wider">FAKTURA</h1>
                 <div className="text-xs text-zinc-600 mt-2 font-mono space-y-0.5">
                   <p>Fakturanr: <strong>{invoiceNumber}</strong></p>
                   <p>Fakturadatum: {invoiceDate}</p>
@@ -486,14 +483,14 @@ export function InvoiceBuilderModal({
             {/* Customer & Reference */}
             <div className="grid grid-cols-2 gap-8 text-xs">
               <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200">
-                <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Faktureras till:</span>
-                <h4 className="font-bold text-sm text-zinc-900 mt-1">{customerName}</h4>
+                <span className="text-[10px] uppercase font-semibold text-zinc-400 tracking-wider block">Faktureras till:</span>
+                <h4 className="font-semibold text-sm text-zinc-900 mt-1">{customerName}</h4>
                 <p className="text-zinc-600 mt-0.5">{customerAddress}</p>
                 <p className="text-zinc-600 mt-1 font-mono">Org.nr: {customerOrgNr}</p>
               </div>
 
               <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200 space-y-1">
-                <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Referenser & Villkor:</span>
+                <span className="text-[10px] uppercase font-semibold text-zinc-400 tracking-wider block">Referenser & Villkor:</span>
                 <p className="text-zinc-700">Vår referens: <strong>{ourReference}</strong></p>
                 <p className="text-zinc-700">Er referens: <strong>{customerReference}</strong></p>
                 <p className="text-zinc-700">Betalningsvillkor: <strong>{paymentTerms}</strong></p>
@@ -509,18 +506,18 @@ export function InvoiceBuilderModal({
                     <th className="py-2.5 px-4">Beskrivning</th>
                     <th className="py-2.5 px-4 text-center">Antal</th>
                     <th className="py-2.5 px-4 text-right">À-pris (SEK)</th>
-                    <th className="py-2.5 px-4 text-center">Momssats</th>
-                    <th className="py-2.5 px-4 text-right">Belopp exkl moms</th>
+                    <th className="py-2.5 px-4 text-center">Moms</th>
+                    <th className="py-2.5 px-4 text-right">Belopp</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200">
                   {items.map((item) => (
                     <tr key={item.id}>
                       <td className="py-3 px-4 font-medium text-zinc-900">{item.description}</td>
-                      <td className="py-3 px-4 text-center font-mono">{item.quantity}</td>
-                      <td className="py-3 px-4 text-right font-mono">{formatSEK(item.unitPrice)}</td>
+                      <td className="py-3 px-4 text-center font-mono tabular-nums">{item.quantity}</td>
+                      <td className="py-3 px-4 text-right font-mono tabular-nums">{formatSEK(item.unitPrice)}</td>
                       <td className="py-3 px-4 text-center font-mono">{item.vatRate}%</td>
-                      <td className="py-3 px-4 text-right font-mono font-semibold">
+                      <td className="py-3 px-4 text-right font-mono font-semibold tabular-nums">
                         {formatSEK(item.quantity * item.unitPrice)}
                       </td>
                     </tr>
@@ -533,16 +530,16 @@ export function InvoiceBuilderModal({
             <div className="flex justify-end">
               <div className="w-72 space-y-2 text-xs font-mono">
                 <div className="flex justify-between text-zinc-600">
-                  <span>Totalt exkl moms:</span>
-                  <span>{formatSEK(subtotal)}</span>
+                  <span>Totalt exkl. moms:</span>
+                  <span className="tabular-nums">{formatSEK(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-zinc-600">
                   <span>Moms ({primaryVatRate}%):</span>
-                  <span>{formatSEK(totalVat)}</span>
+                  <span className="tabular-nums">{formatSEK(totalVat)}</span>
                 </div>
-                <div className="border-t-2 border-zinc-950 pt-2 flex justify-between text-base font-extrabold text-zinc-950">
+                <div className="border-t border-zinc-900 pt-2 flex justify-between text-sm font-bold text-zinc-950">
                   <span>ATT BETALA:</span>
-                  <span>{formatSEK(totalAmount)}</span>
+                  <span className="tabular-nums">{formatSEK(totalAmount)}</span>
                 </div>
               </div>
             </div>
@@ -550,15 +547,15 @@ export function InvoiceBuilderModal({
             {/* Payment instructions */}
             <div className="border-t border-zinc-200 pt-4 grid grid-cols-3 gap-4 text-xs text-zinc-600">
               <div>
-                <span className="font-bold text-zinc-900 block">Bankgiro</span>
+                <span className="font-semibold text-zinc-900 block">Bankgiro</span>
                 <span className="font-mono">{senderBankgiro}</span>
               </div>
               <div>
-                <span className="font-bold text-zinc-900 block">Fakturanummer som ref</span>
+                <span className="font-semibold text-zinc-900 block">Fakturanummer som ref</span>
                 <span className="font-mono">{invoiceNumber}</span>
               </div>
               <div>
-                <span className="font-bold text-zinc-900 block">Kontakt & E-post</span>
+                <span className="font-semibold text-zinc-900 block">E-post</span>
                 <span>{senderEmail}</span>
               </div>
             </div>
@@ -571,14 +568,14 @@ export function InvoiceBuilderModal({
             <button
               type="button"
               onClick={handlePrint}
-              className="px-3.5 py-2 rounded-lg border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium flex items-center gap-1.5 transition"
+              className="px-3.5 py-1.5 rounded-lg border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium flex items-center gap-1.5 transition"
             >
-              <Printer className="w-4 h-4" />
-              <span>Skriv ut / Spara som PDF</span>
+              <Printer className="w-3.5 h-3.5" />
+              <span>Skriv ut / PDF</span>
             </button>
           ) : (
             <div className="text-[11px] text-zinc-500">
-              Uppfyller Skatteverkets krav på fakturainnehåll enligt Mervärdesskattelagen.
+              Krav enligt Mervärdesskattelagen uppfylls.
             </div>
           )}
 
@@ -586,17 +583,17 @@ export function InvoiceBuilderModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 text-xs font-medium transition"
+              className="px-3.5 py-1.5 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-300 text-xs font-medium transition"
             >
               Avbryt
             </button>
             <button
               type="button"
               onClick={handleSaveAndSend}
-              className="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-950"
+              className="px-4 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-semibold transition flex items-center gap-1.5 shadow-sm"
             >
-              <Check className="w-4 h-4" />
-              <span>Spara & Uppdatera Skattebuffert</span>
+              <Check className="w-3.5 h-3.5" />
+              <span>Spara faktura</span>
             </button>
           </div>
         </div>
