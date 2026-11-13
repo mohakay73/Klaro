@@ -3,26 +3,20 @@
 import React, { useState } from 'react';
 import { formatSEK } from '@/lib/utils';
 import { 
-  ShieldCheck, 
   ArrowRight, 
-  CheckCircle2, 
-  Sparkles, 
-  Receipt, 
-  FileCheck, 
+  Check, 
+  ChevronDown, 
+  ChevronRight, 
+  ShieldCheck, 
   Landmark, 
-  Calculator, 
-  HelpCircle,
-  Building2,
-  ChevronDown,
-  ChevronRight,
-  TrendingUp,
+  Receipt, 
+  FileText, 
+  Building2, 
+  Wallet, 
+  ArrowDownLeft, 
+  ArrowUpRight,
   Download,
-  Lock,
-  Smartphone,
-  Eye,
-  Check,
-  Zap,
-  SlidersHorizontal
+  Info
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -31,19 +25,21 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ onEnterApp, onOpenDemoTour }: LandingPageProps) {
-  // Interactive Hero Calculator State
-  const [monthlyRevenue, setMonthlyRevenue] = useState(85000);
+  // Interactive Calculator State
+  const [monthlyRevenue, setMonthlyRevenue] = useState(75000);
   const [companyType, setCompanyType] = useState<'enskild_firma' | 'aktiebolag'>('enskild_firma');
 
-  // FAQ Accordion State
+  // FAQ State
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
-  // Dynamic calculations based on monthly revenue
-  const vatAmount = Math.round(monthlyRevenue * 0.20); // 25% moms represents 20% of gross
+  // Exact Swedish tax calculations
+  // 25% moms on net = 20% of gross revenue
+  const vatAmount = Math.round(monthlyRevenue * 0.20);
   const netRevenue = monthlyRevenue - vatAmount;
   
-  // Enskild firma: ~43% total tax on profit (egenavgifter after schablon + municipal tax)
-  // AB: ~20.6% bolagsskatt (or owner salary)
+  // Tax buffer:
+  // Enskild Firma: Egenavgifter + preliminärskatt (~43% på resultat efter schablonavdrag)
+  // Aktiebolag: Bolagsskatt (20.6% på vinst)
   const taxBuffer = companyType === 'enskild_firma' 
     ? Math.round(netRevenue * 0.43)
     : Math.round(netRevenue * 0.206);
@@ -55,73 +51,67 @@ export function LandingPage({ onEnterApp, onOpenDemoTour }: LandingPageProps) {
 
   const faqs = [
     {
-      q: 'Hur vet Klaro hur mycket jag säkert kan ta ut?',
-      a: 'Varje gång en intäkt eller kostnad registreras beräknar Klaro den exakta momsskulden (utgående minus ingående moms) samt preliminär F-skatt och egenavgifter. Beloppet som återstår är ditt garanterat disponibla belopp – noll risk för kvarskatt.',
+      q: 'Hur vet Klaro hur mycket jag faktiskt kan ta ut?',
+      a: 'Varje gång en inbetalning eller utgift registreras beräknar Klaro den exakta momsskulden (utgående minus ingående moms) samt preliminär skatt. Det belopp som återstår är ditt säkert disponibla överskott. Du vet alltid vad du kan föra över till ditt privata konto utan att riskera kvarskatt.',
     },
     {
       q: 'Fungerar Klaro för både Enskild Firma och Aktiebolag?',
-      a: 'Ja! Du växlar bolagsform med ett klick. För Enskild Firma beräknar Klaro schablonavdrag (25%), egenavgifter (28,97%) och kommunalskatt. För Aktiebolag reserveras bolagsskatt (20,6%) och avräkning för ägarutlägg.',
+      a: 'Ja. För Enskild Firma beräknas schablonavdrag (25%), egenavgifter (28,97%) och kommunalskatt. För Aktiebolag reserveras bolagsskatt (20,6%) och systemet håller ordning på ägarutlägg och lön.',
+    },
+    {
+      q: 'Ersätter Klaro min redovisningsbyrå?',
+      a: 'Klaro ger dig som företagare full koll i realtid varje vecka, så att du slipper obehagliga överraskningar. När det är dags för bokslut exporterar du en komplett SIE-4-fil med ett klick. Din redovisningskonsult eller revisor kan läsa in den i Fortnox, Visma eller Capego på några sekunder.',
     },
     {
       q: 'Är kvitton och underlag godkända enligt Bokföringslagen?',
-      a: 'Absolut. Klaro sparar digitala originalunderlag i enlighet med 7 kap. Bokföringslagen och mappar automatiskt varje affärshändelse mot standardiserade BAS-konton (t.ex. 5420 Programvaror, 5800 Resor). Du kan när som helst exportera SIE-4 filer.',
+      a: 'Ja, alla underlag sparas digitalt i enlighet med 7 kap. Bokföringslagen. Klaro mappar automatiskt affärshändelser mot BAS-kontoplanen och håller isär 25%, 12% och 6% moms.',
     },
     {
-      q: 'Hur fungerar bankavstämningen via PSD2?',
-      a: 'Genom Finansinspektionen-godkända Open Banking API:er kan du ansluta Handelsbanken, Swedbank, SEB, Nordea med flera. Klaro matchar transaktioner automatiskt och varnar om ett kortköp saknar kvitto så att du inte går miste om momsavdrag.',
-    },
-    {
-      q: 'Ersätter Klaro min redovisningskonsult?',
-      a: 'Klaro sköter den dagliga överblicken och gör att du slipper göra misstag under året. När det är dags för bokslut exporterar du en komplett SIE-4 fil som din redovisningsbyrå eller revisor läser in i Fortnox, Visma eller Capego på fem sekunder.',
+      q: 'Hur fungerar kopplingen till min bank?',
+      a: 'Klaro ansluter säkert via godkänd Open Banking (PSD2) med Mobilt BankID till Handelsbanken, Swedbank, SEB, Nordea med flera. Inga känsliga inloggningsuppgifter sparas hos oss.',
     },
   ];
 
   return (
     <div className="min-h-screen bg-[#f8f7f4] text-zinc-900 font-sans selection:bg-zinc-200">
       
-      {/* 1. Sticky Navigation Header */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-zinc-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
+      {/* 1. Header Navigation */}
+      <header className="border-b border-zinc-200/80 bg-[#f8f7f4]/90 backdrop-blur-xs sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           
-          {/* Brand Logo */}
+          {/* Brand Wordmark */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#0c3123] flex items-center justify-center text-white font-extrabold text-base shadow-xs">
+            <div className="w-8 h-8 rounded-lg bg-[#0c3123] flex items-center justify-center text-[#f1e5c8] font-bold text-sm tracking-tight">
               K
             </div>
-            <div>
-              <span className="font-black text-xl tracking-tight text-zinc-950 block leading-tight">
-                Klaro
-              </span>
-              <span className="text-[10px] text-zinc-500 font-mono block -mt-0.5">
-                Skattebuffert & Bokföring
-              </span>
-            </div>
+            <span className="font-extrabold text-xl tracking-tight text-zinc-950">
+              Klaro
+            </span>
           </div>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-7 text-xs font-semibold text-zinc-600">
-            <a href="#funktioner" className="hover:text-zinc-950 transition">Funktioner</a>
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-8 text-xs font-medium text-zinc-600">
             <a href="#kalkylator" className="hover:text-zinc-950 transition">Skattekalkylator</a>
-            <a href="#jamforelse" className="hover:text-zinc-950 transition">Varför Klaro</a>
+            <a href="#funktioner" className="hover:text-zinc-950 transition">Hur det fungerar</a>
+            <a href="#jamforelse" className="hover:text-zinc-950 transition">Skillnaden</a>
             <a href="#priser" className="hover:text-zinc-950 transition">Priser</a>
-            <a href="#faq" className="hover:text-zinc-950 transition">Vanliga frågor</a>
+            <a href="#faq" className="hover:text-zinc-950 transition">Frågor & svar</a>
           </nav>
 
           {/* Action CTAs */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <button
               onClick={onOpenDemoTour}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-zinc-700 bg-white hover:bg-zinc-50 border border-zinc-200 shadow-2xs transition active:scale-95 cursor-pointer"
+              className="hidden sm:inline-flex items-center text-xs font-semibold text-zinc-700 hover:text-zinc-950 px-3 py-2 rounded-lg hover:bg-zinc-100 transition cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Snabbdemo (60s)</span>
+              Se demo (60 sek)
             </button>
 
             <button
               onClick={onEnterApp}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#0c3123] hover:bg-[#144734] shadow-xs transition active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-[#0c3123] hover:bg-[#144734] transition active:scale-95 cursor-pointer shadow-xs"
             >
-              <span>Öppna Cockpit</span>
+              <span>Öppna appen</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -130,89 +120,79 @@ export function LandingPage({ onEnterApp, onOpenDemoTour }: LandingPageProps) {
       </header>
 
       {/* 2. Hero Section */}
-      <section className="relative pt-12 pb-20 md:pt-20 md:pb-32 overflow-hidden">
-        
-        {/* Subtle Decorative Ambient Glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <section className="pt-14 pb-16 sm:pt-20 sm:pb-24 border-b border-zinc-200/60">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-3xl mx-auto space-y-6">
             
-            {/* Swedish Fintech Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-zinc-200/90 shadow-2xs text-xs font-semibold text-zinc-800">
-              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-              <span>Sveriges smartaste skattebuffert för enskild firma & AB</span>
+            {/* Subtle Pill */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white border border-zinc-200 text-xs text-zinc-700 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-700" />
+              <span>Skattebuffert & bokföringsöversikt för svenska företagare</span>
             </div>
 
-            {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-zinc-950 leading-[1.12]">
-              Sluta gissa hur mycket på företagskontot som <span className="text-[#0c3123] underline decoration-emerald-600/40 decoration-4 underline-offset-4">faktiskt är dina</span>.
+            {/* Editorial Headline */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-950 leading-[1.15]">
+              Ditt företagskonto visar vad som kommit in. <br className="hidden sm:inline" />
+              <span className="text-[#0c3123]">Inte vad du får behålla.</span>
             </h1>
 
-            {/* Subheading */}
-            <p className="text-base sm:text-lg text-zinc-600 leading-relaxed max-w-2xl mx-auto">
-              Klaro reserverar moms och F-skatt automatiskt vid varje inbetalning. Full koll på disponibel lön, AI-kvitton och momsdeklaration – utan kvarskatt eller revisorsångest.
+            {/* Calm, Grounded Subheading */}
+            <p className="text-base sm:text-lg text-zinc-600 leading-relaxed max-w-2xl mx-auto font-normal">
+              Klaro räknar automatiskt bort moms och preliminärskatt vid varje inbetalning. 
+              Du vet alltid exakt vad du kan föra över till ditt privata konto — utan kvarskatt eller överraskningar.
             </p>
 
-            {/* Hero CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            {/* Primary Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
               <button
                 onClick={onEnterApp}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[#0c3123] hover:bg-[#144734] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition active:scale-95 cursor-pointer"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-lg bg-[#0c3123] hover:bg-[#144734] text-white font-semibold text-sm transition active:scale-95 cursor-pointer shadow-xs flex items-center justify-center gap-2"
               >
-                <span>Testa Live Cockpit direkt</span>
+                <span>Öppna testcockpit</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
               <button
                 onClick={onOpenDemoTour}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-800 font-semibold text-sm flex items-center justify-center gap-2 shadow-2xs transition active:scale-95 cursor-pointer"
+                className="w-full sm:w-auto px-5 py-3.5 rounded-lg bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-800 font-medium text-sm transition active:scale-95 cursor-pointer shadow-2xs"
               >
-                <Sparkles className="w-4 h-4 text-emerald-700" />
-                <span>Interaktiv rundtur (60 sek)</span>
+                Starta guidad tur (60 sek)
               </button>
             </div>
 
-            {/* Trust Points */}
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-6 text-xs text-zinc-500 font-mono">
-              <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-600" />
-                Bokföringslagen 7 kap.
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-600" />
-                Mobilt BankID & PSD2
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-600" />
-                Skatteverket SKV 4700 & SIE-4
-              </span>
+            {/* Quiet Regulatory / Compliance Footnote */}
+            <div className="pt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-zinc-500 font-mono">
+              <span>Bokföringslagen (1999:1078)</span>
+              <span>•</span>
+              <span>Skattekonto BG 5050-1055</span>
+              <span>•</span>
+              <span>SIE-4 Standard</span>
             </div>
 
           </div>
 
-          {/* 3. Hero Visual & Interactive Live Simulator Teaser */}
-          <div id="kalkylator" className="mt-14 max-w-4xl mx-auto bg-white rounded-3xl border border-zinc-200/90 p-6 sm:p-9 shadow-[0_12px_40px_rgba(0,0,0,0.04)] space-y-8">
+          {/* 3. Interactive Calculation Tool (Grounded in Real Numbers) */}
+          <div id="kalkylator" className="mt-14 bg-white rounded-2xl border border-zinc-200 p-6 sm:p-8 shadow-xs">
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-100">
               <div>
-                <span className="text-xs font-mono uppercase tracking-wider font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                  Interaktiv kalkylator
-                </span>
-                <h3 className="text-lg sm:text-xl font-bold text-zinc-950 mt-1">
-                  Se hur mycket du kan ta ut vid din omsättning
-                </h3>
+                <h2 className="text-base sm:text-lg font-bold text-zinc-950">
+                  Hur mycket av dina fakturor är faktiskt dina?
+                </h2>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Dra i reglaget för att se vad som återstår efter moms och preliminärskatt.
+                </p>
               </div>
 
-              {/* Company Type Switcher */}
-              <div className="flex items-center rounded-xl bg-zinc-100 p-1 text-xs font-semibold">
+              {/* Company Type Tabs */}
+              <div className="flex items-center rounded-lg bg-zinc-100 p-1 text-xs font-medium self-start sm:self-auto">
                 <button
                   type="button"
                   onClick={() => setCompanyType('enskild_firma')}
-                  className={`px-3 py-1.5 rounded-lg transition ${
+                  className={`px-3 py-1.5 rounded-md transition ${
                     companyType === 'enskild_firma'
-                      ? 'bg-white text-zinc-950 font-bold shadow-2xs'
+                      ? 'bg-white text-zinc-950 font-semibold shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-950'
                   }`}
                 >
@@ -221,9 +201,9 @@ export function LandingPage({ onEnterApp, onOpenDemoTour }: LandingPageProps) {
                 <button
                   type="button"
                   onClick={() => setCompanyType('aktiebolag')}
-                  className={`px-3 py-1.5 rounded-lg transition ${
+                  className={`px-3 py-1.5 rounded-md transition ${
                     companyType === 'aktiebolag'
-                      ? 'bg-white text-zinc-950 font-bold shadow-2xs'
+                      ? 'bg-white text-zinc-950 font-semibold shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-950'
                   }`}
                 >
@@ -232,19 +212,21 @@ export function LandingPage({ onEnterApp, onOpenDemoTour }: LandingPageProps) {
               </div>
             </div>
 
-            {/* Slider */}
-            <div className="space-y-3">
+            {/* Slider Section */}
+            <div className="py-6 space-y-3">
               <div className="flex items-baseline justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">Månatlig fakturering (inkl. moms):</span>
-                <span className="text-2xl sm:text-3xl font-black font-mono text-zinc-950 tabular-nums">
+                <span className="text-xs font-medium text-zinc-600">
+                  Fakturerat per månad (inkl. 25% moms):
+                </span>
+                <span className="text-2xl sm:text-3xl font-bold font-mono text-zinc-950 tabular-nums">
                   {formatSEK(monthlyRevenue)}
                 </span>
               </div>
 
               <input
                 type="range"
-                min="25000"
-                max="250000"
+                min="20000"
+                max="200000"
                 step="5000"
                 value={monthlyRevenue}
                 onChange={(e) => setMonthlyRevenue(Number(e.target.value))}
@@ -252,78 +234,84 @@ export function LandingPage({ onEnterApp, onOpenDemoTour }: LandingPageProps) {
               />
 
               <div className="flex justify-between text-[11px] text-zinc-400 font-mono">
-                <span>25 000 kr</span>
-                <span>125 000 kr</span>
-                <span>250 000 kr</span>
+                <span>20 000 kr</span>
+                <span>100 000 kr</span>
+                <span>200 000 kr</span>
               </div>
             </div>
 
             {/* Segmented Capital Track */}
             <div className="space-y-2">
-              <div className="h-4 rounded-xl overflow-hidden flex shadow-inner bg-zinc-100">
-                <div style={{ width: `${safePct}%` }} className="bg-[#0c3123] transition-all duration-300" title={`Säkert: ${safePct}%`} />
-                <div style={{ width: `${vatPct}%` }} className="bg-amber-500 transition-all duration-300" title={`Moms: ${vatPct}%`} />
-                <div style={{ width: `${taxPct}%` }} className="bg-zinc-700 transition-all duration-300" title={`Skatt: ${taxPct}%`} />
+              <div className="h-3 rounded-lg overflow-hidden flex bg-zinc-100">
+                <div style={{ width: `${safePct}%` }} className="bg-[#0c3123] transition-all duration-200" />
+                <div style={{ width: `${vatPct}%` }} className="bg-amber-500 transition-all duration-200" />
+                <div style={{ width: `${taxPct}%` }} className="bg-zinc-400 transition-all duration-200" />
               </div>
 
-              <div className="flex flex-wrap items-center justify-between text-xs font-mono gap-2 pt-1 text-zinc-500">
+              <div className="flex flex-wrap items-center justify-between text-xs font-mono text-zinc-600 pt-1 gap-2">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-xs bg-[#0c3123]" />
-                  <span>Säkert att ta ut ({safePct}%)</span>
+                  <span>Ditt säkert disponibla överskott ({safePct}%)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-xs bg-amber-500" />
-                  <span>Momsreserv ({vatPct}%)</span>
+                  <span>Moms till Skatteverket ({vatPct}%)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-xs bg-zinc-700" />
-                  <span>F-skatt / Bolagsskatt ({taxPct}%)</span>
+                  <span className="w-2.5 h-2.5 rounded-xs bg-zinc-400" />
+                  <span>{companyType === 'enskild_firma' ? 'F-skatt & Egenavgifter' : 'Bolagsskatt'} ({taxPct}%)</span>
                 </div>
               </div>
             </div>
 
-            {/* Calculated Results Strip */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            {/* Breakdown Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6">
               
-              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 space-y-1">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 font-mono block">
-                  Säkert disponibelt
+              <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-1">
+                <span className="text-[11px] font-mono uppercase text-emerald-900 font-semibold block">
+                  Säkert att ta ut
                 </span>
-                <div className="text-2xl font-black font-mono text-emerald-950 tabular-nums">
+                <div className="text-2xl font-bold font-mono text-emerald-950 tabular-nums">
                   {formatSEK(safeToSpend)}
                 </div>
-                <p className="text-[11px] text-emerald-800">Dina pengar, fria att använda.</p>
+                <p className="text-[11px] text-emerald-800">
+                  Dina pengar, fria från framtida skatteanspråk.
+                </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-1">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800 font-mono block">
-                  Moms att inbetala
+              <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 space-y-1">
+                <span className="text-[11px] font-mono uppercase text-amber-900 font-semibold block">
+                  Reserverad moms
                 </span>
-                <div className="text-2xl font-black font-mono text-amber-950 tabular-nums">
+                <div className="text-2xl font-bold font-mono text-amber-950 tabular-nums">
                   {formatSEK(vatAmount)}
                 </div>
-                <p className="text-[11px] text-amber-800">Ruta 49 till Skatteverket.</p>
+                <p className="text-[11px] text-amber-800">
+                  Ska in på Skattekontot vid deklarationen.
+                </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-1">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-600 font-mono block">
-                  {companyType === 'enskild_firma' ? 'F-skatt & Egenavgifter' : 'Bolagsskatt (20.6%)'}
+              <div className="p-4 rounded-xl border border-zinc-200 bg-zinc-50 space-y-1">
+                <span className="text-[11px] font-mono uppercase text-zinc-700 font-semibold block">
+                  {companyType === 'enskild_firma' ? 'F-skatt & Egenavgifter' : 'Bolagsskatt (20,6%)'}
                 </span>
-                <div className="text-2xl font-black font-mono text-zinc-950 tabular-nums">
+                <div className="text-2xl font-bold font-mono text-zinc-950 tabular-nums">
                   {formatSEK(taxBuffer)}
                 </div>
-                <p className="text-[11px] text-zinc-500">Reserveras för slutskattebesked.</p>
+                <p className="text-[11px] text-zinc-500">
+                  Reserverat för slutskattebeskedet.
+                </p>
               </div>
 
             </div>
 
-            {/* Direct Link Into Live Cockpit */}
-            <div className="pt-2 text-center">
+            {/* Bottom note */}
+            <div className="pt-4 text-center">
               <button
                 onClick={onEnterApp}
-                className="text-xs font-bold text-[#0c3123] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                className="text-xs font-medium text-[#0c3123] hover:underline inline-flex items-center gap-1 cursor-pointer"
               >
-                <span>Öppna hela cockpiten med förifyllda exempeltal</span>
+                <span>Öppna cockpiten med förifyllda exempeltal och fakturor</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -333,232 +321,286 @@ export function LandingPage({ onEnterApp, onOpenDemoTour }: LandingPageProps) {
         </div>
       </section>
 
-      {/* 4. Core Features / Superpowers Grid */}
-      <section id="funktioner" className="py-20 bg-white border-y border-zinc-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 4. Concrete Workflow: How It Works */}
+      <section id="funktioner" className="py-20 bg-white border-b border-zinc-200/60">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
           
-          <div className="text-center max-w-2xl mx-auto space-y-3 mb-16">
-            <span className="text-xs font-mono uppercase tracking-wider font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
-              Byggt för svenska företagare
+          <div className="max-w-2xl">
+            <span className="text-xs font-mono uppercase font-semibold text-zinc-500 block mb-2">
+              Arbetsflöde
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-zinc-950">
-              Allt du behöver för att slippa bokföringsstress
+            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-950 tracking-tight">
+              Bokföring i samma takt som du arbetar
             </h2>
-            <p className="text-sm text-zinc-600">
-              Klaro kopplar ihop bank, kvitton och fakturor i ett sammanhängande realtidsflöde.
+            <p className="text-sm text-zinc-600 mt-2 leading-relaxed">
+              Traditionella system kräver att du sätter dig ner en helg varje månad. Klaro håller ordning löpande, i realtid.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             
-            {/* Feature 1 */}
-            <div className="p-6 rounded-2xl border border-zinc-200/90 bg-[#fcfbf9] space-y-4 hover:border-emerald-600/50 transition duration-200 group">
-              <div className="w-12 h-12 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center group-hover:scale-105 transition">
-                <ShieldCheck className="w-6 h-6 text-[#0c3123]" />
+            {/* Step 1 */}
+            <div className="space-y-3">
+              <div className="w-9 h-9 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center font-mono font-bold text-sm text-zinc-800">
+                1
               </div>
-              <h3 className="font-bold text-base text-zinc-950">Realtidsbuffert mot kvarskatt</h3>
+              <h3 className="font-bold text-base text-zinc-950">
+                Fakturera och fota kvitton
+              </h3>
               <p className="text-xs text-zinc-600 leading-relaxed">
-                Vid varje transaktion räknar Klaro ut exakt vad som ska till Skatteverkets Bankgiro 5050-1055. Noll överraskningar när deklarationen kommer.
+                Skapa godkända fakturor med OCR och moms på 30 sekunder. Fota kvitton direkt i mobilen eller vidarebefordra digitala kvitton via e-post. Klaro tolkar 25%, 12% och 6% moms och konterar mot BAS-konton automatiskt.
               </p>
             </div>
 
-            {/* Feature 2 */}
-            <div className="p-6 rounded-2xl border border-zinc-200/90 bg-[#fcfbf9] space-y-4 hover:border-emerald-600/50 transition duration-200 group">
-              <div className="w-12 h-12 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center group-hover:scale-105 transition">
-                <Receipt className="w-6 h-6 text-[#0c3123]" />
+            {/* Step 2 */}
+            <div className="space-y-3">
+              <div className="w-9 h-9 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center font-mono font-bold text-sm text-zinc-800">
+                2
               </div>
-              <h3 className="font-bold text-base text-zinc-950">AI-kvittotolkning (BFL)</h3>
+              <h3 className="font-bold text-base text-zinc-950">
+                Skatten separeras direkt
+              </h3>
               <p className="text-xs text-zinc-600 leading-relaxed">
-                Fota kvitto eller vidarebefordra via e-post. Klaro läser ut 25%, 12%, 6% moms och bokför automatiskt på rätt BAS-konto (t.ex. 5420 IT, 5800 Resor).
+                När en kund betalar räknar Klaro omedelbart ut exakt hur mycket som är moms och preliminär F-skatt. Du ser två tydliga siffror: vad som tillhör Skatteverket och vad du säkert kan spendera.
               </p>
             </div>
 
-            {/* Feature 3 */}
-            <div className="p-6 rounded-2xl border border-zinc-200/90 bg-[#fcfbf9] space-y-4 hover:border-emerald-600/50 transition duration-200 group">
-              <div className="w-12 h-12 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center group-hover:scale-105 transition">
-                <Landmark className="w-6 h-6 text-[#0c3123]" />
+            {/* Step 3 */}
+            <div className="space-y-3">
+              <div className="w-9 h-9 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center font-mono font-bold text-sm text-zinc-800">
+                3
               </div>
-              <h3 className="font-bold text-base text-zinc-950">Bankavstämning & Skatterisk</h3>
+              <h3 className="font-bold text-base text-zinc-950">
+                Exportera vid deklaration
+              </h3>
               <p className="text-xs text-zinc-600 leading-relaxed">
-                PSD2-koppling mot Handelsbanken, Swedbank, SEB m.fl. Varnar om kvitto saknas och räknar ut ditt förlorade skatteavdrag. 1 klick för "Eget uttag (BAS 2013)".
+                När momsen ska deklareras genereras Skatteverkets exakta rutor (Momsdeklaration SKV 4700). Vid årets slut laddar du ner en standardiserad SIE-4-fil som din revisor eller redovisningskonsult kan läsa in direkt.
               </p>
             </div>
 
-            {/* Feature 4 */}
-            <div className="p-6 rounded-2xl border border-zinc-200/90 bg-[#fcfbf9] space-y-4 hover:border-emerald-600/50 transition duration-200 group">
-              <div className="w-12 h-12 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center group-hover:scale-105 transition">
-                <FileCheck className="w-6 h-6 text-[#0c3123]" />
+          </div>
+
+          {/* Concrete UI Preview Box */}
+          <div className="p-6 rounded-2xl bg-[#f8f7f4] border border-zinc-200 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-200">
+              <div className="flex items-center gap-2">
+                <Landmark className="w-4 h-4 text-[#0c3123]" />
+                <span className="font-bold text-xs text-zinc-900">Exempel på hur Klaro hanterar ett kortköp</span>
               </div>
-              <h3 className="font-bold text-base text-zinc-950">Godkänd A4 PDF-faktura</h3>
-              <p className="text-xs text-zinc-600 leading-relaxed">
-                Skapa snygga svenska kundfakturor med Bankgiro, OCR och godkänd F-skattklausul. Klaro reserverar automatiskt utgående moms i din buffert.
-              </p>
+              <span className="text-[11px] font-mono text-zinc-500">Handelsbanken PSD2 • BAS 5420</span>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+              <div className="p-3 bg-white rounded-lg border border-zinc-200/80">
+                <span className="text-[10px] text-zinc-400 font-mono block">Banktransaktion</span>
+                <span className="font-bold text-zinc-900">Webhallen Sverige AB</span>
+                <span className="font-mono text-zinc-600 block mt-0.5">- 1 875,00 kr</span>
+              </div>
+              <div className="p-3 bg-white rounded-lg border border-zinc-200/80">
+                <span className="text-[10px] text-zinc-400 font-mono block">Ingående moms (25%)</span>
+                <span className="font-bold text-emerald-800 font-mono">+ 375,00 kr</span>
+                <span className="text-[10px] text-zinc-500 block mt-0.5">Minskar momsskuld</span>
+              </div>
+              <div className="p-3 bg-white rounded-lg border border-zinc-200/80">
+                <span className="text-[10px] text-zinc-400 font-mono block">Netto kostnad</span>
+                <span className="font-bold text-zinc-900 font-mono">1 500,00 kr</span>
+                <span className="text-[10px] text-zinc-500 block mt-0.5">BAS 5420 IT-tjänster</span>
+              </div>
+              <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                <span className="text-[10px] text-emerald-800 font-mono block">Effekt på disponibelt</span>
+                <span className="font-bold text-emerald-950 font-mono">+ 645,00 kr</span>
+                <span className="text-[10px] text-emerald-800 block mt-0.5">Skattesänkning på vinst</span>
+              </div>
+            </div>
           </div>
 
         </div>
       </section>
 
-      {/* 5. Comparison: Klaro vs Traditionell Bokföring */}
-      <section id="jamforelse" className="py-20">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      {/* 5. Comparison: Traditionell Bokföring vs Klaro */}
+      <section id="jamforelse" className="py-20 border-b border-zinc-200/60">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           
-          <div className="text-center space-y-3">
-            <span className="text-xs font-mono uppercase tracking-wider font-bold text-zinc-500">Jämförelse</span>
-            <h2 className="text-3xl font-black text-zinc-950">Varför traditionell bokföring skapar skattechocker</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* The Old Way */}
-            <div className="p-6 sm:p-8 rounded-3xl border border-zinc-200 bg-white space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-                <span className="font-bold text-sm text-zinc-700">Traditionellt system (Fortnox, Visma m.fl.)</span>
-                <span className="text-xs font-mono text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">Bakåtblickande</span>
-              </div>
-              <ul className="space-y-3 text-xs text-zinc-600 leading-relaxed">
-                <li className="flex items-start gap-2">
-                  <span className="text-rose-500 font-bold shrink-0">✕</span>
-                  <span>Visar bara ditt banksaldo utan att dra av momsskuld eller preliminärskatt.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-rose-500 font-bold shrink-0">✕</span>
-                  <span>Tvingar dig att gissa debet och kredit och tolka kryptiska 4-siffriga kontonummer.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-rose-500 font-bold shrink-0">✕</span>
-                  <span>Varnar inte för hur mycket skatteavdrag du förlorar när du tappar ett kvitto.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-rose-500 font-bold shrink-0">✕</span>
-                  <span>Du får reda på din skatt först när redovisningskonsulten ringer månader senare.</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* The Klaro Way */}
-            <div className="p-6 sm:p-8 rounded-3xl border-2 border-emerald-600/60 bg-linear-to-b from-white to-emerald-50/30 space-y-4 shadow-sm">
-              <div className="flex items-center justify-between pb-3 border-b border-emerald-100">
-                <span className="font-black text-base text-[#0c3123] flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-emerald-700" />
-                  Klaro
-                </span>
-                <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200">Realtid & Framåtblickande</span>
-              </div>
-              <ul className="space-y-3 text-xs text-zinc-800 leading-relaxed font-medium">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
-                  <span>Visar alltid <strong>Säkert att ta ut</strong> direkt i översikten efter alla skattereserver.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
-                  <span>Automatisk BAS-kontoplan & momskontering via AI – noll revisorsjargong.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
-                  <span>Beräknar exakt förlorat skatteavdrag och erbjuder 1-klick eget uttag för privata köp.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
-                  <span>Exportera standardiserad SIE-4 och XML direkt till Skatteverkets e-tjänst.</span>
-                </li>
-              </ul>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* 6. Transparent Pricing / Beta Free Tier */}
-      <section id="priser" className="py-20 bg-white border-y border-zinc-200/80">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-10">
-          
-          <div className="space-y-3">
-            <span className="text-xs font-mono uppercase tracking-wider font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
-              Enkel prissättning
+          <div className="text-center space-y-2">
+            <span className="text-xs font-mono uppercase font-semibold text-zinc-500">
+              Varför Klaro
             </span>
-            <h2 className="text-3xl font-black text-zinc-950">Byggt för soloprenörer</h2>
-            <p className="text-sm text-zinc-600">
-              Inga bindningstider, inga dolda transaktionsavgifter.
+            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-950">
+              Byggt för dig som driver företaget
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-600 max-w-lg mx-auto">
+              Traditionella system är byggda för redovisningskonsulter som tittar bakåt i tiden. Klaro är byggt för att du ska veta vad du har att röra dig med i dag.
             </p>
           </div>
 
-          <div className="max-w-md mx-auto rounded-3xl border-2 border-[#0c3123] bg-[#fcfbf9] p-8 space-y-6 text-left shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-lg text-zinc-950">Klaro Frilans</h3>
-                <p className="text-xs text-zinc-500">För enskilda firmor och nystartade AB</p>
+          <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-white shadow-2xs divide-y divide-zinc-200">
+            
+            <div className="grid grid-cols-12 bg-zinc-50 p-4 text-xs font-semibold text-zinc-700">
+              <div className="col-span-4 sm:col-span-5">Funktion</div>
+              <div className="col-span-4 sm:col-span-3 text-zinc-500">Traditionell programvara</div>
+              <div className="col-span-4 sm:col-span-4 text-[#0c3123] font-bold">Klaro</div>
+            </div>
+
+            <div className="grid grid-cols-12 p-4 text-xs items-center gap-2">
+              <div className="col-span-4 sm:col-span-5 font-medium text-zinc-900">
+                Realtidsbuffert för skatt & moms
               </div>
-              <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                Öppen Beta
-              </span>
+              <div className="col-span-4 sm:col-span-3 text-zinc-500">
+                Nej (visar endast banksaldo)
+              </div>
+              <div className="col-span-4 sm:col-span-4 font-semibold text-[#0c3123] flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                <span>Räknas om vid varje köp</span>
+              </div>
             </div>
 
-            <div className="flex items-baseline gap-2">
-              <span className="text-5xl font-black font-mono text-zinc-950">0 kr</span>
-              <span className="text-xs text-zinc-500 font-mono">/ månad under betan</span>
+            <div className="grid grid-cols-12 p-4 text-xs items-center gap-2">
+              <div className="col-span-4 sm:col-span-5 font-medium text-zinc-900">
+                Disponibelt belopp (Safe-to-Spend)
+              </div>
+              <div className="col-span-4 sm:col-span-3 text-zinc-500">
+                Saknas (måste räknas manuellt)
+              </div>
+              <div className="col-span-4 sm:col-span-4 font-semibold text-[#0c3123] flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                <span>Alltid synligt i cockpiten</span>
+              </div>
             </div>
 
-            <ul className="space-y-2.5 text-xs text-zinc-700">
+            <div className="grid grid-cols-12 p-4 text-xs items-center gap-2">
+              <div className="col-span-4 sm:col-span-5 font-medium text-zinc-900">
+                Kvittoavläsning & BAS-kontering
+              </div>
+              <div className="col-span-4 sm:col-span-3 text-zinc-500">
+                Ofta dyra tilläggsmoduler
+              </div>
+              <div className="col-span-4 sm:col-span-4 font-semibold text-[#0c3123] flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                <span>Ingår som standard</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-12 p-4 text-xs items-center gap-2">
+              <div className="col-span-4 sm:col-span-5 font-medium text-zinc-900">
+                Bankavstämning & saknade kvitton
+              </div>
+              <div className="col-span-4 sm:col-span-3 text-zinc-500">
+                Manuellt i slutet av månaden
+              </div>
+              <div className="col-span-4 sm:col-span-4 font-semibold text-[#0c3123] flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                <span>Varnar för förlorat avdrag</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-12 p-4 text-xs items-center gap-2">
+              <div className="col-span-4 sm:col-span-5 font-medium text-zinc-900">
+                Samarbete med redovisningsbyrå
+              </div>
+              <div className="col-span-4 sm:col-span-3 text-zinc-500">
+                Inlåst i specifikt ekosystem
+              </div>
+              <div className="col-span-4 sm:col-span-4 font-semibold text-[#0c3123] flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                <span>Standard SIE-4 export</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* 6. Pricing */}
+      <section id="priser" className="py-20 bg-white border-b border-zinc-200/60">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
+          
+          <div className="space-y-2">
+            <span className="text-xs font-mono uppercase font-semibold text-zinc-500">
+              Prissättning
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-950">
+              Kostnadsfritt under beta
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-600 max-w-md mx-auto">
+              Vi utvecklar Klaro tillsammans med svenska småföretagare. All funktionalitet ingår under betaperioden utan bindningstid.
+            </p>
+          </div>
+
+          <div className="max-w-md mx-auto p-6 sm:p-8 rounded-2xl border border-zinc-200 bg-[#fbfbfa] text-left space-y-6 shadow-xs">
+            <div className="flex items-baseline justify-between">
+              <div>
+                <h3 className="font-bold text-lg text-zinc-950">Klaro Tidig Åtkomst</h3>
+                <p className="text-xs text-zinc-500">Enskild Firma & Aktiebolag</p>
+              </div>
+              <div className="text-right">
+                <span className="text-3xl font-bold font-mono text-zinc-950">0 kr</span>
+                <span className="text-xs text-zinc-500 block">under betan</span>
+              </div>
+            </div>
+
+            <ul className="space-y-2.5 text-xs text-zinc-700 pt-2 border-t border-zinc-200/80">
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>Realtidsberäkning av Skattekonto & disponibelt belopp</span>
+                <span>Realtidsberäkning av moms & preliminärskatt</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>Obegränsad AI-kvittotolkning & BAS-kontering</span>
+                <span>Kvittoavläsning med moms (25%, 12%, 6%)</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>Svensk A4 PDF-fakturering med F-skatt & Bankgiro</span>
+                <span>Skapa godkända A4-fakturor med Bankgiro & OCR</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>PSD2 Bankavstämning & Skatteavdragsriskkalkylator</span>
+                <span>Bankavstämning med varning för saknade kvitton</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>SIE-4 och Skatteverket XML export</span>
+                <span>Fri SIE-4 export och Skatteverket XML</span>
               </li>
             </ul>
 
             <button
               onClick={onEnterApp}
-              className="w-full py-3 rounded-xl bg-[#0c3123] hover:bg-[#144734] text-white font-bold text-sm shadow-md transition active:scale-95 text-center cursor-pointer"
+              className="w-full py-3 rounded-lg bg-[#0c3123] hover:bg-[#144734] text-white font-semibold text-xs transition active:scale-95 cursor-pointer shadow-xs"
             >
-              Kom igång gratis nu
+              Börja använda Klaro i dag
             </button>
           </div>
 
         </div>
       </section>
 
-      {/* 7. FAQ Accordion */}
-      <section id="faq" className="py-20">
+      {/* 7. FAQ Section */}
+      <section id="faq" className="py-20 border-b border-zinc-200/60">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           
           <div className="text-center space-y-2">
-            <span className="text-xs font-mono uppercase tracking-wider font-bold text-zinc-500">FAQ</span>
-            <h2 className="text-3xl font-black text-zinc-950">Vanliga frågor och svar</h2>
+            <span className="text-xs font-mono uppercase font-semibold text-zinc-500">
+              Frågor & svar
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-950">
+              Vanliga funderingar
+            </h2>
           </div>
 
-          <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-2xl bg-white overflow-hidden shadow-xs">
+          <div className="border border-zinc-200 rounded-2xl bg-white divide-y divide-zinc-200 overflow-hidden shadow-2xs">
             {faqs.map((faq, idx) => {
               const isOpen = openFaqIndex === idx;
               return (
-                <div key={idx} className="transition">
+                <div key={idx}>
                   <button
                     type="button"
                     onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                    className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-zinc-900 hover:text-[#0c3123] cursor-pointer"
+                    className="w-full p-5 text-left flex items-center justify-between gap-4 font-semibold text-sm text-zinc-900 hover:text-[#0c3123] cursor-pointer"
                   >
                     <span>{faq.q}</span>
                     <ChevronDown className={`w-4 h-4 text-zinc-400 shrink-0 transition-transform ${isOpen ? 'rotate-180 text-zinc-800' : ''}`} />
                   </button>
                   {isOpen && (
-                    <div className="px-5 pb-5 text-xs text-zinc-600 leading-relaxed animate-in fade-in duration-150">
+                    <div className="px-5 pb-5 text-xs text-zinc-600 leading-relaxed">
                       {faq.a}
                     </div>
                   )}
@@ -570,53 +612,53 @@ export function LandingPage({ onEnterApp, onOpenDemoTour }: LandingPageProps) {
         </div>
       </section>
 
-      {/* 8. Bottom CTA Banner */}
+      {/* 8. Bottom Action Banner */}
       <section className="py-16 bg-[#0c3123] text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#f1e5c8]">
-            Redo att ta kontroll över dina företagspengar?
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#f1e5c8]">
+            Ta kontroll över företagspengarna redan i dag
           </h2>
-          <p className="text-sm sm:text-base text-emerald-100 max-w-xl mx-auto leading-relaxed">
-            Testa Klaro direkt i webbläsaren utan registrering eller kontokort.
+          <p className="text-xs sm:text-sm text-emerald-100/90 max-w-lg mx-auto leading-relaxed">
+            Testa Klaro direkt i webbläsaren med förifyllda siffror. Ingen registrering eller kontokort krävs.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <button
               onClick={onEnterApp}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#f1e5c8] hover:bg-white text-zinc-950 font-bold text-sm shadow-md transition active:scale-95 cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-[#f1e5c8] hover:bg-white text-zinc-950 font-semibold text-xs shadow-xs transition active:scale-95 cursor-pointer"
             >
-              Öppna Live Cockpit nu
+              Öppna cockpiten
             </button>
             <button
               onClick={onOpenDemoTour}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95 cursor-pointer"
+              className="w-full sm:w-auto px-5 py-3 rounded-lg bg-white/10 hover:bg-white/15 text-white font-medium text-xs transition active:scale-95 cursor-pointer"
             >
-              Starta guidad tur (60s)
+              Se 60 sekunders demo
             </button>
           </div>
         </div>
       </section>
 
-      {/* 9. Global Scandinavian Footer */}
-      <footer className="border-t border-zinc-200 bg-white py-10 text-xs text-zinc-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-md bg-[#0c3123] text-white font-extrabold text-xs flex items-center justify-center">
+      {/* 9. Minimal Scandinavian Footer */}
+      <footer className="bg-white py-10 text-xs text-zinc-500">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded-md bg-[#0c3123] text-[#f1e5c8] font-bold text-[10px] flex items-center justify-center">
               K
             </div>
-            <span className="font-bold text-zinc-900">Klaro Technologies AB</span>
+            <span className="font-semibold text-zinc-900">Klaro Technologies AB</span>
             <span>•</span>
-            <span>Stockholm, Sverige</span>
+            <span>Stockholm</span>
           </div>
 
           <div className="flex items-center gap-6 text-zinc-500">
             <button onClick={onEnterApp} className="hover:text-zinc-900 transition">Cockpit</button>
-            <a href="#kalkylator" className="hover:text-zinc-900 transition">Skattekalkylator</a>
+            <a href="#kalkylator" className="hover:text-zinc-900 transition">Kalkylator</a>
             <a href="#priser" className="hover:text-zinc-900 transition">Priser</a>
-            <a href="#faq" className="hover:text-zinc-900 transition">Vanliga frågor</a>
+            <a href="#faq" className="hover:text-zinc-900 transition">Frågor & svar</a>
           </div>
 
-          <div className="font-mono text-zinc-400">
-            Skatteverket 2026 • Bokföringslagen • SIE-4
+          <div className="font-mono text-zinc-400 text-[11px]">
+            Bokföringslagen • Skatteverket 2026 • SIE-4
           </div>
         </div>
       </footer>
