@@ -20,7 +20,8 @@ import {
   Check,
   Sparkles,
   ChevronRight,
-  Globe
+  Globe,
+  User
 } from 'lucide-react';
 
 export type ActiveView = 'overview' | 'expenses' | 'invoices' | 'tax' | 'bank' | 'landing';
@@ -43,6 +44,8 @@ interface SidebarProps {
   onOpenDemoTour?: () => void;
   isMobileOpen: boolean;
   onCloseMobile: () => void;
+  currentUser?: any;
+  onOpenAuth?: () => void;
 }
 
 export function Sidebar({
@@ -63,6 +66,8 @@ export function Sidebar({
   missingBankReceiptsCount,
   isMobileOpen,
   onCloseMobile,
+  currentUser,
+  onOpenAuth,
 }: SidebarProps) {
   const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
   const [copiedBankgiro, setCopiedBankgiro] = useState(false);
@@ -362,6 +367,32 @@ export function Sidebar({
             </div>
             <span className="ml-auto w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Kopplad" />
           </button>
+
+          {/* User Account / Auth Card */}
+          {onOpenAuth && (
+            <button
+              onClick={() => {
+                onOpenAuth();
+                onCloseMobile();
+              }}
+              className="w-full p-2.5 rounded-xl border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] flex items-center gap-3 transition shadow-xs text-left group"
+            >
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs ${
+                currentUser ? 'bg-[#1c1917] text-white' : 'bg-stone-200 text-stone-600'
+              }`}>
+                <User className={`w-4 h-4 ${currentUser ? 'text-[#f59e0b]' : 'text-stone-600'}`} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-[#1c1917] truncate leading-tight">
+                  {currentUser ? (currentUser.email || 'Inloggad') : 'Logga in'}
+                </div>
+                <div className="text-[11px] text-stone-500 font-medium">
+                  {currentUser ? 'Supabase Auth' : 'Synka data & moln'}
+                </div>
+              </div>
+              <ChevronRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-[#1c1917] transition shrink-0" />
+            </button>
+          )}
 
           {/* Quick Settings Link */}
           <div className="flex items-center justify-between text-xs text-stone-500 pt-1">

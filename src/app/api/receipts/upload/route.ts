@@ -10,21 +10,22 @@ export async function POST(req: NextRequest) {
     const sourceType = (formData.get('source_type') as string) || 'web_upload';
 
     let parsedResult;
+    let fileBuffer: Buffer | null = null;
 
     if (file) {
       const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+      fileBuffer = Buffer.from(arrayBuffer);
       const mimeType = file.type;
 
       if (mimeType.startsWith('image/')) {
-        const base64Image = buffer.toString('base64');
+        const base64Image = fileBuffer.toString('base64');
         parsedResult = await parseReceiptWithAI({
           base64Image,
           mimeType,
         });
       } else {
         // Plain text, PDF text representation or receipt document
-        const textContent = buffer.toString('utf-8');
+        const textContent = fileBuffer.toString('utf-8');
         parsedResult = await parseReceiptWithAI({
           text: textContent || file.name,
         });
@@ -46,11 +47,35 @@ export async function POST(req: NextRequest) {
 
       const userId = user?.id || '00000000-0000-0000-0000-000000000001';
 
+      // If a physical file was uploaded, try saving it to the Supabase storage bucket
+      let fileUrl = file ? file.name : null;
+      if (file && fileBuffer) {
+        try {
+          const fileExt = file.name.split('.').pop() || 'jpg';
+          const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+          const { error: uploadError } = await supabase.storage
+            .from('receipts')
+            .upload(filePath, fileBuffer, {
+              contentType: file.type || 'image/jpeg',
+              upsert: true,
+            });
+
+          if (!uploadError) {
+            const { data: publicUrlData } = supabase.storage
+              .from('receipts')
+              .getPublicUrl(filePath);
+            fileUrl = publicUrlData.publicUrl;
+          }
+        } catch (storageErr) {
+          console.warn('Supabase storage upload fallback to filename:', storageErr);
+        }
+      }
+
       const { data, error } = await supabase
         .from('receipts')
         .insert({
           user_id: userId,
-          original_file_url: file ? file.name : null,
+          original_file_url: fileUrl,
           source_type: sourceType,
           vendor_name: parsedResult.vendor_name,
           invoice_date: parsedResult.invoice_date,
@@ -59,6 +84,7 @@ export async function POST(req: NextRequest) {
           vat_amount: parsedResult.vat_amount,
           vat_rate: parsedResult.vat_rate,
           category: parsedResult.category,
+          bas_account: parsedResult.bas_account || null,
           raw_ai_response: {
             ...parsedResult,
             uploaded_at: new Date().toISOString(),

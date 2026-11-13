@@ -9,7 +9,8 @@ import {
   Download, 
   FileText, 
   RefreshCw,
-  Sparkles
+  Sparkles,
+  User
 } from 'lucide-react';
 import { formatSEK } from '@/lib/utils';
 import { ActiveView } from './Sidebar';
@@ -29,6 +30,8 @@ interface HeaderProps {
   onExportSIE?: () => void;
   onSyncBank?: () => void;
   onOpenDemoTour?: () => void;
+  currentUser?: any;
+  onOpenAuth?: () => void;
 }
 
 const VIEW_TITLES: Record<ActiveView, { title: string; subtitle: string }> = {
@@ -71,6 +74,8 @@ export function Header({
   onExportSIE,
   onSyncBank,
   onOpenDemoTour,
+  currentUser,
+  onOpenAuth,
 }: HeaderProps) {
   const currentViewMeta = VIEW_TITLES[activeView];
 
@@ -237,6 +242,25 @@ export function Header({
             >
               <RefreshCw className="w-4 h-4 text-[#f59e0b]" />
               <span>Synka<span className="hidden sm:inline"> transaktioner</span></span>
+            </button>
+          )}
+
+          {/* User / Supabase Auth Button */}
+          {onOpenAuth && (
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition border ${
+                currentUser
+                  ? 'bg-[#f7f4ee] hover:bg-[#eee9df] text-[#1c1917] border-[#e7e2d7]'
+                  : 'bg-white hover:bg-stone-50 text-stone-700 hover:text-[#1c1917] border-[#e7e2d7]'
+              }`}
+              title={currentUser ? `Inloggad som ${currentUser.email}` : 'Logga in eller skapa konto'}
+            >
+              <User className={`w-4 h-4 ${currentUser ? 'text-[#d97706]' : 'text-stone-400'}`} />
+              <span className="hidden sm:inline">
+                {currentUser ? (currentUser.email?.split('@')[0] || 'Konto') : 'Logga in'}
+              </span>
             </button>
           )}
 

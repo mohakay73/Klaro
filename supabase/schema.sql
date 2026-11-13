@@ -11,9 +11,13 @@ create table if not exists public.profiles (
   email text unique not null,
   company_name text,
   company_type text check (company_type in ('enskild_firma', 'aktiebolag')) default 'enskild_firma',
+  org_nr text,
+  has_f_skatt boolean default true,
   vat_registered boolean default true,
   vat_period text check (vat_period in ('monthly', 'quarterly', 'yearly')) default 'quarterly',
   tax_estimate_rate numeric(5, 2) default 43.00, -- Standard buffer for kommunalskatt + egenavgifter (schablonavdrag)
+  estimated_yearly_revenue numeric(12, 2) default 950000,
+  municipal_tax_rate numeric(5, 4) default 0.3200,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -30,6 +34,7 @@ create table if not exists public.receipts (
   vat_amount numeric(12, 2) not null,
   vat_rate numeric(5, 2) not null check (vat_rate in (0, 6, 12, 25)),
   category text not null,
+  bas_account text,
   raw_ai_response jsonb,
   status text check (status in ('parsed', 'verified', 'exported')) default 'parsed',
   created_at timestamp with time zone default timezone('utc'::text, now()) not null

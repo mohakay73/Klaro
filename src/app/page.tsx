@@ -27,6 +27,7 @@ import { tinkClient } from '@/lib/open-banking/tink-client';
 import { calculateSwedishTaxBuffer } from '@/lib/tax-calculator';
 import { generateSIE4File, downloadSIE4File } from '@/lib/sie-exporter';
 import { Receipt, Invoice, SwedishVatRate } from '@/types/database';
+import { createClient } from '@/lib/supabase/client';
 
 export default function DashboardPage() {
   // Active Navigation View (Left Sidebar)
@@ -108,24 +109,105 @@ export default function DashboardPage() {
     });
   }, [filteredInvoices, filteredReceipts, businessConfig]);
 
+  // Fetch user data from Supabase if authenticated
+  const loadUserData = async (userId: string) => {
+    try {
+      const supabase = createClient();
+
+      // 1. Fetch Profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profile) {
+        setBusinessConfig((prev) => ({
+          ...prev,
+          companyName: profile.company_name || prev.companyName,
+          companyType: profile.company_type || prev.companyType,
+          orgNr: profile.org_nr || prev.orgNr,
+          hasFSkatt: profile.has_f_skatt ?? prev.hasFSkatt,
+          vatPeriod: profile.vat_period || prev.vatPeriod,
+          estimatedYearlyRevenue: Number(profile.estimated_yearly_revenue) || prev.estimatedYearlyRevenue,
+          municipalTaxRate: Number(profile.municipal_tax_rate) || prev.municipalTaxRate,
+        }));
+      }
+
+      // 2. Fetch Receipts
+      const { data: userReceipts } = await supabase
+        .from('receipts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('invoice_date', { ascending: false });
+
+      if (userReceipts && userReceipts.length > 0) {
+        setReceipts(userReceipts);
+      }
+
+      // 3. Fetch Invoices
+      const { data: userInvoices } = await supabase
+        .from('invoices')
+        .select('*')
+        .eq('user_id', userId)
+        .order('invoice_date', { ascending: false });
+
+      if (userInvoices && userInvoices.length > 0) {
+        setInvoices(userInvoices);
+      }
+    } catch (err) {
+      console.warn('Could not load user data from Supabase:', err);
+    }
+  };
+
   // Actions
   const handleReceiptAdded = (newReceipt: Receipt) => {
     setReceipts((prev) => [newReceipt, ...prev]);
+
+    if (currentUser?.id) {
+      const supabase = createClient();
+      supabase.from('receipts').insert({
+        ...newReceipt,
+        user_id: currentUser.id,
+      }).then(({ error }) => {
+        if (error) console.error('Error saving receipt to Supabase:', error);
+      });
+    }
   };
 
   const handleInvoiceCreated = (newInvoice: Invoice) => {
     setInvoices((prev) => [newInvoice, ...prev]);
     setPreviewInvoice(newInvoice);
+
+    if (currentUser?.id) {
+      const supabase = createClient();
+      supabase.from('invoices').insert({
+        ...newInvoice,
+        user_id: currentUser.id,
+      }).then(({ error }) => {
+        if (error) console.error('Error saving invoice to Supabase:', error);
+      });
+    }
   };
 
   const handleDeleteReceipt = (id: string) => {
     setReceipts((prev) => prev.filter((r) => r.id !== id));
+
+    if (currentUser?.id) {
+      const supabase = createClient();
+      supabase.from('receipts').delete().eq('id', id).eq('user_id', currentUser.id);
+    }
   };
 
   const handleVerifyReceipt = (id: string) => {
     setReceipts((prev) =>
       prev.map((r) => (r.id === id ? { ...r, status: 'verified' as const } : r))
     );
+
+    if (currentUser?.id) {
+      const supabase = createClient();
+      supabase.from('receipts').update({ status: 'verified' }).eq('id', id).eq('user_id', currentUser.id);
+    }
   };
 
   const handleUpdateReceiptVatRate = (id: string, newRate: SwedishVatRate) => {
@@ -142,6 +224,20 @@ export default function DashboardPage() {
         };
       })
     );
+
+    if (currentUser?.id) {
+      const supabase = createClient();
+      const targetReceipt = receipts.find((r) => r.id === id);
+      if (targetReceipt) {
+        const total = targetReceipt.total_amount;
+        const newVat = newRate > 0 ? Math.round((total - total / (1 + newRate / 100)) * 100) / 100 : 0;
+        supabase.from('receipts').update({
+          vat_rate: newRate,
+          vat_amount: newVat,
+          status: 'verified',
+        }).eq('id', id).eq('user_id', currentUser.id);
+      }
+    }
   };
 
   const handleExportSIE = () => {
@@ -249,7 +345,7 @@ export default function DashboardPage() {
     return bankTransactions.filter((t) => t.reconciliationStatus === 'missing_receipt').length;
   }, [bankTransactions]);
 
-  // Handle URL query parameters (e.g. ?demo=true or ?view=landing)
+  // Handle URL query parameters and Supabase Auth session
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -259,6 +355,33 @@ export default function DashboardPage() {
       if (params.get('view') === 'landing') {
         setActiveView('landing');
       }
+    }
+
+    // Initialize Supabase Auth & Session Listener
+    try {
+      const supabase = createClient();
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          setCurrentUser(session.user);
+          loadUserData(session.user.id);
+        }
+      }).catch((err) => {
+        console.warn('Supabase session init note:', err);
+      });
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setCurrentUser(session?.user || null);
+        if (session?.user) {
+          loadUserData(session.user.id);
+        } else {
+          setInvoices(INITIAL_INVOICES);
+          setReceipts(INITIAL_RECEIPTS);
+        }
+      });
+
+      return () => subscription.unsubscribe();
+    } catch (err) {
+      console.warn('Supabase client init note:', err);
     }
   }, []);
 
@@ -316,6 +439,8 @@ export default function DashboardPage() {
         missingBankReceiptsCount={missingBankReceiptsCount}
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
+        currentUser={currentUser}
+        onOpenAuth={() => setIsAuthOpen(true)}
       />
 
       {/* 2. Main Content Canvas */}
@@ -335,6 +460,8 @@ export default function DashboardPage() {
           onExportSIE={handleExportSIE}
           onSyncBank={handleSyncTransactions}
           onOpenDemoTour={() => setIsDemoTourOpen(true)}
+          currentUser={currentUser}
+          onOpenAuth={() => setIsAuthOpen(true)}
         />
 
         {/* Dynamic View Body */}

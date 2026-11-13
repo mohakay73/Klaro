@@ -25,6 +25,7 @@ export interface Receipt {
   vat_amount: number;
   vat_rate: SwedishVatRate;
   category: string;
+  bas_account?: string | null;
   raw_ai_response: Record<string, any> | null;
   status: ReceiptStatus;
   created_at: string;

@@ -133,8 +133,9 @@ ${JSON.stringify(SWEDISH_RECEIPT_SCHEMA, null, 2)}`
 
   const candidateModels = [
     process.env.GEMINI_MODEL,
+    'gemini-3.5-flash',
+    'gemini-3.1-flash-lite',
     'gemini-3-flash-preview',
-    'gemini-2.5-flash',
     'gemini-flash-latest',
   ].filter(Boolean) as string[];
 
