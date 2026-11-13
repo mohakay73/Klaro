@@ -19,10 +19,11 @@ import {
   Copy,
   Check,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Globe
 } from 'lucide-react';
 
-export type ActiveView = 'overview' | 'expenses' | 'invoices' | 'tax' | 'bank';
+export type ActiveView = 'overview' | 'expenses' | 'invoices' | 'tax' | 'bank' | 'landing';
 
 interface SidebarProps {
   activeView: ActiveView;
@@ -125,16 +126,20 @@ export function Sidebar({
           
           {/* Brand header + Mobile Close */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-lg bg-[#0d3829] flex items-center justify-center text-white font-extrabold text-sm shadow-xs tracking-tight">
+            <button
+              onClick={() => handleNavClick('landing')}
+              className="flex items-center gap-2.5 text-left group cursor-pointer"
+              title="Visa publik startsida & kalkylator"
+            >
+              <div className="h-8 w-8 rounded-lg bg-[#0d3829] flex items-center justify-center text-white font-extrabold text-sm shadow-xs tracking-tight group-hover:scale-105 transition-transform">
                 K
               </div>
               <div>
-                <span className="font-black text-xl tracking-tight text-zinc-950 block leading-tight">
+                <span className="font-black text-xl tracking-tight text-zinc-950 block leading-tight group-hover:text-[#0d3829] transition-colors">
                   Klaro
                 </span>
               </div>
-            </div>
+            </button>
 
             <button
               onClick={onCloseMobile}
@@ -380,6 +385,17 @@ export function Sidebar({
             >
               <Settings className="w-3.5 h-3.5 text-zinc-400" />
               <span>Inställningar</span>
+            </button>
+            <span>•</span>
+            <button
+              onClick={() => {
+                handleNavClick('landing');
+              }}
+              className="hover:text-zinc-900 transition flex items-center gap-1.5"
+              title="Startsida & Kalkylator"
+            >
+              <Globe className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Om Klaro</span>
             </button>
           </div>
         </div>

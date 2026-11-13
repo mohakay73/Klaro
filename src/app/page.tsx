@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Sidebar, ActiveView } from '@/components/dashboard/Sidebar';
 import { Header, QuarterPeriod } from '@/components/dashboard/Header';
 import { OverviewView } from '@/components/dashboard/OverviewView';
@@ -20,6 +20,7 @@ import { DemoWalkthroughModal, DemoScenario } from '@/components/dashboard/DemoW
 import { KivraInboxModal } from '@/components/dashboard/KivraInboxModal';
 import { EmailForwardingModal } from '@/components/dashboard/EmailForwardingModal';
 import { AuthModal } from '@/components/dashboard/AuthModal';
+import { LandingPage } from '@/components/landing/LandingPage';
 import { INITIAL_INVOICES, INITIAL_RECEIPTS } from '@/lib/mock-data';
 import { ConnectedBankAccount, PSD2Transaction } from '@/lib/open-banking/types';
 import { tinkClient } from '@/lib/open-banking/tink-client';
@@ -247,6 +248,44 @@ export default function DashboardPage() {
   const missingBankReceiptsCount = useMemo(() => {
     return bankTransactions.filter((t) => t.reconciliationStatus === 'missing_receipt').length;
   }, [bankTransactions]);
+
+  // Handle URL query parameters (e.g. ?demo=true or ?view=landing)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('demo') === 'true') {
+        setIsDemoTourOpen(true);
+      }
+      if (params.get('view') === 'landing') {
+        setActiveView('landing');
+      }
+    }
+  }, []);
+
+  // Public Landing Page View Mode
+  if (activeView === 'landing') {
+    return (
+      <div className="relative">
+        <LandingPage
+          onEnterApp={() => setActiveView('overview')}
+          onOpenDemoTour={() => {
+            setActiveView('overview');
+            setIsDemoTourOpen(true);
+          }}
+        />
+        {/* Floating Quick Return Button */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <button
+            onClick={() => setActiveView('overview')}
+            className="flex items-center gap-2 px-5 py-3 rounded-full bg-[#0c3123] text-white shadow-xl hover:bg-[#072016] transition active:scale-95 font-bold text-sm border border-emerald-800/40 cursor-pointer"
+          >
+            <span>Öppna Cockpit</span>
+            <span className="text-emerald-300">→</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f8f7f4] text-zinc-900 flex font-sans selection:bg-zinc-200">

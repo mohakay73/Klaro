@@ -52,6 +52,10 @@ const VIEW_TITLES: Record<ActiveView, { title: string; subtitle: string }> = {
     title: 'Bank & Avstämning',
     subtitle: 'Open Banking PSD2 koppling och automatisk avstämning',
   },
+  landing: {
+    title: 'Om Klaro',
+    subtitle: 'Sveriges modernaste skattebuffert & bokföring',
+  },
 };
 
 export function Header({
