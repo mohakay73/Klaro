@@ -24,6 +24,7 @@ interface MobileBottomNavProps {
   onOpenUpload: () => void;
   onOpenInvoiceBuilder: () => void;
   onSyncBank?: () => void;
+  onOpenDemoTour?: () => void;
 }
 
 export function MobileBottomNav({
@@ -35,6 +36,7 @@ export function MobileBottomNav({
   onOpenUpload,
   onOpenInvoiceBuilder,
   onSyncBank,
+  onOpenDemoTour,
 }: MobileBottomNavProps) {
   const [isFabOpen, setIsFabOpen] = useState(false);
 
@@ -104,6 +106,21 @@ export function MobileBottomNav({
                 <div>
                   <div className="font-bold text-sm text-zinc-900 group-hover:text-emerald-950">Synka banktransaktioner</div>
                   <div className="text-xs text-zinc-500">Hämta nya händelser via PSD2</div>
+                </div>
+              </button>
+            )}
+
+            {onOpenDemoTour && (
+              <button
+                onClick={() => handleAction(onOpenDemoTour)}
+                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50/70 text-left transition group active:scale-[0.98] border-t border-zinc-100 mt-1"
+              >
+                <div className="w-10 h-10 rounded-xl bg-[#0c3123]/10 text-[#0c3123] flex items-center justify-center shrink-0">
+                  <Sparkles className="w-5 h-5 text-emerald-700" />
+                </div>
+                <div>
+                  <div className="font-bold text-sm text-zinc-900 group-hover:text-emerald-950">Interaktiv snabbdemo (60s)</div>
+                  <div className="text-xs text-zinc-500">Lär dig hur Klaro automatiserar skatt & fakturor</div>
                 </div>
               </button>
             )}

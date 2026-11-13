@@ -17,7 +17,9 @@ import {
   Settings,
   X,
   Copy,
-  Check
+  Check,
+  Sparkles,
+  ChevronRight
 } from 'lucide-react';
 
 export type ActiveView = 'overview' | 'expenses' | 'invoices' | 'tax' | 'bank';
@@ -37,6 +39,7 @@ interface SidebarProps {
   receiptsCount: number;
   invoicesCount: number;
   missingBankReceiptsCount?: number;
+  onOpenDemoTour?: () => void;
   isMobileOpen: boolean;
   onCloseMobile: () => void;
 }
@@ -53,6 +56,7 @@ export function Sidebar({
   onOpenKivra,
   onOpenEmailForwarding,
   onOpenSettings,
+  onOpenDemoTour,
   receiptsCount,
   invoicesCount,
   missingBankReceiptsCount,
@@ -306,6 +310,32 @@ export function Sidebar({
         {/* Bottom Area: Docked Kivra Digital Post Card (Mockup Style) + Settings */}
         <div className="p-4 space-y-3 border-t border-zinc-200/80 bg-zinc-50/40">
           
+          {/* Interactive Demo Tour Trigger */}
+          {onOpenDemoTour && (
+            <button
+              onClick={() => {
+                onOpenDemoTour();
+                onCloseMobile();
+              }}
+              className="w-full p-2.5 rounded-xl border border-emerald-200/80 bg-emerald-50/60 hover:bg-emerald-50 flex items-center justify-between transition shadow-2xs text-left group cursor-pointer active:scale-95"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-[#0c3123] text-white flex items-center justify-center shrink-0">
+                  <Sparkles className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-zinc-900 group-hover:text-emerald-950">
+                    Snabbdemo (60s)
+                  </div>
+                  <div className="text-[10px] text-emerald-800 font-medium">
+                    Interaktiv guidad tur
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          )}
+
           {/* Kivra Digital Post Docked Card */}
           <button
             onClick={() => {

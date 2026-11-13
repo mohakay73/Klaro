@@ -16,6 +16,7 @@ import { PayMomsModal } from '@/components/dashboard/PayMomsModal';
 import { SkatteverketDeclarationModal } from '@/components/dashboard/SkatteverketDeclarationModal';
 import { OnboardingWizard, BusinessConfig } from '@/components/dashboard/OnboardingWizard';
 import { OpenBankingModal } from '@/components/dashboard/OpenBankingModal';
+import { DemoWalkthroughModal, DemoScenario } from '@/components/dashboard/DemoWalkthroughModal';
 import { KivraInboxModal } from '@/components/dashboard/KivraInboxModal';
 import { EmailForwardingModal } from '@/components/dashboard/EmailForwardingModal';
 import { AuthModal } from '@/components/dashboard/AuthModal';
@@ -70,6 +71,7 @@ export default function DashboardPage() {
   const [isEmailForwardingOpen, setIsEmailForwardingOpen] = useState(false);
   const [isOpenBankingOpen, setIsOpenBankingOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isDemoTourOpen, setIsDemoTourOpen] = useState(false);
   const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
 
   // Filter items by selected quarter if applicable
@@ -183,6 +185,65 @@ export default function DashboardPage() {
     }
   };
 
+  const handleLoadScenario = (scenario: DemoScenario) => {
+    if (scenario === 'standard_ef') {
+      setBusinessConfig({
+        companyType: 'enskild_firma',
+        companyName: 'Lindqvist Digital Design (Enskild Firma)',
+        orgNr: '559123-4567',
+        hasFSkatt: true,
+        vatPeriod: 'quarterly',
+        estimatedYearlyRevenue: 950000,
+        municipalTaxRate: 0.32,
+      });
+      setInvoices(INITIAL_INVOICES);
+      setReceipts(INITIAL_RECEIPTS);
+      setBankTransactions(tinkClient.getMockSandboxTransactions('acc-handelsbanken-main'));
+    } else if (scenario === 'new_ab') {
+      setBusinessConfig({
+        companyType: 'aktiebolag',
+        companyName: 'Nordic Tech Solutions AB',
+        orgNr: '559123-4567',
+        hasFSkatt: true,
+        vatPeriod: 'quarterly',
+        estimatedYearlyRevenue: 1200000,
+        municipalTaxRate: 0.32,
+      });
+      setBankTransactions((prev) =>
+        prev.map((t) => (t.reconciliationStatus === 'private_draw' ? { ...t, basAccount: '2893' } : t))
+      );
+    } else if (scenario === 'all_reconciled') {
+      // Mark all bank transactions reconciled (0 missing receipts)
+      setBankTransactions((prev) =>
+        prev.map((t) => {
+          if (t.reconciliationStatus === 'missing_receipt') {
+            return {
+              ...t,
+              reconciliationStatus: 'reconciled' as const,
+              matchedReceiptId: `rec-quick-${t.id}`,
+            };
+          }
+          return t;
+        })
+      );
+    }
+  };
+
+  const handleResetDemoData = () => {
+    setBusinessConfig({
+      companyType: 'enskild_firma',
+      companyName: 'Lindqvist Digital Design (Enskild Firma)',
+      orgNr: '559123-4567',
+      hasFSkatt: true,
+      vatPeriod: 'quarterly',
+      estimatedYearlyRevenue: 950000,
+      municipalTaxRate: 0.32,
+    });
+    setInvoices(INITIAL_INVOICES);
+    setReceipts(INITIAL_RECEIPTS);
+    setBankTransactions(tinkClient.getMockSandboxTransactions('acc-handelsbanken-main'));
+  };
+
   const missingBankReceiptsCount = useMemo(() => {
     return bankTransactions.filter((t) => t.reconciliationStatus === 'missing_receipt').length;
   }, [bankTransactions]);
@@ -210,6 +271,7 @@ export default function DashboardPage() {
         onOpenKivra={() => setIsKivraOpen(true)}
         onOpenEmailForwarding={() => setIsEmailForwardingOpen(true)}
         onOpenSettings={() => setIsOnboardingOpen(true)}
+        onOpenDemoTour={() => setIsDemoTourOpen(true)}
         receiptsCount={filteredReceipts.length}
         invoicesCount={filteredInvoices.length}
         missingBankReceiptsCount={missingBankReceiptsCount}
@@ -233,6 +295,7 @@ export default function DashboardPage() {
           onOpenDeclaration={() => setIsDeclarationOpen(true)}
           onExportSIE={handleExportSIE}
           onSyncBank={handleSyncTransactions}
+          onOpenDemoTour={() => setIsDemoTourOpen(true)}
         />
 
         {/* Dynamic View Body */}
@@ -331,6 +394,7 @@ export default function DashboardPage() {
         onOpenUpload={() => setIsUploadOpen(true)}
         onOpenInvoiceBuilder={() => setIsInvoiceBuilderOpen(true)}
         onSyncBank={handleSyncTransactions}
+        onOpenDemoTour={() => setIsDemoTourOpen(true)}
       />
 
       {/* Modals & Dialogs */}
@@ -405,6 +469,20 @@ export default function DashboardPage() {
         onClose={() => setIsAuthOpen(false)}
         currentUser={currentUser}
         onUserChange={setCurrentUser}
+      />
+
+      {/* Interactive 60s Demo Walkthrough Modal */}
+      <DemoWalkthroughModal
+        isOpen={isDemoTourOpen}
+        onClose={() => setIsDemoTourOpen(false)}
+        activeView={activeView}
+        onSelectView={setActiveView}
+        onLoadScenario={handleLoadScenario}
+        onResetDemoData={handleResetDemoData}
+        onOpenUpload={() => setIsUploadOpen(true)}
+        onOpenInvoiceBuilder={() => setIsInvoiceBuilderOpen(true)}
+        onOpenPayMoms={() => setIsPayMomsOpen(true)}
+        onOpenDeclaration={() => setIsDeclarationOpen(true)}
       />
 
     </div>

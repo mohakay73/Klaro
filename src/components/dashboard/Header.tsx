@@ -6,9 +6,10 @@ import {
   Upload, 
   Plus, 
   Landmark, 
-  Download,
-  FileText,
-  RefreshCw
+  Download, 
+  FileText, 
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 import { formatSEK } from '@/lib/utils';
 import { ActiveView } from './Sidebar';
@@ -27,6 +28,7 @@ interface HeaderProps {
   onOpenDeclaration: () => void;
   onExportSIE?: () => void;
   onSyncBank?: () => void;
+  onOpenDemoTour?: () => void;
 }
 
 const VIEW_TITLES: Record<ActiveView, { title: string; subtitle: string }> = {
@@ -64,6 +66,7 @@ export function Header({
   onOpenDeclaration,
   onExportSIE,
   onSyncBank,
+  onOpenDemoTour,
 }: HeaderProps) {
   const currentViewMeta = VIEW_TITLES[activeView];
 
@@ -82,7 +85,7 @@ export function Header({
           </button>
 
           <div>
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
+            <div className="flex items-center gap-2 text-sm text-zinc-400 flex-wrap">
               <span className="font-semibold text-zinc-500">Klaro</span>
               <span>/</span>
               <span className="font-bold text-zinc-950 text-base">{currentViewMeta.title}</span>
@@ -90,6 +93,17 @@ export function Header({
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
                 Live
               </span>
+              {onOpenDemoTour && (
+                <button
+                  type="button"
+                  onClick={onOpenDemoTour}
+                  className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#0c3123]/5 hover:bg-[#0c3123]/10 text-[#0c3123] border border-[#0c3123]/15 transition cursor-pointer active:scale-95"
+                  title="Starta interaktiv snabbdemo (60s)"
+                >
+                  <Sparkles className="w-3 h-3 text-emerald-700" />
+                  <span>Snabbdemo (60s)</span>
+                </button>
+              )}
             </div>
             <p className="hidden md:block text-xs text-zinc-500 font-normal truncate max-w-sm mt-0.5">
               {currentViewMeta.subtitle}
