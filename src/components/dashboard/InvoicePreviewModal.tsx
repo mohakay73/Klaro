@@ -241,9 +241,12 @@ export function InvoicePreviewModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden my-auto">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+      <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-4xl w-full max-h-[95vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden my-0 sm:my-auto animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
         
+        {/* Mobile Pull Handle */}
+        <div className="w-12 h-1.5 rounded-full bg-zinc-200 mx-auto mt-2 -mb-1 sm:hidden" />
+
         {/* Top Control Bar */}
         <div className="p-4 sm:px-6 border-b border-zinc-200 bg-zinc-50/90 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5">

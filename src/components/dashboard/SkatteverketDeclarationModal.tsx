@@ -39,9 +39,12 @@ export function SkatteverketDeclarationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white border border-zinc-200 rounded-xl max-w-3xl w-full p-6 shadow-xl space-y-6 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white border border-zinc-200 rounded-t-3xl sm:rounded-2xl max-w-3xl w-full p-5 sm:p-6 shadow-2xl space-y-6 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
         
+        {/* Mobile Pull Handle */}
+        <div className="w-12 h-1.5 rounded-full bg-zinc-200 mx-auto -mt-1 mb-2 sm:hidden" />
+
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
           <div className="flex items-center gap-3">

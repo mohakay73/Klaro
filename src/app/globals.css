@@ -36,6 +36,21 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Mobile Touch & Scroll Optimizations */
+html, body {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Hide scrollbar for mobile pill strips while retaining touch momentum */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Monospace numbers for financial figures */
 .tabular-nums {
   font-variant-numeric: tabular-nums;

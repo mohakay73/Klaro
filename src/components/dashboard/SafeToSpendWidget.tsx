@@ -90,11 +90,11 @@ export function SafeToSpendWidget({ taxBuffer, companyType }: SafeToSpendWidgetP
               <span className="text-zinc-400 font-mono">/ Disponibelt belopp</span>
             </div>
 
-            <div className="mt-4 flex items-baseline gap-3.5">
-              <span className="text-5xl sm:text-6xl font-black tracking-tight text-zinc-950 font-mono tabular-nums">
+            <div className="mt-4 flex flex-wrap items-baseline gap-2.5 sm:gap-3.5">
+              <span className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-zinc-950 font-mono tabular-nums">
                 {formatSEK(safeToSpend)}
               </span>
-              <span className="text-sm font-mono font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+              <span className="text-xs sm:text-sm font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-emerald-200 shrink-0">
                 {safePct}% disponibelt
               </span>
             </div>

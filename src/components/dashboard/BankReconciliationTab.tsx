@@ -351,7 +351,7 @@ export function BankReconciliationTab({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         
         {/* Status Pills */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white border border-zinc-200 shadow-2xs overflow-x-auto">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white border border-zinc-200 shadow-2xs overflow-x-auto no-scrollbar scroll-smooth">
           <button
             onClick={() => setStatusFilter('ALL')}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer whitespace-nowrap ${
@@ -429,9 +429,143 @@ export function BankReconciliationTab({
 
       </div>
 
-      {/* 4. Transactions Table */}
+      {/* 4. Transactions List (Responsive: Mobile Cards + Desktop Table) */}
       <div className="rounded-2xl border border-zinc-200/90 bg-white overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
+        
+        {/* Mobile Touch Cards (< 768px) */}
+        <div className="md:hidden divide-y divide-zinc-200/80">
+          {filteredTransactions.length === 0 ? (
+            <div className="p-8 text-center text-zinc-500 text-xs">
+              Inga transaktioner matchar det valda filtret.
+            </div>
+          ) : (
+            filteredTransactions.map((tx) => {
+              const isExpense = tx.amount < 0;
+              const absAmount = Math.abs(tx.amount);
+              const isMissing = tx.reconciliationStatus === 'missing_receipt';
+              const isPrivate = tx.reconciliationStatus === 'private_draw';
+              const isReconciled = tx.reconciliationStatus === 'reconciled';
+
+              return (
+                <div
+                  key={tx.id}
+                  onClick={() => setSelectedTxForDetails(tx)}
+                  className="p-4 space-y-3 bg-white hover:bg-[#fcfbf9] active:bg-zinc-100/50 transition cursor-pointer"
+                >
+                  {/* Top: Icon + Description + Amount */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-2.5 min-w-0">
+                      <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                        isExpense 
+                          ? 'bg-zinc-100 text-zinc-600' 
+                          : 'bg-emerald-100 text-emerald-700'
+                      }`}>
+                        {isExpense ? (
+                          <ArrowDownLeft className="w-4 h-4 text-zinc-500" />
+                        ) : (
+                          <ArrowUpRight className="w-4 h-4 text-emerald-600" />
+                        )}
+                      </span>
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-sm text-zinc-950 truncate">{tx.description}</h4>
+                        <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-mono mt-0.5">
+                          <span>{formatDate(tx.bookingDate)}</span>
+                          <span>•</span>
+                          <span className="font-semibold text-zinc-700 bg-zinc-100 px-1.5 py-0.2 rounded border border-zinc-200">
+                            BAS {tx.basAccount || (isExpense ? '6990' : '1510')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <span className={`font-mono font-bold text-sm tabular-nums block ${
+                        tx.amount > 0 ? 'text-emerald-700' : 'text-zinc-950'
+                      }`}>
+                        {tx.amount > 0 ? `+${formatSEK(tx.amount)}` : `-${formatSEK(absAmount)}`}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Status & Category Strip */}
+                  <div className="flex items-center justify-between text-xs pt-1">
+                    <span className="text-zinc-500 truncate max-w-[180px]">
+                      {tx.merchantName || tx.category || 'Bankhändelse'}
+                    </span>
+                    <div>
+                      {isReconciled && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          Avstämd
+                        </span>
+                      )}
+                      {isMissing && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                          <AlertCircle className="w-3 h-3 text-amber-600" />
+                          Saknar kvitto
+                        </span>
+                      )}
+                      {isPrivate && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-800 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                          <UserCheck className="w-3 h-3 text-purple-600" />
+                          Eget uttag (2013)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions Footer */}
+                  <div className="flex items-center justify-between pt-2 border-t border-zinc-100 text-xs" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => setSelectedTxForDetails(tx)}
+                      className="text-zinc-500 hover:text-zinc-900 font-medium flex items-center gap-1 text-[11px]"
+                    >
+                      <Info className="w-3.5 h-3.5" />
+                      <span>Visa kontering</span>
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      {isMissing && (
+                        <>
+                          <button
+                            onClick={() => setSelectedTxForLink(tx)}
+                            className="px-3 py-1.5 rounded-lg bg-[#0c3123] text-white text-xs font-semibold shadow-xs active:scale-95 transition flex items-center gap-1"
+                          >
+                            <Link2 className="w-3 h-3" />
+                            <span>Koppla kvitto</span>
+                          </button>
+                          <button
+                            onClick={(e) => handleTogglePrivateDraw(tx, e)}
+                            className="px-2.5 py-1.5 rounded-lg bg-zinc-100 active:bg-zinc-200 text-zinc-700 text-xs font-medium border border-zinc-200 transition"
+                          >
+                            Privat
+                          </button>
+                        </>
+                      )}
+                      {isPrivate && (
+                        <button
+                          onClick={(e) => handleTogglePrivateDraw(tx, e)}
+                          className="px-2.5 py-1.5 rounded-lg bg-zinc-100 active:bg-zinc-200 text-zinc-700 text-xs font-medium border border-zinc-200 transition"
+                        >
+                          Ångra uttag
+                        </button>
+                      )}
+                      {isReconciled && (
+                        <span className="font-mono text-[11px] text-zinc-500 flex items-center gap-1">
+                          <Link2 className="w-3 h-3 text-zinc-400" />
+                          <span>{tx.matchedInvoiceId || tx.matchedReceiptId || 'Verifikat'}</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop Table View (>= 768px) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-[#fcfbf9] text-zinc-600 border-b border-zinc-200">
               <tr>
@@ -562,7 +696,7 @@ export function BankReconciliationTab({
                           <div className="flex items-center justify-end gap-1.5">
                             <button
                               onClick={() => setSelectedTxForLink(tx)}
-                              className="px-2.5 py-1 rounded-lg bg-[#0c3123] hover:bg-[#144734] text-white text-[11px] font-semibold transition shadow-xs flex items-center gap-1 cursor-pointer"
+                              className="px-2.5 py-1 rounded-lg bg-[#0c3123] hover:bg-[#144734] text-white text-[11px] font-semibold transition shadow-xs flex items-center gap-1 cursor-pointer active:scale-95"
                               title="Koppla eller generera kvitto för denna transaktion"
                             >
                               <Link2 className="w-3 h-3" />
@@ -571,7 +705,7 @@ export function BankReconciliationTab({
 
                             <button
                               onClick={(e) => handleTogglePrivateDraw(tx, e)}
-                              className="px-2.5 py-1 rounded-lg bg-white hover:bg-zinc-100 text-zinc-700 text-[11px] font-medium border border-zinc-200 transition shadow-2xs cursor-pointer"
+                              className="px-2.5 py-1 rounded-lg bg-white hover:bg-zinc-100 text-zinc-700 text-[11px] font-medium border border-zinc-200 transition shadow-2xs cursor-pointer active:scale-95"
                               title="Markera som eget uttag (privat inköp) så behövs inget företagskvitto"
                             >
                               Privat
@@ -580,7 +714,7 @@ export function BankReconciliationTab({
                         ) : isPrivate ? (
                           <button
                             onClick={(e) => handleTogglePrivateDraw(tx, e)}
-                            className="px-2.5 py-1 rounded-lg bg-white hover:bg-zinc-100 text-zinc-600 text-[11px] font-medium border border-zinc-200 transition shadow-2xs cursor-pointer"
+                            className="px-2.5 py-1 rounded-lg bg-white hover:bg-zinc-100 text-zinc-600 text-[11px] font-medium border border-zinc-200 transition shadow-2xs cursor-pointer active:scale-95"
                             title="Återställ till saknar kvitto"
                           >
                             Ångra uttag
@@ -601,10 +735,13 @@ export function BankReconciliationTab({
         </div>
       </div>
 
-      {/* 5. Modal: Connect or Quick Create Receipt for Transaction */}
+      {/* 5. Modal: Connect or Quick Create Receipt for Transaction (Mobile Bottom Sheet) */}
       {selectedTxForLink && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white border border-zinc-200 rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-5 animate-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white border border-zinc-200 rounded-t-3xl sm:rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto">
+            
+            {/* Mobile Drag Handle */}
+            <div className="w-12 h-1.5 rounded-full bg-zinc-200 mx-auto -mt-2 mb-2 sm:hidden" />
             
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
@@ -760,10 +897,13 @@ export function BankReconciliationTab({
         </div>
       )}
 
-      {/* 6. Modal: Detailed Transaction Inspector & Double-Entry Journal (Konteringsorder) */}
+      {/* 6. Modal: Detailed Transaction Inspector & Double-Entry Journal (Mobile Bottom Sheet) */}
       {selectedTxForDetails && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white border border-zinc-200 rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-5 animate-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white border border-zinc-200 rounded-t-3xl sm:rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto">
+            
+            {/* Mobile Drag Handle */}
+            <div className="w-12 h-1.5 rounded-full bg-zinc-200 mx-auto -mt-2 mb-2 sm:hidden" />
             
             <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
               <div className="flex items-center gap-2.5">

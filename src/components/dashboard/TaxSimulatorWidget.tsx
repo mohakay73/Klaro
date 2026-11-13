@@ -151,13 +151,13 @@ export function TaxSimulatorWidget({
             className="w-full accent-zinc-900 cursor-pointer"
           />
 
-          <div className="flex gap-2 pt-1">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 pt-1">
             {[25000, 50000, 80000, 100000].map((val) => (
               <button
                 key={val}
                 type="button"
                 onClick={() => setAdditionalRevenue(val)}
-                className={`px-2.5 py-1 rounded-md text-xs font-mono border transition ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-mono border transition active:scale-95 ${
                   additionalRevenue === val
                     ? 'bg-emerald-700 text-white border-emerald-700 font-bold'
                     : 'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-100'
@@ -170,7 +170,7 @@ export function TaxSimulatorWidget({
         </div>
 
         {/* Additional Expense Slider */}
-        <div className="p-5 rounded-xl bg-zinc-50 border border-zinc-200 space-y-3.5">
+        <div className="p-4 sm:p-5 rounded-xl bg-zinc-50 border border-zinc-200 space-y-3.5">
           <div className="flex items-center justify-between">
             <label className="font-semibold text-zinc-800 flex items-center gap-2 text-sm">
               <ShoppingBag className="w-4 h-4 text-zinc-500" />
@@ -188,23 +188,23 @@ export function TaxSimulatorWidget({
             step="2000"
             value={additionalExpense}
             onChange={(e) => setAdditionalExpense(Number(e.target.value))}
-            className="w-full accent-zinc-900 cursor-pointer"
+            className="w-full accent-[#0c3123] cursor-pointer"
           />
 
-          <div className="flex items-center justify-between pt-1">
-            <div className="flex gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {[8000, 15000, 32000].map((val) => (
                 <button
                   key={val}
                   type="button"
                   onClick={() => setAdditionalExpense(val)}
-                  className={`px-2.5 py-1 rounded-md text-xs font-mono border transition ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-mono border transition active:scale-95 ${
                     additionalExpense === val
-                      ? 'bg-emerald-700 text-white border-emerald-700 font-bold'
+                      ? 'bg-amber-600 text-white border-amber-600 font-bold'
                       : 'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-100'
                   }`}
                 >
-                  {(val / 1000)}k kr
+                  -{(val / 1000)}k kr
                 </button>
               ))}
             </div>

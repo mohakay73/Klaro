@@ -41,7 +41,7 @@ export function TaxView({
       />
 
       {/* 3. Swedish Tax Guide & Transparency Explainer */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-7 space-y-6 text-sm text-zinc-700 shadow-xs">
+      <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-7 space-y-6 text-sm text-zinc-700 shadow-xs">
         <div className="flex items-center gap-2.5 pb-4 border-b border-zinc-100">
           <ShieldCheck className="w-5 h-5 text-emerald-700" />
           <h3 className="text-base font-bold text-zinc-950">

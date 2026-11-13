@@ -8,6 +8,7 @@ import { ReceiptsTable } from '@/components/dashboard/ReceiptsTable';
 import { InvoicesTable } from '@/components/dashboard/InvoicesTable';
 import { TaxView } from '@/components/dashboard/TaxView';
 import { BankReconciliationTab } from '@/components/dashboard/BankReconciliationTab';
+import { MobileBottomNav } from '@/components/dashboard/MobileBottomNav';
 import { ReceiptUploadModal } from '@/components/dashboard/ReceiptUploadModal';
 import { InvoiceBuilderModal } from '@/components/dashboard/InvoiceBuilderModal';
 import { InvoicePreviewModal } from '@/components/dashboard/InvoicePreviewModal';
@@ -235,7 +236,7 @@ export default function DashboardPage() {
         />
 
         {/* Dynamic View Body */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-8 pb-28 lg:pb-8">
           
           {/* View 1: Översikt (Cockpit) */}
           {activeView === 'overview' && (
@@ -311,7 +312,7 @@ export default function DashboardPage() {
         </main>
 
         {/* Global Footer */}
-        <footer className="border-t border-zinc-200 bg-white py-6 text-center text-xs text-zinc-500 mt-auto">
+        <footer className="border-t border-zinc-200 bg-white py-6 text-center text-xs text-zinc-500 mt-auto pb-24 lg:pb-6">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
             <span>Klaro — Automatiserad skattebuffert & fakturering för svenska företagare.</span>
             <span className="font-mono text-zinc-400">SIE-4 Standard • Skatteverket 2026 • F-skatt</span>
@@ -319,6 +320,18 @@ export default function DashboardPage() {
         </footer>
 
       </div>
+
+      {/* 3. Mobile Thumb-Friendly Navigation Bottom Bar */}
+      <MobileBottomNav
+        activeView={activeView}
+        onSelectView={setActiveView}
+        receiptsCount={filteredReceipts.length}
+        invoicesCount={filteredInvoices.length}
+        missingBankReceiptsCount={missingBankReceiptsCount}
+        onOpenUpload={() => setIsUploadOpen(true)}
+        onOpenInvoiceBuilder={() => setIsInvoiceBuilderOpen(true)}
+        onSyncBank={handleSyncTransactions}
+      />
 
       {/* Modals & Dialogs */}
       <ReceiptUploadModal

@@ -197,144 +197,268 @@ export function ReceiptsTable({
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-zinc-50/80 text-zinc-600 border-b border-zinc-200 text-xs uppercase tracking-wider font-bold">
-              <tr>
-                <th className="py-3 px-4 font-semibold">Datum</th>
-                <th className="py-3 px-4 font-semibold">Leverantör & BAS-konto</th>
-                <th className="py-3 px-4 font-semibold">Källa</th>
-                <th className="py-3 px-4 font-semibold">Moms</th>
-                <th className="py-3 px-4 font-semibold text-right">Momsbelopp</th>
-                <th className="py-3 px-4 font-semibold text-right">Totalt (SEK)</th>
-                <th className="py-3 px-4 font-semibold">Status</th>
-                <th className="py-3 px-4 font-semibold text-right">Åtgärd</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-200/70">
-              {filteredReceipts.map((rec) => {
-                const isAmbiguous = rec.status === 'parsed' && (rec.vat_rate === 12 || rec.total_amount > 2000);
+        <>
+          {/* Mobile Card List View (< 768px) */}
+          <div className="md:hidden divide-y divide-zinc-200/80">
+            {filteredReceipts.map((rec) => {
+              const isAmbiguous = rec.status === 'parsed' && (rec.vat_rate === 12 || rec.total_amount > 2000);
 
-                return (
-                  <tr key={rec.id} className="hover:bg-zinc-50/80 transition">
-                    <td className="py-3.5 px-4 whitespace-nowrap text-zinc-600 font-mono text-xs">
-                      {formatDate(rec.invoice_date)}
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      <div className="font-bold text-zinc-950 flex items-center gap-2 text-sm">
-                        <span>{rec.vendor_name}</span>
-                        {isAmbiguous && (
-                          <span className="text-xs px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200 font-semibold flex items-center gap-1">
-                            <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-                            Granska
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="text-xs text-zinc-500 flex items-center gap-2 mt-1">
-                        <span>{rec.category}</span>
-                        <span className="font-mono text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200 font-semibold">
-                          BAS {rec.raw_ai_response?.bas_account || '6990'}
-                        </span>
-                      </div>
-
-                      {/* Ambiguous rate selector */}
-                      {isAmbiguous && onUpdateReceiptVatRate && (
-                        <div className="mt-2 flex items-center gap-2 text-xs text-zinc-700 bg-zinc-50 p-2 rounded-lg border border-zinc-200">
-                          <span className="font-medium">Momssats:</span>
-                          <button
-                            onClick={() => onUpdateReceiptVatRate(rec.id, 12)}
-                            className={`px-2 py-1 rounded font-mono text-xs ${
-                              rec.vat_rate === 12 
-                                ? 'bg-zinc-900 text-white font-bold' 
-                                : 'hover:bg-zinc-200 text-zinc-700'
-                            }`}
-                          >
-                            12% representation
-                          </button>
-                          <span>/</span>
-                          <button
-                            onClick={() => onUpdateReceiptVatRate(rec.id, 25)}
-                            className={`px-2 py-1 rounded font-mono text-xs ${
-                              rec.vat_rate === 25 
-                                ? 'bg-zinc-900 text-white font-bold' 
-                                : 'hover:bg-zinc-200 text-zinc-700'
-                            }`}
-                          >
-                            25% standard
-                          </button>
-                        </div>
-                      )}
-                    </td>
-
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2 text-zinc-600 text-xs">
+              return (
+                <div 
+                  key={rec.id} 
+                  className="p-4 space-y-3 bg-white hover:bg-zinc-50/70 transition active:bg-zinc-100/50"
+                >
+                  {/* Top: Vendor + Status */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-9 h-9 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center shrink-0 text-zinc-600">
                         {getSourceIcon(rec.source_type)}
-                        <span className="capitalize font-medium">
-                          {rec.source_type === 'email_forward' ? 'E-post' : rec.source_type === 'mobile_scan' ? 'Mobil' : 'Webb'}
-                        </span>
                       </div>
-                    </td>
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-sm text-zinc-950 truncate">{rec.vendor_name}</h4>
+                        <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-mono mt-0.5">
+                          <span>{formatDate(rec.invoice_date)}</span>
+                          <span>•</span>
+                          <span className="font-semibold text-zinc-700 bg-zinc-100 px-1.5 py-0.2 rounded border border-zinc-200">
+                            BAS {rec.raw_ai_response?.bas_account || '6990'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-zinc-100 text-zinc-800 border border-zinc-200">
-                        {rec.vat_rate}%
-                      </span>
-                    </td>
-
-                    <td className="py-3.5 px-4 whitespace-nowrap text-right font-mono text-zinc-700 font-semibold tabular-nums text-sm">
-                      {formatSEK(rec.vat_amount)}
-                    </td>
-
-                    <td className="py-3.5 px-4 whitespace-nowrap text-right font-mono font-black text-zinc-950 tabular-nums text-sm">
-                      {formatSEK(rec.total_amount)}
-                    </td>
-
-                    <td className="py-3.5 px-4 whitespace-nowrap">
+                    <div className="shrink-0">
                       {rec.status === 'verified' ? (
-                        <span className="inline-flex items-center gap-1.5 text-xs text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                           Godkänd
                         </span>
                       ) : (
                         <button
                           onClick={() => onVerifyReceipt && onVerifyReceipt(rec.id)}
-                          className="inline-flex items-center gap-1.5 text-xs text-zinc-800 hover:text-zinc-950 font-bold transition bg-zinc-100 hover:bg-zinc-200 px-2.5 py-1 rounded-lg border border-zinc-300"
-                          title="Klicka för att godkänna momsavdrag"
+                          className="inline-flex items-center gap-1 text-[11px] text-zinc-800 font-bold bg-zinc-100 active:bg-zinc-200 px-2.5 py-1 rounded-lg border border-zinc-300"
                         >
-                          <Check className="w-4 h-4 text-zinc-600" />
+                          <Check className="w-3.5 h-3.5 text-zinc-600" />
                           Verifiera
                         </button>
                       )}
-                    </td>
+                    </div>
+                  </div>
 
-                    <td className="py-3.5 px-4 whitespace-nowrap text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                  {/* Financials Strip */}
+                  <div className="flex items-baseline justify-between p-2.5 rounded-xl bg-zinc-50 border border-zinc-100">
+                    <div>
+                      <span className="text-[10px] text-zinc-500 block uppercase font-mono tracking-wider">Totalt belopp</span>
+                      <span className="font-mono font-black text-base text-zinc-950 tabular-nums">
+                        {formatSEK(rec.total_amount)}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-zinc-500 block uppercase font-mono tracking-wider">Moms ({rec.vat_rate}%)</span>
+                      <span className="font-mono font-bold text-sm text-emerald-700 tabular-nums">
+                        {formatSEK(rec.vat_amount)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Ambiguous Rate Selector */}
+                  {isAmbiguous && onUpdateReceiptVatRate && (
+                    <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-amber-50/70 border border-amber-200 text-xs">
+                      <span className="text-amber-900 font-medium text-[11px] flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                        Välj moms:
+                      </span>
+                      <div className="flex items-center gap-1.5">
                         <button
-                          onClick={() => setSelectedReceipt(rec)}
-                          className="p-2 text-zinc-500 hover:text-zinc-950 hover:bg-zinc-100 rounded-lg transition"
-                          title="Visa detaljer och BAS-analys"
+                          onClick={() => onUpdateReceiptVatRate(rec.id, 12)}
+                          className={`px-2 py-1 rounded text-xs font-semibold ${
+                            rec.vat_rate === 12 
+                              ? 'bg-amber-900 text-white' 
+                              : 'bg-white text-zinc-700 border border-zinc-200'
+                          }`}
                         >
-                          <Info className="w-4 h-4" />
+                          12% mat
                         </button>
-                        {onDeleteReceipt && (
+                        <button
+                          onClick={() => onUpdateReceiptVatRate(rec.id, 25)}
+                          className={`px-2 py-1 rounded text-xs font-semibold ${
+                            rec.vat_rate === 25 
+                              ? 'bg-amber-900 text-white' 
+                              : 'bg-white text-zinc-700 border border-zinc-200'
+                          }`}
+                        >
+                          25% standard
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Mobile Actions Footer */}
+                  <div className="flex items-center justify-between pt-1 border-t border-zinc-100 text-xs">
+                    <span className="text-zinc-500 truncate max-w-[180px]">{rec.category}</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setSelectedReceipt(rec)}
+                        className="px-2.5 py-1.5 text-zinc-700 hover:text-zinc-950 bg-zinc-100 active:bg-zinc-200 rounded-lg text-xs font-semibold flex items-center gap-1"
+                      >
+                        <Info className="w-3.5 h-3.5" />
+                        <span>Detaljer</span>
+                      </button>
+                      {onDeleteReceipt && (
+                        <button
+                          onClick={() => onDeleteReceipt(rec.id)}
+                          className="p-1.5 text-zinc-400 hover:text-rose-600 active:bg-rose-50 rounded-lg transition"
+                          title="Ta bort kvitto"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View (>= 768px) */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-zinc-50/80 text-zinc-600 border-b border-zinc-200 text-xs uppercase tracking-wider font-bold">
+                <tr>
+                  <th className="py-3 px-4 font-semibold">Datum</th>
+                  <th className="py-3 px-4 font-semibold">Leverantör & BAS-konto</th>
+                  <th className="py-3 px-4 font-semibold">Källa</th>
+                  <th className="py-3 px-4 font-semibold">Moms</th>
+                  <th className="py-3 px-4 font-semibold text-right">Momsbelopp</th>
+                  <th className="py-3 px-4 font-semibold text-right">Totalt (SEK)</th>
+                  <th className="py-3 px-4 font-semibold">Status</th>
+                  <th className="py-3 px-4 font-semibold text-right">Åtgärd</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200/70">
+                {filteredReceipts.map((rec) => {
+                  const isAmbiguous = rec.status === 'parsed' && (rec.vat_rate === 12 || rec.total_amount > 2000);
+
+                  return (
+                    <tr key={rec.id} className="hover:bg-zinc-50/80 transition">
+                      <td className="py-3.5 px-4 whitespace-nowrap text-zinc-600 font-mono text-xs">
+                        {formatDate(rec.invoice_date)}
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-zinc-950 flex items-center gap-2 text-sm">
+                          <span>{rec.vendor_name}</span>
+                          {isAmbiguous && (
+                            <span className="text-xs px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200 font-semibold flex items-center gap-1">
+                              <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                              Granska
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="text-xs text-zinc-500 flex items-center gap-2 mt-1">
+                          <span>{rec.category}</span>
+                          <span className="font-mono text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200 font-semibold">
+                            BAS {rec.raw_ai_response?.bas_account || '6990'}
+                          </span>
+                        </div>
+
+                        {/* Ambiguous rate selector */}
+                        {isAmbiguous && onUpdateReceiptVatRate && (
+                          <div className="mt-2 flex items-center gap-2 text-xs text-zinc-700 bg-zinc-50 p-2 rounded-lg border border-zinc-200">
+                            <span className="font-medium">Momssats:</span>
+                            <button
+                              onClick={() => onUpdateReceiptVatRate(rec.id, 12)}
+                              className={`px-2 py-1 rounded font-mono text-xs ${
+                                rec.vat_rate === 12 
+                                  ? 'bg-zinc-900 text-white font-bold' 
+                                  : 'hover:bg-zinc-200 text-zinc-700'
+                              }`}
+                            >
+                              12% representation
+                            </button>
+                            <span>/</span>
+                            <button
+                              onClick={() => onUpdateReceiptVatRate(rec.id, 25)}
+                              className={`px-2 py-1 rounded font-mono text-xs ${
+                                rec.vat_rate === 25 
+                                  ? 'bg-zinc-900 text-white font-bold' 
+                                  : 'hover:bg-zinc-200 text-zinc-700'
+                              }`}
+                            >
+                              25% standard
+                            </button>
+                          </div>
+                        )}
+                      </td>
+
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2 text-zinc-600 text-xs">
+                          {getSourceIcon(rec.source_type)}
+                          <span className="capitalize font-medium">
+                            {rec.source_type === 'email_forward' ? 'E-post' : rec.source_type === 'mobile_scan' ? 'Mobil' : 'Webb'}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-zinc-100 text-zinc-800 border border-zinc-200">
+                          {rec.vat_rate}%
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-4 whitespace-nowrap text-right font-mono text-zinc-700 font-semibold tabular-nums text-sm">
+                        {formatSEK(rec.vat_amount)}
+                      </td>
+
+                      <td className="py-3.5 px-4 whitespace-nowrap text-right font-mono font-black text-zinc-950 tabular-nums text-sm">
+                        {formatSEK(rec.total_amount)}
+                      </td>
+
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        {rec.status === 'verified' ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                            Godkänd
+                          </span>
+                        ) : (
                           <button
-                            onClick={() => onDeleteReceipt(rec.id)}
-                            className="p-2 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
-                            title="Radera kvitto"
+                            onClick={() => onVerifyReceipt && onVerifyReceipt(rec.id)}
+                            className="inline-flex items-center gap-1.5 text-xs text-zinc-800 hover:text-zinc-950 font-bold transition bg-zinc-100 hover:bg-zinc-200 px-2.5 py-1 rounded-lg border border-zinc-300"
+                            title="Klicka för att godkänna momsavdrag"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Check className="w-4 h-4 text-zinc-600" />
+                            Verifiera
                           </button>
                         )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => setSelectedReceipt(rec)}
+                            className="p-2 text-zinc-500 hover:text-zinc-950 hover:bg-zinc-100 rounded-lg transition"
+                            title="Visa detaljer och BAS-analys"
+                          >
+                            <Info className="w-4 h-4" />
+                          </button>
+                          {onDeleteReceipt && (
+                            <button
+                              onClick={() => onDeleteReceipt(rec.id)}
+                              className="p-2 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                              title="Radera kvitto"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {/* Detail / Reasoning Modal */}
