@@ -75,56 +75,56 @@ export function Header({
   const currentViewMeta = VIEW_TITLES[activeView];
 
   return (
-    <header className="border-b border-zinc-200/90 bg-white/95 backdrop-blur-md sticky top-0 z-30 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+    <header className="border-b border-[#e7e2d7] bg-white/95 backdrop-blur-md sticky top-0 z-30 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         
         {/* Left: Mobile Menu Trigger + Breadcrumb */}
         <div className="flex items-center gap-3">
           <button
             onClick={onOpenMobileMenu}
-            className="lg:hidden p-2 -ml-1 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition"
+            className="lg:hidden p-2 -ml-1 text-stone-600 hover:text-[#1c1917] hover:bg-stone-100 rounded-lg transition"
             title="Öppna navigering"
           >
             <Menu className="w-5 h-5" />
           </button>
 
           <div>
-            <div className="flex items-center gap-2 text-sm text-zinc-400 flex-wrap">
-              <span className="font-semibold text-zinc-500">Klaro</span>
+            <div className="flex items-center gap-2 text-sm text-stone-400 flex-wrap">
+              <span className="font-semibold text-stone-500">Klaro</span>
               <span>/</span>
-              <span className="font-bold text-zinc-950 text-base">{currentViewMeta.title}</span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+              <span className="font-bold text-[#1c1917] text-base">{currentViewMeta.title}</span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-[#b45309] border border-amber-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#d97706] animate-pulse" />
                 Live
               </span>
               {onOpenDemoTour && (
                 <button
                   type="button"
                   onClick={onOpenDemoTour}
-                  className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#0c3123]/5 hover:bg-[#0c3123]/10 text-[#0c3123] border border-[#0c3123]/15 transition cursor-pointer active:scale-95"
+                  className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#f7f4ee] hover:bg-[#eee9df] text-[#1c1917] border border-[#e7e2d7] transition cursor-pointer active:scale-95"
                   title="Starta interaktiv snabbdemo (60s)"
                 >
-                  <Sparkles className="w-3 h-3 text-emerald-700" />
+                  <Sparkles className="w-3 h-3 text-[#d97706]" />
                   <span>Snabbdemo (60s)</span>
                 </button>
               )}
             </div>
-            <p className="hidden md:block text-xs text-zinc-500 font-normal truncate max-w-sm mt-0.5">
+            <p className="hidden md:block text-xs text-stone-500 font-normal truncate max-w-sm mt-0.5">
               {currentViewMeta.subtitle}
             </p>
           </div>
         </div>
 
-        {/* Center: Quarter Segmented Filter (Responsive: Desktop pills, Mobile select) */}
-        <div className="hidden sm:flex items-center rounded-lg border border-zinc-200 bg-zinc-100/90 p-1 text-xs font-mono shadow-2xs">
+        {/* Center: Quarter Segmented Filter */}
+        <div className="hidden sm:flex items-center rounded-lg border border-[#e7e2d7] bg-[#f7f4ee]/90 p-1 text-xs font-mono shadow-2xs">
           {(['Q1', 'Q2', 'Q3', 'Q4', 'ALL'] as QuarterPeriod[]).map((q) => (
             <button
               key={q}
               onClick={() => onSelectPeriod(q)}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
                 selectedPeriod === q
-                  ? 'bg-white text-zinc-950 shadow-xs font-bold'
-                  : 'text-zinc-600 hover:text-zinc-950'
+                  ? 'bg-white text-[#1c1917] shadow-xs font-bold'
+                  : 'text-stone-600 hover:text-[#1c1917]'
               }`}
             >
               {q === 'ALL' ? 'Helår' : q}
@@ -137,7 +137,7 @@ export function Header({
           <select
             value={selectedPeriod}
             onChange={(e) => onSelectPeriod(e.target.value as QuarterPeriod)}
-            className="px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-zinc-50 text-xs font-mono font-bold text-zinc-900 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-[#0c3123]"
+            className="px-2.5 py-1.5 rounded-lg border border-[#e7e2d7] bg-[#f7f4ee] text-xs font-mono font-bold text-[#1c1917] shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-[#1c1917]"
           >
             <option value="Q1">Q1</option>
             <option value="Q2">Q2</option>
@@ -156,24 +156,24 @@ export function Header({
               {netMoms > 0 && (
                 <button
                   onClick={onOpenPayMoms}
-                  className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100/90 border border-amber-200 shadow-2xs transition"
+                  className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold text-amber-950 bg-amber-50 hover:bg-amber-100/90 border border-amber-200 shadow-2xs transition"
                 >
-                  <Landmark className="w-4 h-4 text-amber-700" />
+                  <Landmark className="w-4 h-4 text-[#b45309]" />
                   <span>Betala moms ({formatSEK(Math.round(netMoms))})</span>
                 </button>
               )}
               <button
                 onClick={onOpenInvoiceBuilder}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold text-zinc-800 hover:text-zinc-950 bg-white hover:bg-zinc-50 border border-zinc-200 hover:border-zinc-300 transition shadow-2xs"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold text-stone-800 hover:text-[#1c1917] bg-white hover:bg-stone-50 border border-[#e7e2d7] hover:border-stone-400 transition shadow-2xs"
               >
-                <Plus className="w-4 h-4 text-zinc-500" />
+                <Plus className="w-4 h-4 text-stone-500" />
                 <span>Fakturera</span>
               </button>
               <button
                 onClick={onOpenUpload}
-                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-emerald-700 hover:bg-emerald-800 transition shadow-xs active:scale-95"
+                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95"
               >
-                <Upload className="w-4 h-4" />
+                <Upload className="w-4 h-4 text-[#f59e0b]" />
                 <span>Tolka<span className="hidden sm:inline"> kvitto</span></span>
               </button>
             </>
@@ -184,18 +184,18 @@ export function Header({
               {onExportSIE && (
                 <button
                   onClick={onExportSIE}
-                  className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-zinc-700 hover:text-zinc-950 bg-white hover:bg-zinc-50 border border-zinc-200 transition shadow-2xs active:scale-95"
+                  className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-stone-700 hover:text-[#1c1917] bg-white hover:bg-stone-50 border border-[#e7e2d7] transition shadow-2xs active:scale-95"
                   title="Exportera verifikationer till SIE-4 format för Skatteverket/Bokföring"
                 >
-                  <Download className="w-4 h-4 text-zinc-500" />
+                  <Download className="w-4 h-4 text-stone-500" />
                   <span className="hidden sm:inline">Exportera</span> SIE-4
                 </button>
               )}
               <button
                 onClick={onOpenUpload}
-                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-emerald-700 hover:bg-emerald-800 transition shadow-xs active:scale-95"
+                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95"
               >
-                <Upload className="w-4 h-4" />
+                <Upload className="w-4 h-4 text-[#f59e0b]" />
                 <span>Tolka<span className="hidden sm:inline"> nytt kvitto</span></span>
               </button>
             </>
@@ -204,9 +204,9 @@ export function Header({
           {activeView === 'invoices' && (
             <button
               onClick={onOpenInvoiceBuilder}
-              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-emerald-700 hover:bg-emerald-800 transition shadow-xs active:scale-95"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 text-[#f59e0b]" />
               <span>Ny<span className="hidden sm:inline"> kundfaktura</span></span>
             </button>
           )}
@@ -215,16 +215,16 @@ export function Header({
             <>
               <button
                 onClick={onOpenDeclaration}
-                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-zinc-700 hover:text-zinc-950 bg-white hover:bg-zinc-50 border border-zinc-200 transition shadow-2xs active:scale-95"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-stone-700 hover:text-[#1c1917] bg-white hover:bg-stone-50 border border-[#e7e2d7] transition shadow-2xs active:scale-95"
               >
-                <FileText className="w-4 h-4 text-zinc-500" />
+                <FileText className="w-4 h-4 text-stone-500" />
                 <span className="hidden sm:inline">Skatteverket </span>XML
               </button>
               <button
                 onClick={onOpenPayMoms}
-                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-emerald-700 hover:bg-emerald-800 transition shadow-xs active:scale-95"
+                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95"
               >
-                <Landmark className="w-4 h-4" />
+                <Landmark className="w-4 h-4 text-[#f59e0b]" />
                 <span>Betala moms</span>
               </button>
             </>
@@ -233,9 +233,9 @@ export function Header({
           {activeView === 'bank' && onSyncBank && (
             <button
               onClick={onSyncBank}
-              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-emerald-700 hover:bg-emerald-800 transition shadow-xs active:scale-95"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-4 h-4 text-[#f59e0b]" />
               <span>Synka<span className="hidden sm:inline"> transaktioner</span></span>
             </button>
           )}

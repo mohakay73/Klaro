@@ -277,10 +277,10 @@ export default function DashboardPage() {
         <div className="fixed bottom-6 right-6 z-50">
           <button
             onClick={() => setActiveView('overview')}
-            className="flex items-center gap-2 px-5 py-3 rounded-full bg-[#0c3123] text-white shadow-xl hover:bg-[#072016] transition active:scale-95 font-bold text-sm border border-emerald-800/40 cursor-pointer"
+            className="flex items-center gap-2 px-5 py-3 rounded-full bg-[#1c1917] text-white shadow-xl hover:bg-[#292524] transition active:scale-95 font-bold text-sm border border-[#e7e2d7] cursor-pointer"
           >
             <span>Öppna Cockpit</span>
-            <span className="text-emerald-300">→</span>
+            <span className="text-[#f59e0b]">→</span>
           </button>
         </div>
       </div>
@@ -288,7 +288,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f7f4] text-zinc-900 flex font-sans selection:bg-zinc-200">
+    <div className="min-h-screen bg-[#f7f4ee] text-[#1c1917] flex font-sans selection:bg-amber-200 selection:text-[#1c1917]">
       
       {/* 1. Left Navigation Sidebar (Stripe / Linear style) */}
       <Sidebar
@@ -414,10 +414,10 @@ export default function DashboardPage() {
         </main>
 
         {/* Global Footer */}
-        <footer className="border-t border-zinc-200 bg-white py-6 text-center text-xs text-zinc-500 mt-auto pb-24 lg:pb-6">
+        <footer className="border-t border-[#e7e2d7] bg-white py-6 text-center text-xs text-stone-500 mt-auto pb-24 lg:pb-6">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
             <span>Klaro — Automatiserad skattebuffert & fakturering för svenska företagare.</span>
-            <span className="font-mono text-zinc-400">SIE-4 Standard • Skatteverket 2026 • F-skatt</span>
+            <span className="font-mono text-stone-400">SIE-4 Standard • Skatteverket 2026 • F-skatt</span>
           </div>
         </footer>
 

@@ -48,14 +48,14 @@ export function InvoicesTable({
   const hasActiveFilters = searchQuery.length > 0 || vatFilter !== 'ALL';
 
   return (
-    <div className="rounded-2xl border border-zinc-200/90 bg-white overflow-hidden shadow-xs space-y-0">
+    <div className="rounded-2xl border border-[#e7e2d7] bg-white overflow-hidden shadow-xs space-y-0">
       
       {/* Table Header & Controls Bar */}
-      <div className="p-5 border-b border-zinc-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-5 border-b border-[#e7e2d7] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <FileCheck className="w-5 h-5 text-emerald-700" />
-          <h3 className="text-base font-bold text-zinc-950">Fakturerade Intäkter</h3>
-          <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-700 font-mono font-semibold border border-zinc-200">
+          <FileCheck className="w-5 h-5 text-[#d97706]" />
+          <h3 className="text-base font-bold text-[#1c1917]">Fakturerade Intäkter</h3>
+          <span className="text-xs px-2.5 py-1 rounded-full bg-[#f7f4ee] text-stone-700 font-mono font-semibold border border-[#e7e2d7]">
             {filteredInvoices.length} av {invoices.length}
           </span>
         </div>
@@ -65,13 +65,13 @@ export function InvoicesTable({
           
           {/* Search Box */}
           <div className="relative">
-            <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Sök kund, fakturanr..."
-              className="pl-9 pr-3 py-2 rounded-lg border border-zinc-200 bg-zinc-50/70 text-zinc-900 placeholder:text-zinc-400 text-sm focus:outline-hidden focus:ring-1 focus:ring-zinc-900 focus:bg-white transition w-44 sm:w-56"
+              className="pl-9 pr-3 py-2 rounded-lg border border-[#e7e2d7] bg-[#f7f4ee]/70 text-[#1c1917] placeholder:text-stone-400 text-sm focus:outline-hidden focus:ring-1 focus:ring-stone-900 focus:bg-white transition w-44 sm:w-56"
             />
           </div>
 
@@ -80,7 +80,7 @@ export function InvoicesTable({
             <select
               value={vatFilter}
               onChange={(e) => setVatFilter(e.target.value)}
-              className="py-2 px-3 rounded-lg border border-zinc-200 bg-zinc-50/70 text-zinc-800 text-sm focus:outline-hidden focus:ring-1 focus:ring-zinc-900 focus:bg-white transition cursor-pointer font-medium"
+              className="py-2 px-3 rounded-lg border border-[#e7e2d7] bg-[#f7f4ee]/70 text-[#1c1917] text-sm focus:outline-hidden focus:ring-1 focus:ring-stone-900 focus:bg-white transition cursor-pointer font-medium"
             >
               <option value="ALL">Alla momssatser</option>
               <option value="25">25% (Standard)</option>
@@ -97,7 +97,7 @@ export function InvoicesTable({
                 setSearchQuery('');
                 setVatFilter('ALL');
               }}
-              className="inline-flex items-center gap-1 px-2.5 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition text-sm font-medium"
+              className="inline-flex items-center gap-1 px-2.5 py-2 rounded-lg text-stone-600 hover:text-[#1c1917] hover:bg-[#f7f4ee] transition text-sm font-medium cursor-pointer"
               title="Rensa filter"
             >
               <X className="w-4 h-4" />
@@ -108,9 +108,9 @@ export function InvoicesTable({
           {/* Primary Action Button */}
           <button
             onClick={onOpenAddInvoice}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0d3829] hover:bg-[#07251a] text-white text-sm font-semibold transition shadow-xs ml-auto md:ml-2"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-sm font-semibold transition shadow-xs ml-auto md:ml-2 cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-[#f59e0b]" />
             <span>Skapa faktura</span>
           </button>
         </div>
@@ -176,17 +176,17 @@ export function InvoicesTable({
                 </div>
 
                 {/* Action Row */}
-                <div className="flex items-center justify-between pt-1 border-t border-zinc-100 text-xs">
-                  <span className="text-zinc-500 font-mono text-[11px]">Netto: {formatSEK(inv.subtotal_amount)}</span>
+                <div className="flex items-center justify-between pt-1 border-t border-[#e7e2d7] text-xs">
+                  <span className="text-stone-500 font-mono text-[11px]">Netto: {formatSEK(inv.subtotal_amount)}</span>
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       if (onSelectInvoice) onSelectInvoice(inv);
                     }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0c3123] text-white text-xs font-semibold shadow-xs active:scale-95 transition"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-semibold shadow-xs active:scale-95 transition cursor-pointer"
                   >
-                    <FileText className="w-3.5 h-3.5" />
+                    <FileText className="w-3.5 h-3.5 text-[#f59e0b]" />
                     <span>Visa & Skriv ut PDF</span>
                   </button>
                 </div>
@@ -197,7 +197,7 @@ export function InvoicesTable({
           {/* Desktop Table View (>= 768px) */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-zinc-50/80 text-zinc-600 border-b border-zinc-200 text-xs uppercase tracking-wider font-bold">
+              <thead className="bg-[#f7f4ee]/80 text-stone-600 border-b border-[#e7e2d7] text-xs uppercase tracking-wider font-bold">
                 <tr>
                   <th className="py-3 px-4 font-semibold">Datum</th>
                   <th className="py-3 px-4 font-semibold">Kund</th>
@@ -210,18 +210,18 @@ export function InvoicesTable({
                   <th className="py-3 px-4 font-semibold text-right">PDF Faktura</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-200/70">
+              <tbody className="divide-y divide-[#e7e2d7]/70">
                 {filteredInvoices.map((inv) => (
                   <tr 
                     key={inv.id} 
                     onClick={() => onSelectInvoice && onSelectInvoice(inv)}
-                    className="hover:bg-zinc-50/80 transition cursor-pointer group"
+                    className="hover:bg-[#f7f4ee]/50 transition cursor-pointer group"
                   >
-                    <td className="py-3.5 px-4 whitespace-nowrap text-zinc-600 font-mono text-xs">
+                    <td className="py-3.5 px-4 whitespace-nowrap text-stone-600 font-mono text-xs">
                       {formatDate(inv.invoice_date)}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="font-bold text-zinc-950 text-sm group-hover:text-emerald-800 transition">
+                      <span className="font-bold text-[#1c1917] text-sm group-hover:text-[#d97706] transition">
                         {inv.customer_name}
                       </span>
                     </td>

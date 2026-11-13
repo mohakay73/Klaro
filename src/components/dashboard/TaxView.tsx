@@ -41,10 +41,10 @@ export function TaxView({
       />
 
       {/* 3. Swedish Tax Guide & Transparency Explainer */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-7 space-y-6 text-sm text-zinc-700 shadow-xs">
-        <div className="flex items-center gap-2.5 pb-4 border-b border-zinc-100">
-          <ShieldCheck className="w-5 h-5 text-emerald-700" />
-          <h3 className="text-base font-bold text-zinc-950">
+      <div className="rounded-2xl border border-[#e7e2d7] bg-white p-5 sm:p-7 space-y-6 text-sm text-stone-700 shadow-xs">
+        <div className="flex items-center gap-2.5 pb-4 border-b border-[#e7e2d7]">
+          <ShieldCheck className="w-5 h-5 text-[#d97706]" />
+          <h3 className="text-base font-bold text-[#1c1917]">
             Hur beräknar Klaro skattebuffert och säkert disponibelt belopp?
           </h3>
         </div>
@@ -52,46 +52,46 @@ export function TaxView({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           
           {/* Enskild Firma Rules */}
-          <div className="space-y-3.5 p-5 rounded-xl bg-zinc-50 border border-zinc-200/80">
-            <h4 className="font-bold text-zinc-950 text-sm">
+          <div className="space-y-3.5 p-5 rounded-xl bg-[#f7f4ee] border border-[#e7e2d7]">
+            <h4 className="font-bold text-[#1c1917] text-sm">
               Enskild Firma (F-skatt & Egenavgifter)
             </h4>
-            <p className="text-zinc-600 leading-relaxed text-xs">
+            <p className="text-stone-600 leading-relaxed text-xs">
               I en enskild firma beskattas du på <strong>verksamhetens skattemässiga överskott</strong> (nettointäkter minus avdragsgilla kostnader exkl. moms):
             </p>
-            <ul className="list-disc list-inside space-y-1.5 text-zinc-600 text-xs">
+            <ul className="list-disc list-inside space-y-1.5 text-stone-600 text-xs">
               <li>
-                <strong className="text-zinc-900">Schablonavdrag (25%):</strong> Automatiskt avdrag på 25% av vinsten före sociala avgifter.
+                <strong className="text-[#1c1917]">Schablonavdrag (25%):</strong> Automatiskt avdrag på 25% av vinsten före sociala avgifter.
               </li>
               <li>
-                <strong className="text-zinc-900">Egenavgifter (28,97%):</strong> Beräknas på överskottet efter schablonavdrag.
+                <strong className="text-[#1c1917]">Egenavgifter (28,97%):</strong> Beräknas på överskottet efter schablonavdrag.
               </li>
               <li>
-                <strong className="text-zinc-900">Kommunalskatt (~{Math.round(businessConfig.municipalTaxRate * 100)}%):</strong> Dras på vinsten minus egenavgifterna.
+                <strong className="text-[#1c1917]">Kommunalskatt (~{Math.round(businessConfig.municipalTaxRate * 100)}%):</strong> Dras på vinsten minus egenavgifterna.
               </li>
               <li>
-                <strong className="text-zinc-900">Total F-skatt:</strong> Reserveras automatiskt för att undvika kvarskatt vid slutskattsedeln.
+                <strong className="text-[#1c1917]">Total F-skatt:</strong> Reserveras automatiskt för att undvika kvarskatt vid slutskattsedeln.
               </li>
             </ul>
           </div>
 
           {/* Moms Rules */}
-          <div className="space-y-3.5 p-5 rounded-xl bg-zinc-50 border border-zinc-200/80">
-            <h4 className="font-bold text-zinc-950 text-sm">
+          <div className="space-y-3.5 p-5 rounded-xl bg-[#f7f4ee] border border-[#e7e2d7]">
+            <h4 className="font-bold text-[#1c1917] text-sm">
               Mervärdesskatt (Momsdeklaration)
             </h4>
-            <p className="text-zinc-600 leading-relaxed text-xs">
+            <p className="text-stone-600 leading-relaxed text-xs">
               Moms är statens skatt som ditt företag kräver in och redovisar periodiskt till Skatteverket:
             </p>
-            <ul className="list-disc list-inside space-y-1.5 text-zinc-600 text-xs">
+            <ul className="list-disc list-inside space-y-1.5 text-stone-600 text-xs">
               <li>
-                <strong className="text-zinc-900">Utgående moms:</strong> Moms på dina utställda kundfakturor (25%, 12%, 6%).
+                <strong className="text-[#1c1917]">Utgående moms:</strong> Moms på dina utställda kundfakturor (25%, 12%, 6%).
               </li>
               <li>
-                <strong className="text-zinc-900">Ingående moms:</strong> Moms du betalat på verifierade utgiftskvitton (Ruta 48).
+                <strong className="text-[#1c1917]">Ingående moms:</strong> Moms du betalat på verifierade utgiftskvitton (Ruta 48).
               </li>
               <li>
-                <strong className="text-zinc-900">Netto moms:</strong> Mellanskillnaden som reserveras och inbetalas till Skatteverkets Bankgiro 5050-1055.
+                <strong className="text-[#1c1917]">Netto moms:</strong> Mellanskillnaden som reserveras och inbetalas till Skatteverkets Bankgiro 5050-1055.
               </li>
             </ul>
           </div>
@@ -99,11 +99,11 @@ export function TaxView({
         </div>
 
         {/* Safe to Spend formula summary */}
-        <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80 text-sm">
-          <span className="font-bold text-zinc-900 block mb-1">
+        <div className="p-4 rounded-xl bg-[#f7f4ee] border border-[#e7e2d7] text-sm">
+          <span className="font-bold text-[#1c1917] block mb-1">
             Klaros formel för &quot;Säkert att ta ut&quot;:
           </span>
-          <p className="text-zinc-700 font-mono text-xs leading-relaxed">
+          <p className="text-stone-700 font-mono text-xs leading-relaxed">
             Säkert att ta ut = Nettointäkter - Verifierade nettoutgifter - Beräknad F-skatt (Egenavgifter + Kommunalskatt) - Netto moms
           </p>
         </div>

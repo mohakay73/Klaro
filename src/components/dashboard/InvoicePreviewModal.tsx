@@ -241,26 +241,26 @@ export function InvoicePreviewModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-      <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-4xl w-full max-h-[95vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden my-0 sm:my-auto animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-stone-900/60 backdrop-blur-xs animate-in fade-in overflow-y-auto">
+      <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-4xl w-full max-h-[95vh] flex flex-col shadow-2xl border border-[#e7e2d7] overflow-hidden my-0 sm:my-auto animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
         
         {/* Mobile Pull Handle */}
-        <div className="w-12 h-1.5 rounded-full bg-zinc-200 mx-auto mt-2 -mb-1 sm:hidden" />
+        <div className="w-12 h-1.5 rounded-full bg-stone-200 mx-auto mt-2 -mb-1 sm:hidden" />
 
         {/* Top Control Bar */}
-        <div className="p-4 sm:px-6 border-b border-zinc-200 bg-zinc-50/90 flex items-center justify-between gap-3 shrink-0">
+        <div className="p-4 sm:px-6 border-b border-[#e7e2d7] bg-[#f7f4ee] flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#0d3829] flex items-center justify-center text-white font-bold text-xs shadow-xs">
+            <div className="w-8 h-8 rounded-lg bg-[#1c1917] flex items-center justify-center text-[#f59e0b] font-bold text-xs shadow-xs border border-[#e7e2d7]">
               PDF
             </div>
             <div>
-              <h3 className="font-bold text-sm text-zinc-950 flex items-center gap-2">
+              <h3 className="font-bold text-sm text-[#1c1917] flex items-center gap-2">
                 <span>{invoiceNum}</span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-[#15803d] border border-emerald-200 font-semibold">
                   {invoice.status === 'paid' ? 'Betald' : 'Fakturerad'}
                 </span>
               </h3>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-stone-500">
                 Svensk standardfaktura enligt Mervärdesskattelagen & Bokföringslagen
               </p>
             </div>
@@ -269,16 +269,16 @@ export function InvoicePreviewModal({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0d3829] hover:bg-[#07251a] text-white text-xs font-bold transition shadow-xs"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-bold transition shadow-xs cursor-pointer"
               title="Ladda ner som PDF eller skriv ut"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-4 h-4 text-[#f59e0b]" />
               <span>Ladda ner PDF / Skriv ut</span>
             </button>
             
             <button
               onClick={onClose}
-              className="p-2 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-200/60 rounded-lg transition"
+              className="p-2 text-stone-400 hover:text-stone-700 hover:bg-[#eee8dc] rounded-lg transition cursor-pointer"
               title="Stäng"
             >
               <X className="w-5 h-5" />
@@ -287,24 +287,24 @@ export function InvoicePreviewModal({
         </div>
 
         {/* Invoice Printable Viewport */}
-        <div className="flex-1 overflow-y-auto p-6 sm:p-10 bg-[#f8f7f4] flex justify-center">
+        <div className="flex-1 overflow-y-auto p-6 sm:p-10 bg-[#f7f4ee] flex justify-center">
           
           {/* Printable White A4 Sheet */}
           <div 
             ref={invoiceRef}
-            className="w-full max-w-2xl bg-white rounded-xl p-8 sm:p-12 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-zinc-200 text-zinc-900 font-sans space-y-8"
+            className="w-full max-w-2xl bg-white rounded-xl p-8 sm:p-12 shadow-[0_4px_24px_rgba(28,25,23,0.06)] border border-[#e7e2d7] text-[#1c1917] font-sans space-y-8"
           >
             {/* Header: Company & Faktura Title */}
-            <div className="flex justify-between items-start border-b-2 border-zinc-200 pb-6">
+            <div className="flex justify-between items-start border-b-2 border-[#e7e2d7] pb-6">
               <div>
-                <h1 className="text-2xl font-black text-[#0d3829] tracking-tight">
+                <h1 className="text-2xl font-black text-[#1c1917] tracking-tight">
                   {companyName}
                 </h1>
-                <div className="text-xs text-zinc-600 mt-1.5 space-y-0.5 font-sans">
-                  <p>Organisationsnummer: <strong className="font-mono text-zinc-900">{cleanOrgNr}</strong></p>
-                  <p>Momsregistreringsnummer: <strong className="font-mono text-zinc-900">{vatNumber}</strong></p>
+                <div className="text-xs text-stone-600 mt-1.5 space-y-0.5 font-sans">
+                  <p>Organisationsnummer: <strong className="font-mono text-[#1c1917]">{cleanOrgNr}</strong></p>
+                  <p>Momsregistreringsnummer: <strong className="font-mono text-[#1c1917]">{vatNumber}</strong></p>
                   <div className="pt-1">
-                    <span className="inline-block bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded text-[11px] font-bold">
+                    <span className="inline-block bg-emerald-50 text-[#15803d] border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-bold">
                       ✔ Innehar F-skattsedel
                     </span>
                   </div>
@@ -312,13 +312,13 @@ export function InvoicePreviewModal({
               </div>
 
               <div className="text-right">
-                <span className="text-3xl font-black tracking-wider text-zinc-950 block">
+                <span className="text-3xl font-black tracking-wider text-[#1c1917] block">
                   FAKTURA
                 </span>
-                <div className="text-xs text-zinc-600 mt-2 font-mono space-y-1">
-                  <p>Fakturanr: <strong className="text-zinc-950">{invoiceNum}</strong></p>
+                <div className="text-xs text-stone-600 mt-2 font-mono space-y-1">
+                  <p>Fakturanr: <strong className="text-[#1c1917]">{invoiceNum}</strong></p>
                   <p>Fakturadatum: <strong>{formatDate(invoice.invoice_date)}</strong></p>
-                  <p>Förfallodatum: <strong className="text-zinc-950 font-bold">{dueDate}</strong></p>
+                  <p>Förfallodatum: <strong className="text-[#1c1917] font-bold">{dueDate}</strong></p>
                   <p>Betalningsvillkor: <strong>30 dagar netto</strong></p>
                 </div>
               </div>
@@ -326,32 +326,32 @@ export function InvoicePreviewModal({
 
             {/* Customer & Reference Info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
-              <div className="bg-zinc-50/80 p-4 rounded-xl border border-zinc-200/80 space-y-1">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 block">
+              <div className="bg-[#f7f4ee] p-4 rounded-xl border border-[#e7e2d7] space-y-1">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-stone-400 block">
                   Faktureras till:
                 </span>
-                <div className="text-base font-bold text-zinc-950">
+                <div className="text-base font-bold text-[#1c1917]">
                   {invoice.customer_name}
                 </div>
-                <div className="text-zinc-600">
+                <div className="text-stone-600">
                   Regeringsgatan 19, 111 53 Stockholm
                 </div>
-                <div className="text-zinc-500 font-mono pt-1">
+                <div className="text-stone-500 font-mono pt-1">
                   Org.nr: 556703-7485
                 </div>
               </div>
 
-              <div className="bg-zinc-50/80 p-4 rounded-xl border border-zinc-200/80 space-y-1.5 text-zinc-700">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 block">
+              <div className="bg-[#f7f4ee] p-4 rounded-xl border border-[#e7e2d7] space-y-1.5 text-stone-700">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-stone-400 block">
                   Referenser & Betalning:
                 </span>
                 <div className="flex justify-between">
                   <span>Vår referens:</span>
-                  <strong className="text-zinc-950">{companyName}</strong>
+                  <strong className="text-[#1c1917]">{companyName}</strong>
                 </div>
                 <div className="flex justify-between">
                   <span>Er referens:</span>
-                  <strong className="text-zinc-950">Ekonomiavdelningen</strong>
+                  <strong className="text-[#1c1917]">Ekonomiavdelningen</strong>
                 </div>
                 <div className="flex justify-between">
                   <span>Dröjsmålsränta:</span>
@@ -361,9 +361,9 @@ export function InvoicePreviewModal({
             </div>
 
             {/* Line Items Table */}
-            <div className="border border-zinc-200 rounded-xl overflow-hidden shadow-2xs">
+            <div className="border border-[#e7e2d7] rounded-xl overflow-hidden shadow-2xs">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-100/80 text-zinc-700 font-bold border-b border-zinc-200">
+                <thead className="bg-[#f7f4ee] text-stone-700 font-bold border-b border-[#e7e2d7]">
                   <tr>
                     <th className="py-3 px-4">Beskrivning av tjänst / vara</th>
                     <th className="py-3 px-4 text-center">Antal</th>
@@ -372,9 +372,9 @@ export function InvoicePreviewModal({
                     <th className="py-3 px-4 text-right">Belopp (exkl. moms)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200/80">
+                <tbody className="divide-y divide-[#e7e2d7]">
                   <tr>
-                    <td className="py-3.5 px-4 font-semibold text-zinc-900">
+                    <td className="py-3.5 px-4 font-semibold text-[#1c1917]">
                       Konsulttjänster och digital rådgivning (Period {formatDate(invoice.invoice_date)})
                     </td>
                     <td className="py-3.5 px-4 text-center font-mono">1</td>
@@ -391,50 +391,50 @@ export function InvoicePreviewModal({
             {/* Tax Breakdown & Total Due */}
             <div className="flex justify-end">
               <div className="w-80 space-y-2 text-xs font-mono">
-                <div className="flex justify-between text-zinc-600">
+                <div className="flex justify-between text-stone-600">
                   <span className="font-sans">Nettobelopp exkl. moms:</span>
-                  <span className="tabular-nums font-semibold">{formatSEK(invoice.subtotal_amount)}</span>
+                  <span className="tabular-nums font-semibold text-[#1c1917]">{formatSEK(invoice.subtotal_amount)}</span>
                 </div>
-                <div className="flex justify-between text-zinc-600">
+                <div className="flex justify-between text-stone-600">
                   <span className="font-sans">Mervärdesskatt ({invoice.vat_rate}%):</span>
-                  <span className="tabular-nums font-semibold">{formatSEK(invoice.vat_amount)}</span>
+                  <span className="tabular-nums font-semibold text-[#1c1917]">{formatSEK(invoice.vat_amount)}</span>
                 </div>
-                <div className="border-t-2 border-zinc-950 pt-2.5 flex justify-between text-base font-black text-zinc-950">
+                <div className="border-t-2 border-[#1c1917] pt-2.5 flex justify-between text-base font-black text-[#1c1917]">
                   <span className="font-sans font-bold">ATT BETALA (SEK):</span>
-                  <span className="tabular-nums font-mono text-[#0d3829]">{formatSEK(invoice.total_amount)}</span>
+                  <span className="tabular-nums font-mono text-[#1c1917]">{formatSEK(invoice.total_amount)}</span>
                 </div>
               </div>
             </div>
 
             {/* Swedish Payment Footer: Bankgiro, Swish, OCR */}
-            <div className="border-t-2 border-zinc-200 pt-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs text-zinc-600 bg-zinc-50/60 p-5 rounded-xl border border-zinc-200/80">
+            <div className="border-t-2 border-[#e7e2d7] pt-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs text-stone-600 bg-[#f7f4ee] p-5 rounded-xl border border-[#e7e2d7]">
               <div className="space-y-1">
-                <span className="font-bold text-zinc-900 block uppercase tracking-wider text-[10px]">
+                <span className="font-bold text-[#1c1917] block uppercase tracking-wider text-[10px]">
                   Bankgiro
                 </span>
-                <span className="font-mono text-sm font-bold text-zinc-950 block">5050-1055</span>
-                <span className="text-[11px] text-zinc-500">Mottagare: {companyName}</span>
+                <span className="font-mono text-sm font-bold text-[#1c1917] block">5050-1055</span>
+                <span className="text-[11px] text-stone-500">Mottagare: {companyName}</span>
               </div>
 
               <div className="space-y-1">
-                <span className="font-bold text-zinc-900 block uppercase tracking-wider text-[10px]">
+                <span className="font-bold text-[#1c1917] block uppercase tracking-wider text-[10px]">
                   Betalningsreferens (OCR)
                 </span>
-                <span className="font-mono text-sm font-bold text-zinc-950 block">{invoiceNum}</span>
-                <span className="text-[11px] text-zinc-500">Ange vid bankinbetalning</span>
+                <span className="font-mono text-sm font-bold text-[#1c1917] block">{invoiceNum}</span>
+                <span className="text-[11px] text-stone-500">Ange vid bankinbetalning</span>
               </div>
 
               <div className="space-y-1">
-                <span className="font-bold text-zinc-900 block uppercase tracking-wider text-[10px]">
+                <span className="font-bold text-[#1c1917] block uppercase tracking-wider text-[10px]">
                   Swish Företag
                 </span>
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded bg-emerald-600 flex items-center justify-center text-white font-bold text-[10px]">
+                  <div className="w-5 h-5 rounded bg-[#15803d] flex items-center justify-center text-white font-bold text-[10px]">
                     S
                   </div>
-                  <span className="font-mono font-bold text-zinc-900">123 456 78 90</span>
+                  <span className="font-mono font-bold text-[#1c1917]">123 456 78 90</span>
                 </div>
-                <span className="text-[11px] text-zinc-500">Scanna i Swish-appen</span>
+                <span className="text-[11px] text-stone-500">Scanna i Swish-appen</span>
               </div>
             </div>
 

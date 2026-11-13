@@ -117,7 +117,7 @@ export function Sidebar({
 
       {/* Main Sidebar Shell */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-white border-r border-zinc-200/90 flex flex-col justify-between transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-white border-r border-[#e7e2d7] flex flex-col justify-between transition-transform duration-200 ease-in-out lg:translate-x-0 ${
           isMobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
       >
@@ -131,11 +131,11 @@ export function Sidebar({
               className="flex items-center gap-2.5 text-left group cursor-pointer"
               title="Visa publik startsida & kalkylator"
             >
-              <div className="h-8 w-8 rounded-lg bg-[#0d3829] flex items-center justify-center text-white font-extrabold text-sm shadow-xs tracking-tight group-hover:scale-105 transition-transform">
+              <div className="h-8 w-8 rounded-lg bg-[#1c1917] flex items-center justify-center text-[#d97706] font-black text-sm shadow-xs tracking-tight group-hover:scale-105 transition-transform">
                 K
               </div>
               <div>
-                <span className="font-black text-xl tracking-tight text-zinc-950 block leading-tight group-hover:text-[#0d3829] transition-colors">
+                <span className="font-bold text-xl tracking-tight text-[#1c1917] block leading-tight group-hover:text-[#d97706] transition-colors">
                   Klaro
                 </span>
               </div>
@@ -143,37 +143,37 @@ export function Sidebar({
 
             <button
               onClick={onCloseMobile}
-              className="lg:hidden p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition"
+              className="lg:hidden p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition"
               title="Stäng meny"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Company Switcher Pill (Mockup Style with initial avatar and F-skatt badge) */}
+          {/* Company Switcher Pill */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsCompanyDropdownOpen(!isCompanyDropdownOpen)}
-              className="w-full flex items-center justify-between p-2.5 rounded-xl border border-zinc-200/80 bg-zinc-50/70 hover:bg-zinc-100 hover:border-zinc-300 text-left transition group shadow-2xs"
+              className="w-full flex items-center justify-between p-2.5 rounded-xl border border-[#e7e2d7] bg-[#f7f4ee]/80 hover:bg-[#f7f4ee] hover:border-stone-400 text-left transition group shadow-2xs"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-800 font-bold text-xs shrink-0 shadow-2xs">
+                <div className="w-8 h-8 rounded-full bg-white border border-[#e7e2d7] flex items-center justify-center text-[#1c1917] font-bold text-xs shrink-0 shadow-2xs">
                   M
                 </div>
                 <div className="min-w-0">
-                  <div className="text-sm font-bold text-zinc-900 truncate">
+                  <div className="text-sm font-bold text-[#1c1917] truncate">
                     {companyName}
                   </div>
-                  <div className="text-xs text-zinc-500 font-mono flex items-center gap-1.5">
-                    <span className="inline-flex items-center gap-0.5 text-emerald-800 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 text-[10px]">
-                      <Check className="w-2.5 h-2.5 text-emerald-700" />
+                  <div className="text-xs text-stone-500 font-mono flex items-center gap-1.5">
+                    <span className="inline-flex items-center gap-0.5 text-[#15803d] font-semibold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 text-[10px]">
+                      <Check className="w-2.5 h-2.5 text-[#15803d]" />
                       F-skatt
                     </span>
                   </div>
                 </div>
               </div>
               <ChevronDown
-                className={`w-4 h-4 text-zinc-400 group-hover:text-zinc-700 shrink-0 transition-transform duration-200 ${
+                className={`w-4 h-4 text-stone-400 group-hover:text-stone-700 shrink-0 transition-transform duration-200 ${
                   isCompanyDropdownOpen ? 'rotate-180' : ''
                 }`}
               />
@@ -262,16 +262,16 @@ export function Sidebar({
             )}
           </div>
 
-          {/* Primary Action Button (Deep Swedish Pine) */}
+          {/* Primary Action Button (Roasted Espresso) */}
           <button
             onClick={() => {
               onOpenUpload();
               onCloseMobile();
             }}
-            className="w-full flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-[#0d3829] hover:bg-[#07241a] text-white font-bold text-sm transition shadow-xs"
+            className="w-full flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white font-semibold text-sm transition shadow-xs"
           >
-            <Plus className="w-4 h-4" />
-            <span>+ Skanna kvitto</span>
+            <Plus className="w-4 h-4 text-[#f59e0b]" />
+            <span>Tolka kvitto</span>
           </button>
 
           {/* Main Navigation List */}
@@ -285,12 +285,12 @@ export function Sidebar({
                   onClick={() => handleNavClick(item.id)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
                     isActive
-                      ? 'bg-[#f2efe9] text-zinc-950 font-bold border border-zinc-200/80 shadow-2xs'
-                      : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70 border border-transparent'
+                      ? 'bg-[#f7f4ee] text-[#1c1917] font-bold border border-[#e7e2d7] shadow-2xs'
+                      : 'text-stone-600 hover:text-[#1c1917] hover:bg-[#f7f4ee] border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-zinc-950' : 'text-zinc-500'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-[#1c1917]' : 'text-stone-400'}`} />
                     <span>{item.label}</span>
                   </div>
                   {item.badge !== undefined && (
@@ -299,8 +299,8 @@ export function Sidebar({
                         item.isAlert
                           ? 'bg-amber-100 text-amber-900 border border-amber-300'
                           : isActive
-                            ? 'bg-zinc-200/80 text-zinc-800'
-                            : 'bg-zinc-100 text-zinc-600'
+                            ? 'bg-stone-200/80 text-stone-900'
+                            : 'bg-[#f7f4ee] text-stone-600 border border-[#e7e2d7]'
                       }`}
                     >
                       {item.badge}
@@ -312,8 +312,8 @@ export function Sidebar({
           </nav>
         </div>
 
-        {/* Bottom Area: Docked Kivra Digital Post Card (Mockup Style) + Settings */}
-        <div className="p-4 space-y-3 border-t border-zinc-200/80 bg-zinc-50/40">
+        {/* Bottom Area: Docked Kivra Digital Post Card + Settings */}
+        <div className="p-4 space-y-3 border-t border-[#e7e2d7] bg-[#f7f4ee]/50">
           
           {/* Interactive Demo Tour Trigger */}
           {onOpenDemoTour && (
@@ -322,22 +322,22 @@ export function Sidebar({
                 onOpenDemoTour();
                 onCloseMobile();
               }}
-              className="w-full p-2.5 rounded-xl border border-emerald-200/80 bg-emerald-50/60 hover:bg-emerald-50 flex items-center justify-between transition shadow-2xs text-left group cursor-pointer active:scale-95"
+              className="w-full p-2.5 rounded-xl border border-amber-200/80 bg-amber-50/70 hover:bg-amber-100/80 flex items-center justify-between transition shadow-2xs text-left group cursor-pointer active:scale-95"
             >
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-[#0c3123] text-white flex items-center justify-center shrink-0">
+                <div className="w-7 h-7 rounded-lg bg-[#1c1917] text-[#d97706] flex items-center justify-center shrink-0">
                   <Sparkles className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-zinc-900 group-hover:text-emerald-950">
+                  <div className="text-xs font-bold text-[#1c1917] group-hover:text-amber-950">
                     Snabbdemo (60s)
                   </div>
-                  <div className="text-[10px] text-emerald-800 font-medium">
+                  <div className="text-[10px] text-amber-800 font-medium">
                     Interaktiv guidad tur
                   </div>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-4 h-4 text-amber-800 group-hover:translate-x-0.5 transition-transform" />
             </button>
           )}
 
@@ -347,16 +347,16 @@ export function Sidebar({
               onOpenKivra();
               onCloseMobile();
             }}
-            className="w-full p-2.5 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50/90 flex items-center gap-3 transition shadow-xs text-left group"
+            className="w-full p-2.5 rounded-xl border border-[#e7e2d7] bg-white hover:bg-stone-50 flex items-center gap-3 transition shadow-xs text-left group"
           >
             <div className="w-8 h-8 rounded-lg bg-[#5cc971] flex items-center justify-center text-white shrink-0 shadow-xs">
               <Inbox className="w-4 h-4 text-white" />
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-bold text-zinc-900 leading-tight">
+              <div className="text-xs font-bold text-[#1c1917] leading-tight">
                 Kivra
               </div>
-              <div className="text-[11px] text-zinc-500 font-medium">
+              <div className="text-[11px] text-stone-500 font-medium">
                 digital post
               </div>
             </div>
@@ -364,15 +364,15 @@ export function Sidebar({
           </button>
 
           {/* Quick Settings Link */}
-          <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
+          <div className="flex items-center justify-between text-xs text-stone-500 pt-1">
             <button
               onClick={() => {
                 onOpenEmailForwarding();
                 onCloseMobile();
               }}
-              className="hover:text-zinc-900 transition flex items-center gap-1.5"
+              className="hover:text-[#1c1917] transition flex items-center gap-1.5"
             >
-              <Mail className="w-3.5 h-3.5 text-zinc-400" />
+              <Mail className="w-3.5 h-3.5 text-stone-400" />
               <span>E-post</span>
             </button>
             <span>•</span>
@@ -381,9 +381,9 @@ export function Sidebar({
                 onOpenSettings();
                 onCloseMobile();
               }}
-              className="hover:text-zinc-900 transition flex items-center gap-1.5"
+              className="hover:text-[#1c1917] transition flex items-center gap-1.5"
             >
-              <Settings className="w-3.5 h-3.5 text-zinc-400" />
+              <Settings className="w-3.5 h-3.5 text-stone-400" />
               <span>Inställningar</span>
             </button>
             <span>•</span>
@@ -391,10 +391,10 @@ export function Sidebar({
               onClick={() => {
                 handleNavClick('landing');
               }}
-              className="hover:text-zinc-900 transition flex items-center gap-1.5"
+              className="hover:text-[#1c1917] transition flex items-center gap-1.5"
               title="Startsida & Kalkylator"
             >
-              <Globe className="w-3.5 h-3.5 text-zinc-400" />
+              <Globe className="w-3.5 h-3.5 text-stone-400" />
               <span>Om Klaro</span>
             </button>
           </div>

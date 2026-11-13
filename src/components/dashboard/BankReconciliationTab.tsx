@@ -204,26 +204,26 @@ export function BankReconciliationTab({
     <div className="space-y-6">
       
       {/* 1. Bank Account Header Card */}
-      <div className="bg-white rounded-2xl border border-zinc-200/80 p-5 shadow-xs">
+      <div className="bg-white rounded-2xl border border-[#e7e2d7] p-5 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           
           <div className="flex items-start sm:items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[#0c3123]/5 border border-[#0c3123]/15 flex items-center justify-center text-[#0c3123] shrink-0">
-              <Landmark className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-xl bg-[#1c1917]/5 border border-[#1c1917]/15 flex items-center justify-center text-[#1c1917] shrink-0">
+              <Landmark className="w-6 h-6 text-[#d97706]" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-bold text-base text-zinc-900 tracking-tight">{accountName}</h3>
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                <h3 className="font-bold text-base text-[#1c1917] tracking-tight">{accountName}</h3>
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#15803d] border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#15803d] animate-pulse"></span>
                   PSD2 Live Feed
                 </span>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600 border border-zinc-200">
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-[#f7f4ee] text-stone-600 border border-[#e7e2d7]">
                   Handelsbanken API
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 font-mono mt-1">
-                IBAN: {iban} • Bokfört banksaldo: <span className="font-bold text-zinc-900 tabular-nums">{formatSEK(balance)}</span>
+              <p className="text-xs text-stone-500 font-mono mt-1">
+                IBAN: {iban} • Bokfört banksaldo: <span className="font-bold text-[#1c1917] tabular-nums">{formatSEK(balance)}</span>
               </p>
             </div>
           </div>
@@ -232,16 +232,16 @@ export function BankReconciliationTab({
             <button
               onClick={handleSync}
               disabled={isSyncing}
-              className="px-3.5 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-semibold flex items-center gap-2 transition shadow-xs cursor-pointer disabled:opacity-50"
+              className="px-3.5 py-2 rounded-xl border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] text-stone-700 text-xs font-semibold flex items-center gap-2 transition shadow-xs cursor-pointer disabled:opacity-50"
               title="Hämta senaste transaktioner via PSD2 Open Banking"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-zinc-500 ${isSyncing ? 'animate-spin text-[#0c3123]' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-stone-500 ${isSyncing ? 'animate-spin text-[#d97706]' : ''}`} />
               <span>{isSyncing ? 'Synkroniserar...' : 'Synka bankfeed'}</span>
             </button>
 
             <button
               onClick={onOpenConnectBank}
-              className="px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-zinc-700 text-xs font-semibold transition shadow-xs cursor-pointer"
+              className="px-3.5 py-2 rounded-xl border border-[#e7e2d7] bg-[#f7f4ee] hover:bg-[#eee8dc] text-stone-700 text-xs font-semibold transition shadow-xs cursor-pointer"
             >
               Byt bankkonto
             </button>

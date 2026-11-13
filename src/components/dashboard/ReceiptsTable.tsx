@@ -89,14 +89,14 @@ export function ReceiptsTable({
   };
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-xs space-y-0">
+    <div className="rounded-xl border border-[#e7e2d7] bg-white overflow-hidden shadow-xs space-y-0">
       
       {/* Table Header & Controls Bar */}
-      <div className="p-5 border-b border-zinc-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-5 border-b border-[#e7e2d7] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <ReceiptIcon className="w-5 h-5 text-emerald-700" />
-          <h3 className="text-base font-bold text-zinc-950">Utgifter & Inköpskvitton</h3>
-          <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-700 font-mono font-semibold border border-zinc-200">
+          <ReceiptIcon className="w-5 h-5 text-[#d97706]" />
+          <h3 className="text-base font-bold text-[#1c1917]">Utgifter & Inköpskvitton</h3>
+          <span className="text-xs px-2.5 py-1 rounded-full bg-[#f7f4ee] text-stone-700 font-mono font-semibold border border-[#e7e2d7]">
             {filteredReceipts.length} av {receipts.length}
           </span>
         </div>
@@ -106,18 +106,18 @@ export function ReceiptsTable({
           
           {/* Search Box */}
           <div className="relative">
-            <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Sök leverantör, kategori..."
-              className="pl-9 pr-7 py-2 rounded-lg border border-zinc-200 bg-zinc-50/70 hover:bg-white focus:bg-white text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 transition text-sm w-44 sm:w-56"
+              className="pl-9 pr-7 py-2 rounded-lg border border-[#e7e2d7] bg-[#f7f4ee]/70 hover:bg-white focus:bg-white text-[#1c1917] placeholder-stone-400 focus:outline-none focus:border-stone-400 transition text-sm w-44 sm:w-56"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-2.5 text-zinc-400 hover:text-zinc-700"
+                className="absolute right-2.5 top-2.5 text-stone-400 hover:text-stone-700"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -128,7 +128,7 @@ export function ReceiptsTable({
           <select
             value={vatFilter}
             onChange={(e) => setVatFilter(e.target.value)}
-            className="py-2 px-3 rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-800 font-medium focus:outline-none focus:bg-white focus:border-zinc-400 text-sm shadow-2xs cursor-pointer"
+            className="py-2 px-3 rounded-lg border border-[#e7e2d7] bg-[#f7f4ee] text-[#1c1917] font-medium focus:outline-none focus:bg-white focus:border-stone-400 text-sm shadow-2xs cursor-pointer"
           >
             <option value="ALL">Alla momssatser</option>
             <option value="25">25% (Standard)</option>
@@ -141,7 +141,7 @@ export function ReceiptsTable({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="py-2 px-3 rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-800 font-medium focus:outline-none focus:bg-white focus:border-zinc-400 text-sm shadow-2xs cursor-pointer"
+            className="py-2 px-3 rounded-lg border border-[#e7e2d7] bg-[#f7f4ee] text-[#1c1917] font-medium focus:outline-none focus:bg-white focus:border-stone-400 text-sm shadow-2xs cursor-pointer"
           >
             <option value="ALL">Alla statusar</option>
             <option value="verified">Godkända verifikationer</option>
@@ -156,7 +156,7 @@ export function ReceiptsTable({
                 setVatFilter('ALL');
                 setStatusFilter('ALL');
               }}
-              className="inline-flex items-center gap-1 px-2.5 py-2 rounded-lg text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100 transition text-sm font-medium"
+              className="inline-flex items-center gap-1 px-2.5 py-2 rounded-lg text-stone-600 hover:text-[#1c1917] hover:bg-[#f7f4ee] transition text-sm font-medium"
               title="Rensa filter"
             >
               <X className="w-4 h-4" />
@@ -168,10 +168,10 @@ export function ReceiptsTable({
           {onExportSIE && (
             <button
               onClick={onExportSIE}
-              className="px-3.5 py-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 text-sm font-semibold flex items-center gap-2 transition shadow-2xs"
+              className="px-3.5 py-2 rounded-lg border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] text-[#1c1917] text-sm font-semibold flex items-center gap-2 transition shadow-2xs cursor-pointer"
               title="Ladda ner SIE-4 fil för Fortnox, Visma eller Bokio"
             >
-              <Download className="w-4 h-4 text-zinc-500" />
+              <Download className="w-4 h-4 text-stone-500" />
               <span>Exportera SIE-4</span>
             </button>
           )}
@@ -322,7 +322,7 @@ export function ReceiptsTable({
           {/* Desktop Table View (>= 768px) */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-zinc-50/80 text-zinc-600 border-b border-zinc-200 text-xs uppercase tracking-wider font-bold">
+              <thead className="bg-[#f7f4ee]/80 text-stone-600 border-b border-[#e7e2d7] text-xs uppercase tracking-wider font-bold">
                 <tr>
                   <th className="py-3 px-4 font-semibold">Datum</th>
                   <th className="py-3 px-4 font-semibold">Leverantör & BAS-konto</th>
@@ -334,18 +334,18 @@ export function ReceiptsTable({
                   <th className="py-3 px-4 font-semibold text-right">Åtgärd</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-200/70">
+              <tbody className="divide-y divide-[#e7e2d7]/70">
                 {filteredReceipts.map((rec) => {
                   const isAmbiguous = rec.status === 'parsed' && (rec.vat_rate === 12 || rec.total_amount > 2000);
 
                   return (
-                    <tr key={rec.id} className="hover:bg-zinc-50/80 transition">
-                      <td className="py-3.5 px-4 whitespace-nowrap text-zinc-600 font-mono text-xs">
+                    <tr key={rec.id} className="hover:bg-[#f7f4ee]/50 transition">
+                      <td className="py-3.5 px-4 whitespace-nowrap text-stone-600 font-mono text-xs">
                         {formatDate(rec.invoice_date)}
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <div className="font-bold text-zinc-950 flex items-center gap-2 text-sm">
+                        <div className="font-bold text-[#1c1917] flex items-center gap-2 text-sm">
                           <span>{rec.vendor_name}</span>
                           {isAmbiguous && (
                             <span className="text-xs px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200 font-semibold flex items-center gap-1">
@@ -355,9 +355,9 @@ export function ReceiptsTable({
                           )}
                         </div>
 
-                        <div className="text-xs text-zinc-500 flex items-center gap-2 mt-1">
+                        <div className="text-xs text-stone-500 flex items-center gap-2 mt-1">
                           <span>{rec.category}</span>
-                          <span className="font-mono text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200 font-semibold">
+                          <span className="font-mono text-stone-700 bg-[#f7f4ee] px-2 py-0.5 rounded border border-[#e7e2d7] font-semibold">
                             BAS {rec.raw_ai_response?.bas_account || '6990'}
                           </span>
                         </div>

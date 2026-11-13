@@ -194,34 +194,34 @@ export function DemoWalkthroughModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-950/50 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-stone-900/60 backdrop-blur-xs animate-in fade-in duration-200">
       
       {/* Modal Dialog Card */}
-      <div className="bg-white border border-zinc-200 rounded-t-3xl sm:rounded-2xl max-w-xl w-full p-5 sm:p-7 shadow-2xl space-y-6 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
+      <div className="bg-white border border-[#e7e2d7] rounded-t-3xl sm:rounded-2xl max-w-xl w-full p-5 sm:p-7 shadow-2xl space-y-6 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
         
         {/* Mobile Pull Handle */}
-        <div className="w-12 h-1.5 rounded-full bg-zinc-200 mx-auto -mt-1 mb-2 sm:hidden" />
+        <div className="w-12 h-1.5 rounded-full bg-stone-200 mx-auto -mt-1 mb-2 sm:hidden" />
 
         {/* Top Header: Step Indicator & Close */}
-        <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
+        <div className="flex items-center justify-between pb-4 border-b border-[#e7e2d7]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#0c3123]/10 border border-[#0c3123]/20 flex items-center justify-center text-[#0c3123] shrink-0">
-              <Sparkles className="w-4 h-4 text-[#0c3123]" />
+            <div className="w-8 h-8 rounded-xl bg-[#1c1917]/5 border border-[#1c1917]/10 flex items-center justify-center text-[#d97706] shrink-0">
+              <Sparkles className="w-4 h-4 text-[#d97706]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-sm text-zinc-900">Guidad Snabbdemo (60s)</h3>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <h3 className="font-bold text-sm text-[#1c1917]">Guidad Snabbdemo (60s)</h3>
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#f7f4ee] text-stone-700 border border-[#e7e2d7]">
                   Steg {currentStep.stepNumber} av {tourSteps.length}
                 </span>
               </div>
-              <p className="text-xs text-zinc-500">Lär dig hur Klaro automatiserar skatt och bokföring</p>
+              <p className="text-xs text-stone-500">Lär dig hur Klaro automatiserar skatt och bokföring</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 flex items-center justify-center transition cursor-pointer"
+            className="w-8 h-8 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-[#f7f4ee] flex items-center justify-center transition cursor-pointer"
             title="Stäng rundtur"
           >
             <X className="w-4 h-4" />
@@ -239,10 +239,10 @@ export function DemoWalkthroughModal({
               }}
               className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                 idx === currentStepIndex
-                  ? 'bg-[#0c3123]'
+                  ? 'bg-[#1c1917]'
                   : idx < currentStepIndex
-                    ? 'bg-emerald-600'
-                    : 'bg-zinc-200 hover:bg-zinc-300'
+                    ? 'bg-[#d97706]'
+                    : 'bg-[#e7e2d7] hover:bg-stone-300'
               }`}
               title={`Hoppa till steg ${step.stepNumber}: ${step.title}`}
             />
@@ -253,30 +253,30 @@ export function DemoWalkthroughModal({
         <div className="space-y-4 animate-in fade-in duration-200">
           
           <div>
-            <span className="inline-block text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200 mb-2">
+            <span className="inline-block text-[11px] font-mono font-bold uppercase tracking-wider text-[#1c1917] bg-[#f7f4ee] px-2.5 py-0.5 rounded border border-[#e7e2d7] mb-2">
               {currentStep.badge}
             </span>
-            <h2 className="text-lg sm:text-xl font-bold text-zinc-950 tracking-tight">
+            <h2 className="text-lg sm:text-xl font-bold text-[#1c1917] tracking-tight">
               {currentStep.title}
             </h2>
-            <p className="text-xs text-zinc-500 font-medium mt-0.5">
+            <p className="text-xs text-stone-500 font-medium mt-0.5">
               {currentStep.subtitle}
             </p>
           </div>
 
-          <p className="text-xs sm:text-sm text-zinc-700 leading-relaxed bg-[#fcfbf9] p-3.5 rounded-xl border border-zinc-200/80">
+          <p className="text-xs sm:text-sm text-stone-700 leading-relaxed bg-[#f7f4ee] p-3.5 rounded-xl border border-[#e7e2d7]">
             {currentStep.description}
           </p>
 
           {/* Key Bullet Points */}
           <div className="space-y-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 block">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block">
               Varför detta är viktigt:
             </span>
-            <div className="space-y-1.5 text-xs text-zinc-700">
+            <div className="space-y-1.5 text-xs text-stone-700">
               {currentStep.keyPoints.map((point, i) => (
                 <div key={i} className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#15803d] shrink-0 mt-0.5" />
                   <span>{point}</span>
                 </div>
               ))}
@@ -289,15 +289,15 @@ export function DemoWalkthroughModal({
               <button
                 type="button"
                 onClick={currentStep.actionHandler}
-                className="w-full flex items-center justify-between p-3 rounded-xl border border-emerald-200/90 bg-emerald-50/60 hover:bg-emerald-50 text-emerald-950 font-bold text-xs transition cursor-pointer group shadow-2xs"
+                className="w-full flex items-center justify-between p-3 rounded-xl border border-[#e7e2d7] bg-[#f7f4ee] hover:bg-[#eee8dc] text-[#1c1917] font-bold text-xs transition cursor-pointer group shadow-2xs"
               >
                 <div className="flex items-center gap-2">
                   {currentStep.actionIcon && (
-                    <currentStep.actionIcon className="w-4 h-4 text-emerald-700" />
+                    <currentStep.actionIcon className="w-4 h-4 text-[#d97706]" />
                   )}
                   <span>{currentStep.actionLabel}</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight className="w-4 h-4 text-[#d97706] group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           )}
@@ -305,17 +305,17 @@ export function DemoWalkthroughModal({
         </div>
 
         {/* Demo Scenario Switcher Strip */}
-        <div className="pt-4 border-t border-zinc-100 space-y-2">
+        <div className="pt-4 border-t border-[#e7e2d7] space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-zinc-700 flex items-center gap-1.5">
-              <SlidersHorizontal className="w-3.5 h-3.5 text-zinc-500" />
+            <span className="font-bold text-stone-700 flex items-center gap-1.5">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-[#d97706]" />
               <span>Byt testsituation:</span>
             </span>
             {onResetDemoData && (
               <button
                 type="button"
                 onClick={onResetDemoData}
-                className="text-xs text-zinc-500 hover:text-zinc-800 underline font-medium cursor-pointer"
+                className="text-xs text-stone-500 hover:text-[#1c1917] underline font-medium cursor-pointer"
               >
                 Återställ demo
               </button>
@@ -328,12 +328,12 @@ export function DemoWalkthroughModal({
               onClick={() => handleSelectScenario('standard_ef')}
               className={`p-2 rounded-xl border text-center transition cursor-pointer ${
                 selectedScenario === 'standard_ef'
-                  ? 'border-[#0c3123] bg-[#0c3123]/5 text-[#0c3123] font-bold shadow-2xs'
-                  : 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50'
+                  ? 'border-[#1c1917] bg-[#1c1917] text-white font-bold shadow-2xs'
+                  : 'border-[#e7e2d7] bg-white text-stone-700 hover:bg-[#f7f4ee]'
               }`}
             >
               <div className="font-semibold truncate">Enskild Firma</div>
-              <div className="text-[10px] text-zinc-400">124k disponibelt</div>
+              <div className={`text-[10px] ${selectedScenario === 'standard_ef' ? 'text-[#f59e0b]' : 'text-stone-400'}`}>124k disponibelt</div>
             </button>
 
             <button
@@ -341,12 +341,12 @@ export function DemoWalkthroughModal({
               onClick={() => handleSelectScenario('new_ab')}
               className={`p-2 rounded-xl border text-center transition cursor-pointer ${
                 selectedScenario === 'new_ab'
-                  ? 'border-[#0c3123] bg-[#0c3123]/5 text-[#0c3123] font-bold shadow-2xs'
-                  : 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50'
+                  ? 'border-[#1c1917] bg-[#1c1917] text-white font-bold shadow-2xs'
+                  : 'border-[#e7e2d7] bg-white text-stone-700 hover:bg-[#f7f4ee]'
               }`}
             >
               <div className="font-semibold truncate">Aktiebolag (AB)</div>
-              <div className="text-[10px] text-zinc-400">Bolagsskatt 20.6%</div>
+              <div className={`text-[10px] ${selectedScenario === 'new_ab' ? 'text-[#f59e0b]' : 'text-stone-400'}`}>Bolagsskatt 20.6%</div>
             </button>
 
             <button
@@ -354,23 +354,23 @@ export function DemoWalkthroughModal({
               onClick={() => handleSelectScenario('all_reconciled')}
               className={`p-2 rounded-xl border text-center transition cursor-pointer ${
                 selectedScenario === 'all_reconciled'
-                  ? 'border-[#0c3123] bg-[#0c3123]/5 text-[#0c3123] font-bold shadow-2xs'
-                  : 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50'
+                  ? 'border-[#1c1917] bg-[#1c1917] text-white font-bold shadow-2xs'
+                  : 'border-[#e7e2d7] bg-white text-stone-700 hover:bg-[#f7f4ee]'
               }`}
             >
               <div className="font-semibold truncate">100% Avstämd</div>
-              <div className="text-[10px] text-zinc-400">0 kr skatterisk</div>
+              <div className={`text-[10px] ${selectedScenario === 'all_reconciled' ? 'text-[#f59e0b]' : 'text-stone-400'}`}>0 kr skatterisk</div>
             </button>
           </div>
         </div>
 
         {/* Modal Navigation Buttons */}
-        <div className="flex items-center justify-between pt-3 border-t border-zinc-100">
+        <div className="flex items-center justify-between pt-3 border-t border-[#e7e2d7]">
           <button
             type="button"
             onClick={handlePrev}
             disabled={currentStepIndex === 0}
-            className="px-3.5 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+            className="px-3.5 py-2 rounded-xl border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] text-stone-700 text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Föregående</span>
@@ -380,7 +380,7 @@ export function DemoWalkthroughModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-2 text-zinc-500 hover:text-zinc-800 text-xs font-semibold cursor-pointer"
+              className="px-3 py-2 text-stone-500 hover:text-[#1c1917] text-xs font-semibold cursor-pointer"
             >
               Avsluta tur
             </button>
@@ -388,10 +388,10 @@ export function DemoWalkthroughModal({
             <button
               type="button"
               onClick={handleNext}
-              className="px-4 py-2 rounded-xl bg-[#0c3123] hover:bg-[#144734] text-white text-xs font-bold flex items-center gap-1.5 transition shadow-xs cursor-pointer active:scale-95"
+              className="px-4 py-2 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-bold flex items-center gap-1.5 transition shadow-xs cursor-pointer active:scale-95"
             >
               <span>{currentStepIndex === tourSteps.length - 1 ? 'Klar!' : 'Nästa steg'}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 text-[#f59e0b]" />
             </button>
           </div>
         </div>

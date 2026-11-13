@@ -118,23 +118,23 @@ export function KivraInboxModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white border border-zinc-200 rounded-xl max-w-2xl w-full p-6 shadow-xl space-y-5 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-in fade-in">
+      <div className="bg-white border border-[#e7e2d7] rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+        <div className="flex items-center justify-between pb-3 border-b border-[#e7e2d7]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700">
-              <Mail className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-lg bg-[#1c1917]/5 border border-[#1c1917]/10 flex items-center justify-center text-[#d97706]">
+              <Mail className="w-4 h-4 text-[#d97706]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-sm text-zinc-900">Kivra Företagsbrevlåda</h3>
-                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 border border-zinc-200">
+                <h3 className="font-bold text-sm text-[#1c1917]">Kivra Företagsbrevlåda</h3>
+                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#f7f4ee] text-stone-700 border border-[#e7e2d7]">
                   Digital Myndighetspost
                 </span>
               </div>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-stone-500">
                 Importera fakturor från svenska leverantörer direkt utan manuell nedladdning
               </p>
             </div>
@@ -144,14 +144,14 @@ export function KivraInboxModal({
             <button
               onClick={handleSync}
               disabled={isSyncing}
-              className="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-md hover:bg-zinc-100 transition"
+              className="p-1.5 text-stone-400 hover:text-stone-700 rounded-md hover:bg-[#f7f4ee] transition cursor-pointer"
               title="Hämta nya brev från Kivra"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-zinc-600' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-[#d97706]' : ''}`} />
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-md hover:bg-zinc-100 transition"
+              className="p-1.5 text-stone-400 hover:text-stone-700 rounded-md hover:bg-[#f7f4ee] transition cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -159,12 +159,12 @@ export function KivraInboxModal({
         </div>
 
         {/* Security badge */}
-        <div className="p-3 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-between text-xs text-zinc-600">
+        <div className="p-3 rounded-xl bg-[#f7f4ee] border border-[#e7e2d7] flex items-center justify-between text-xs text-stone-600">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-zinc-600 shrink-0" />
+            <ShieldCheck className="w-4 h-4 text-[#d97706] shrink-0" />
             <span>Kopplad mot BankID-verifierat företagskonto</span>
           </div>
-          <span className="font-mono text-[11px] text-zinc-500 font-medium">3 nya fakturor</span>
+          <span className="font-mono text-[11px] text-stone-500 font-medium">3 nya fakturor</span>
         </div>
 
         {/* Kivra Feed List */}
@@ -174,44 +174,44 @@ export function KivraInboxModal({
               key={doc.id}
               className={`p-3.5 rounded-xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                 doc.imported
-                  ? 'bg-zinc-50/50 border-zinc-200 opacity-60'
-                  : 'bg-zinc-50 border-zinc-200 hover:border-zinc-300'
+                  ? 'bg-[#f7f4ee]/40 border-[#e7e2d7] opacity-60'
+                  : 'bg-[#f7f4ee] border-[#e7e2d7] hover:border-stone-400'
               }`}
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs text-zinc-900">{doc.sender}</span>
-                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-zinc-700 border border-zinc-200">
+                  <span className="font-bold text-xs text-[#1c1917]">{doc.sender}</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-stone-700 border border-[#e7e2d7]">
                     BAS {doc.basAccount}
                   </span>
                 </div>
-                <p className="text-xs text-zinc-600">{doc.subject}</p>
-                <div className="text-[11px] text-zinc-500 font-mono">
+                <p className="text-xs text-stone-600">{doc.subject}</p>
+                <div className="text-[11px] text-stone-500 font-mono">
                   Mottaget: {formatDate(doc.date)} • Momssats: {doc.vatRate}%
                 </div>
               </div>
 
               <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
                 <div className="text-right">
-                  <div className="text-sm font-bold font-mono text-zinc-950 tabular-nums">
+                  <div className="text-sm font-bold font-mono text-[#1c1917] tabular-nums">
                     {formatSEK(doc.amount)}
                   </div>
-                  <span className="text-[10px] text-zinc-500 font-mono block tabular-nums">
+                  <span className="text-[10px] text-stone-500 font-mono block tabular-nums">
                     Moms: {formatSEK(doc.vatRate > 0 ? doc.amount - doc.amount / (1 + doc.vatRate / 100) : 0)}
                   </span>
                 </div>
 
                 {doc.imported ? (
-                  <span className="px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 border border-zinc-200 text-xs font-semibold flex items-center gap-1">
-                    <Check className="w-3.5 h-3.5" />
+                  <span className="px-3 py-1.5 rounded-xl bg-white text-stone-600 border border-[#e7e2d7] text-xs font-semibold flex items-center gap-1">
+                    <Check className="w-3.5 h-3.5 text-[#15803d]" />
                     <span>Inläst</span>
                   </span>
                 ) : (
                   <button
                     onClick={() => handleImport(doc)}
-                    className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-xs"
+                    className="px-3 py-1.5 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
                   >
-                    <Plus className="w-3.5 h-3.5" />
+                    <Plus className="w-3.5 h-3.5 text-[#f59e0b]" />
                     <span>Importera</span>
                   </button>
                 )}
@@ -221,10 +221,10 @@ export function KivraInboxModal({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end pt-2 border-t border-zinc-100">
+        <div className="flex justify-end pt-2 border-t border-[#e7e2d7]">
           <button
             onClick={onClose}
-            className="px-3.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold transition border border-zinc-200"
+            className="px-3.5 py-1.5 rounded-xl bg-[#f7f4ee] hover:bg-[#eee8dc] text-stone-800 text-xs font-semibold transition border border-[#e7e2d7] cursor-pointer"
           >
             Stäng
           </button>

@@ -28,8 +28,8 @@
 }
 
 body {
-  color: #18181b;
-  background: #f8f7f4;
+  color: #1c1917;
+  background: #f7f4ee;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   letter-spacing: -0.011em;
   -webkit-font-smoothing: antialiased;
@@ -65,11 +65,11 @@ html, body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d4d4d8;
+  background: #e7e2d7;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1aa;
+  background: #d4cebe;
 }
 
 /* Designer Micro-Interactions & Animation Keyframes */
