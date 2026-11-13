@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseReceiptWithAI } from '@/lib/ai-parser';
-import { createClient } from '@/lib/supabase/server';
+import { insertReceiptIntoNeon, getOrCreateNeonProfile, DEFAULT_USER_ID } from '@/lib/neon';
 
 /**
  * Resend Inbound Email Webhook Handler
  * Receives forwarded receipt emails, runs Swedish AI tax parsing,
- * and saves into Supabase public.receipts table.
+ * and saves into Neon PostgreSQL receipts table.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -46,40 +46,35 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Attempt to store in Supabase
-    try {
-      const supabase = await createClient();
+    // Attempt to store in Neon PostgreSQL
+    if (process.env.DATABASE_URL) {
+      try {
+        const profile = await getOrCreateNeonProfile(fromAddress);
+        const userId = profile?.id || DEFAULT_USER_ID;
 
-      // Look up profile by email address or use default
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', fromAddress)
-        .maybeSingle();
-
-      const userId = profile?.id || '00000000-0000-0000-0000-000000000001';
-
-      await supabase.from('receipts').insert({
-        user_id: userId,
-        original_file_url: originalFilename || `email://${subject}`,
-        source_type: 'email_forward',
-        vendor_name: parsedData.vendor_name,
-        invoice_date: parsedData.invoice_date,
-        currency: parsedData.currency || 'SEK',
-        total_amount: parsedData.total_amount,
-        vat_amount: parsedData.vat_amount,
-        vat_rate: parsedData.vat_rate,
-        category: parsedData.category,
-        raw_ai_response: {
-          ...parsedData,
-          source_email_from: fromAddress,
-          source_email_subject: subject,
-          received_via: 'resend_webhook',
-        },
-        status: 'parsed',
-      });
-    } catch (dbErr) {
-      console.warn('Webhook received but Supabase save skipped (offline/dev):', dbErr);
+        await insertReceiptIntoNeon({
+          user_id: userId,
+          original_file_url: originalFilename || `email://${subject}`,
+          source_type: 'email_forward',
+          vendor_name: parsedData.vendor_name,
+          invoice_date: parsedData.invoice_date,
+          currency: parsedData.currency || 'SEK',
+          total_amount: parsedData.total_amount,
+          vat_amount: parsedData.vat_amount,
+          vat_rate: parsedData.vat_rate,
+          category: parsedData.category,
+          bas_account: parsedData.bas_account || null,
+          raw_ai_response: {
+            ...parsedData,
+            source_email_from: fromAddress,
+            source_email_subject: subject,
+            received_via: 'resend_webhook',
+          },
+          status: 'parsed',
+        });
+      } catch (dbErr) {
+        console.warn('Webhook received but Neon database save skipped (offline/dev):', dbErr);
+      }
     }
 
     return NextResponse.json({

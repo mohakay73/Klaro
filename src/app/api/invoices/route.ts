@@ -1,38 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getInvoicesFromNeon, insertInvoiceIntoNeon, DEFAULT_USER_ID } from '@/lib/neon';
 import { INITIAL_INVOICES } from '@/lib/mock-data';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('invoices')
-      .select('*')
-      .order('invoice_date', { ascending: false });
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId') || DEFAULT_USER_ID;
 
-    if (error || !data || data.length === 0) {
-      return NextResponse.json({ invoices: INITIAL_INVOICES });
+    if (process.env.DATABASE_URL) {
+      const invoices = await getInvoicesFromNeon(userId);
+      if (invoices && invoices.length > 0) {
+        return NextResponse.json({ invoices, source: 'neon' });
+      }
     }
 
-    return NextResponse.json({ invoices: data });
-  } catch {
-    return NextResponse.json({ invoices: INITIAL_INVOICES });
+    return NextResponse.json({ invoices: INITIAL_INVOICES, source: 'initial' });
+  } catch (error) {
+    console.error('Error in GET /api/invoices:', error);
+    return NextResponse.json({ invoices: INITIAL_INVOICES, source: 'fallback' });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { customer_name, total_amount, vat_rate, invoice_date, invoice_number } = body;
+    const { customer_name, total_amount, vat_rate, invoice_date, invoice_number, user_id } = body;
 
     const rate = Number(vat_rate) || 25;
     const total = Number(total_amount) || 0;
     const vat = rate > 0 ? Math.round((total - total / (1 + rate / 100)) * 100) / 100 : 0;
     const subtotal = Math.round((total - vat) * 100) / 100;
 
-    const newInvoice = {
-      id: `inv-${Date.now()}`,
-      user_id: '00000000-0000-0000-0000-000000000001',
+    const invoiceData = {
+      user_id: user_id || DEFAULT_USER_ID,
       customer_name: customer_name || 'Kund AB',
       invoice_number: invoice_number || `FAKTURA-${new Date().getFullYear()}-${Math.floor(Math.random() * 900 + 100)}`,
       invoice_date: invoice_date || new Date().toISOString().split('T')[0],
@@ -40,20 +40,24 @@ export async function POST(req: NextRequest) {
       subtotal_amount: subtotal,
       vat_amount: vat,
       total_amount: total,
-      vat_rate: rate,
-      status: 'paid',
-      created_at: new Date().toISOString(),
+      vat_rate: rate as any,
+      status: 'paid' as const,
     };
 
-    try {
-      const supabase = await createClient();
-      await supabase.from('invoices').insert(newInvoice);
-    } catch {
-      // dev offline fallback
+    let createdInvoice;
+    if (process.env.DATABASE_URL) {
+      createdInvoice = await insertInvoiceIntoNeon(invoiceData);
+    } else {
+      createdInvoice = {
+        id: `inv-${Date.now()}`,
+        ...invoiceData,
+        created_at: new Date().toISOString(),
+      };
     }
 
-    return NextResponse.json({ success: true, invoice: newInvoice });
+    return NextResponse.json({ success: true, invoice: createdInvoice });
   } catch (error: any) {
+    console.error('Error in POST /api/invoices:', error);
     return NextResponse.json({ error: error.message || 'Kunde inte skapa faktura.' }, { status: 500 });
   }
 }

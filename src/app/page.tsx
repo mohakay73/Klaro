@@ -164,39 +164,33 @@ export default function DashboardPage() {
   const handleReceiptAdded = (newReceipt: Receipt) => {
     setReceipts((prev) => [newReceipt, ...prev]);
 
-    if (currentUser?.id) {
-      const supabase = createClient();
-      supabase.from('receipts').insert({
-        ...newReceipt,
-        user_id: currentUser.id,
-      }).then(({ error }) => {
-        if (error) console.error('Error saving receipt to Supabase:', error);
-      });
-    }
+    // If added manually outside file upload, sync to database
+    fetch('/api/receipts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newReceipt),
+    }).catch((err) => console.warn('Receipt sync notice:', err));
   };
 
   const handleInvoiceCreated = (newInvoice: Invoice) => {
     setInvoices((prev) => [newInvoice, ...prev]);
     setPreviewInvoice(newInvoice);
 
-    if (currentUser?.id) {
-      const supabase = createClient();
-      supabase.from('invoices').insert({
-        ...newInvoice,
-        user_id: currentUser.id,
-      }).then(({ error }) => {
-        if (error) console.error('Error saving invoice to Supabase:', error);
-      });
-    }
+    // Persist invoice to database
+    fetch('/api/invoices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newInvoice),
+    }).catch((err) => console.warn('Invoice save notice:', err));
   };
 
   const handleDeleteReceipt = (id: string) => {
     setReceipts((prev) => prev.filter((r) => r.id !== id));
 
-    if (currentUser?.id) {
-      const supabase = createClient();
-      supabase.from('receipts').delete().eq('id', id).eq('user_id', currentUser.id);
-    }
+    // Delete from database
+    fetch(`/api/receipts?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }).catch((err) => console.warn('Receipt delete notice:', err));
   };
 
   const handleVerifyReceipt = (id: string) => {
@@ -204,18 +198,22 @@ export default function DashboardPage() {
       prev.map((r) => (r.id === id ? { ...r, status: 'verified' as const } : r))
     );
 
-    if (currentUser?.id) {
-      const supabase = createClient();
-      supabase.from('receipts').update({ status: 'verified' }).eq('id', id).eq('user_id', currentUser.id);
-    }
+    // Update in database
+    fetch('/api/receipts', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status: 'verified' }),
+    }).catch((err) => console.warn('Receipt verify notice:', err));
   };
 
   const handleUpdateReceiptVatRate = (id: string, newRate: SwedishVatRate) => {
+    const target = receipts.find((r) => r.id === id);
+    const total = target ? target.total_amount : 0;
+    const newVat = newRate > 0 ? Math.round((total - total / (1 + newRate / 100)) * 100) / 100 : 0;
+
     setReceipts((prev) =>
       prev.map((r) => {
         if (r.id !== id) return r;
-        const total = r.total_amount;
-        const newVat = newRate > 0 ? Math.round((total - total / (1 + newRate / 100)) * 100) / 100 : 0;
         return {
           ...r,
           vat_rate: newRate,
@@ -225,19 +223,12 @@ export default function DashboardPage() {
       })
     );
 
-    if (currentUser?.id) {
-      const supabase = createClient();
-      const targetReceipt = receipts.find((r) => r.id === id);
-      if (targetReceipt) {
-        const total = targetReceipt.total_amount;
-        const newVat = newRate > 0 ? Math.round((total - total / (1 + newRate / 100)) * 100) / 100 : 0;
-        supabase.from('receipts').update({
-          vat_rate: newRate,
-          vat_amount: newVat,
-          status: 'verified',
-        }).eq('id', id).eq('user_id', currentUser.id);
-      }
-    }
+    // Update in database
+    fetch('/api/receipts', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, vat_rate: newRate, vat_amount: newVat, status: 'verified' }),
+    }).catch((err) => console.warn('Receipt update notice:', err));
   };
 
   const handleExportSIE = () => {
@@ -357,7 +348,26 @@ export default function DashboardPage() {
       }
     }
 
-    // Initialize Supabase Auth & Session Listener
+    // Load initial data from database (Neon / Postgres)
+    fetch('/api/receipts')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.receipts && data.receipts.length > 0) {
+          setReceipts(data.receipts);
+        }
+      })
+      .catch((err) => console.warn('Note on loading receipts:', err));
+
+    fetch('/api/invoices')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.invoices && data.invoices.length > 0) {
+          setInvoices(data.invoices);
+        }
+      })
+      .catch((err) => console.warn('Note on loading invoices:', err));
+
+    // Initialize Supabase Auth & Session Listener (if enabled)
     try {
       const supabase = createClient();
       supabase.auth.getSession().then(({ data: { session } }) => {
