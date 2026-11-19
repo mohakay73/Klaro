@@ -6,18 +6,23 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId') || DEFAULT_USER_ID;
+    const includeSample = searchParams.get('includeSample') !== 'false';
 
     if (process.env.DATABASE_URL) {
       const invoices = await getInvoicesFromNeon(userId);
       if (invoices && invoices.length > 0) {
-        return NextResponse.json({ invoices, source: 'neon' });
+        return NextResponse.json({ invoices, source: 'neon', isSample: false, actualCount: invoices.length });
       }
     }
 
-    return NextResponse.json({ invoices: INITIAL_INVOICES, source: 'initial' });
+    if (!includeSample) {
+      return NextResponse.json({ invoices: [], source: 'neon', isSample: false, actualCount: 0 });
+    }
+
+    return NextResponse.json({ invoices: INITIAL_INVOICES, source: 'initial', isSample: true, actualCount: 0 });
   } catch (error) {
     console.error('Error in GET /api/invoices:', error);
-    return NextResponse.json({ invoices: INITIAL_INVOICES, source: 'fallback' });
+    return NextResponse.json({ invoices: INITIAL_INVOICES, source: 'fallback', isSample: true, actualCount: 0 });
   }
 }
 

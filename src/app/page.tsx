@@ -27,6 +27,7 @@ import { tinkClient } from '@/lib/open-banking/tink-client';
 import { calculateSwedishTaxBuffer } from '@/lib/tax-calculator';
 import { generateSIE4File, downloadSIE4File } from '@/lib/sie-exporter';
 import { Receipt, Invoice, SwedishVatRate } from '@/types/database';
+import { Sparkles, ShieldCheck, RotateCcw } from 'lucide-react';
 
 export default function DashboardPage() {
   // Active Navigation View (Left Sidebar)
@@ -61,6 +62,8 @@ export default function DashboardPage() {
   // Data collections
   const [invoices, setInvoices] = useState<Invoice[]>(INITIAL_INVOICES);
   const [receipts, setReceipts] = useState<Receipt[]>(INITIAL_RECEIPTS);
+  const [hideSampleData, setHideSampleData] = useState<boolean>(false);
+  const [isSampleDataActive, setIsSampleDataActive] = useState<boolean>(true);
 
   // Modals state
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -109,23 +112,53 @@ export default function DashboardPage() {
   }, [filteredInvoices, filteredReceipts, businessConfig]);
 
   // Fetch user data from Neon via API
-  const loadUserData = async (userId: string) => {
+  const loadUserData = async (userId: string, shouldHideSample?: boolean) => {
+    const hide = shouldHideSample !== undefined ? shouldHideSample : hideSampleData;
     try {
       // 1. Fetch Receipts for this user
-      const recRes = await fetch(`/api/receipts?userId=${encodeURIComponent(userId)}`);
+      const recRes = await fetch(`/api/receipts?userId=${encodeURIComponent(userId)}&includeSample=${!hide}`);
       const recData = await recRes.json();
       if (recData.receipts) {
         setReceipts(recData.receipts);
+        setIsSampleDataActive(Boolean(recData.isSample));
       }
 
       // 2. Fetch Invoices for this user
-      const invRes = await fetch(`/api/invoices?userId=${encodeURIComponent(userId)}`);
+      const invRes = await fetch(`/api/invoices?userId=${encodeURIComponent(userId)}&includeSample=${!hide}`);
       const invData = await invRes.json();
       if (invData.invoices) {
         setInvoices(invData.invoices);
       }
     } catch (err) {
       console.warn('Could not load user data from database:', err);
+    }
+  };
+
+  const handleClearSampleData = () => {
+    setHideSampleData(true);
+    setIsSampleDataActive(false);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('klaro_hide_sample_data', 'true');
+    }
+    if (currentUser) {
+      loadUserData(currentUser.id, true);
+    } else {
+      setReceipts([]);
+      setInvoices([]);
+    }
+  };
+
+  const handleRestoreSampleData = () => {
+    setHideSampleData(false);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('klaro_hide_sample_data');
+    }
+    if (currentUser) {
+      loadUserData(currentUser.id, false);
+    } else {
+      setReceipts(INITIAL_RECEIPTS);
+      setInvoices(INITIAL_INVOICES);
+      setIsSampleDataActive(true);
     }
   };
 
@@ -307,6 +340,7 @@ export default function DashboardPage() {
 
   // Handle URL query parameters and Supabase Auth session
   useEffect(() => {
+    let savedHidePref = false;
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       if (params.get('demo') === 'true') {
@@ -315,22 +349,27 @@ export default function DashboardPage() {
       if (params.get('view') === 'landing') {
         setActiveView('landing');
       }
+      savedHidePref = localStorage.getItem('klaro_hide_sample_data') === 'true';
+      if (savedHidePref) {
+        setHideSampleData(true);
+      }
     }
 
     // Load initial data from database (Neon / Postgres)
-    fetch('/api/receipts')
+    fetch(`/api/receipts?includeSample=${!savedHidePref}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.receipts && data.receipts.length > 0) {
+        if (data.receipts) {
           setReceipts(data.receipts);
+          setIsSampleDataActive(Boolean(data.isSample));
         }
       })
       .catch((err) => console.warn('Note on loading receipts:', err));
 
-    fetch('/api/invoices')
+    fetch(`/api/invoices?includeSample=${!savedHidePref}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.invoices && data.invoices.length > 0) {
+        if (data.invoices) {
           setInvoices(data.invoices);
         }
       })
@@ -342,7 +381,7 @@ export default function DashboardPage() {
       .then((data) => {
         if (data.user) {
           setCurrentUser(data.user);
-          loadUserData(data.user.id);
+          loadUserData(data.user.id, savedHidePref);
           if (data.user.company_name) {
             setBusinessConfig((prev) => ({
               ...prev,
@@ -437,6 +476,53 @@ export default function DashboardPage() {
 
         {/* Dynamic View Body */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-8 pb-28 lg:pb-8">
+          
+          {/* Sample Data Notice Banner (Option 3) */}
+          {isSampleDataActive && !hideSampleData && (
+            <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs animate-in fade-in duration-300">
+              <div className="flex items-start sm:items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0 text-amber-700">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div className="text-sm">
+                  <span className="font-semibold text-amber-900">Du visar exempeldata (starter demo).</span>{' '}
+                  <span className="text-amber-800">
+                    {currentUser ? `Ditt konto (${currentUser.email}) har inga egna verifikat i databasen än.` : 'Logga in för att spara dina egna kvitton & fakturor.'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                <button
+                  onClick={handleClearSampleData}
+                  className="px-3.5 py-1.5 rounded-lg bg-[#1c1917] text-white hover:bg-[#292524] transition text-xs font-semibold cursor-pointer shadow-xs flex items-center gap-1.5"
+                >
+                  <span>Börja från noll (0 kr)</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Clean Slate Confirmation Banner */}
+          {hideSampleData && receipts.length === 0 && invoices.length === 0 && (
+            <div className="mb-6 p-4 rounded-xl bg-stone-50 border border-[#e7e2d7] text-stone-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs animate-in fade-in duration-300">
+              <div className="flex items-start sm:items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-white border border-[#e7e2d7] flex items-center justify-center shrink-0 text-emerald-600">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div className="text-sm">
+                  <span className="font-semibold text-stone-900">Rent konto (0 kr i bokföring).</span>{' '}
+                  <span className="text-stone-600">Ladda upp ditt första kvitto eller skapa en faktura för att komma igång.</span>
+                </div>
+              </div>
+              <button
+                onClick={handleRestoreSampleData}
+                className="px-3.5 py-1.5 rounded-lg border border-[#e7e2d7] bg-white text-stone-700 hover:bg-stone-100 transition text-xs font-semibold cursor-pointer flex items-center gap-1.5"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Visa exempeldata igen</span>
+              </button>
+            </div>
+          )}
           
           {/* View 1: Översikt (Cockpit) */}
           {activeView === 'overview' && (

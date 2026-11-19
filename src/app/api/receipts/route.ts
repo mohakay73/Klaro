@@ -6,18 +6,23 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId') || DEFAULT_USER_ID;
+    const includeSample = searchParams.get('includeSample') !== 'false';
 
     if (process.env.DATABASE_URL) {
       const receipts = await getReceiptsFromNeon(userId);
       if (receipts && receipts.length > 0) {
-        return NextResponse.json({ receipts, source: 'neon' });
+        return NextResponse.json({ receipts, source: 'neon', isSample: false, actualCount: receipts.length });
       }
     }
 
-    return NextResponse.json({ receipts: INITIAL_RECEIPTS, source: 'initial' });
+    if (!includeSample) {
+      return NextResponse.json({ receipts: [], source: 'neon', isSample: false, actualCount: 0 });
+    }
+
+    return NextResponse.json({ receipts: INITIAL_RECEIPTS, source: 'initial', isSample: true, actualCount: 0 });
   } catch (error) {
     console.error('Error in GET /api/receipts:', error);
-    return NextResponse.json({ receipts: INITIAL_RECEIPTS, source: 'fallback' });
+    return NextResponse.json({ receipts: INITIAL_RECEIPTS, source: 'fallback', isSample: true, actualCount: 0 });
   }
 }
 
