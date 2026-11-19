@@ -221,12 +221,22 @@ export function ReceiptsTable({
                       </div>
                       <div className="min-w-0">
                         <h4 className="font-bold text-sm text-zinc-950 truncate">{rec.vendor_name}</h4>
-                        <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-mono mt-0.5">
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-500 font-mono mt-0.5">
                           <span>{formatDate(rec.invoice_date)}</span>
                           <span>•</span>
                           <span className="font-semibold text-zinc-700 bg-zinc-100 px-1.5 py-0.2 rounded border border-zinc-200">
                             BAS {rec.raw_ai_response?.bas_account || '6990'}
                           </span>
+                          {rec.original_file_url && (
+                            <button
+                              onClick={() => setSelectedReceipt(rec)}
+                              className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-700 hover:text-black bg-stone-100 active:bg-stone-200 px-1.5 py-0.5 rounded border border-stone-200 transition cursor-pointer"
+                              title="Visa verifikatsbilaga"
+                            >
+                              <Paperclip className="w-3 h-3 text-[#d97706]" />
+                              <span>Bilaga</span>
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -538,23 +548,47 @@ export function ReceiptsTable({
                   )}
                 </div>
 
-                {/* Live Image / File Preview */}
-                <div className="rounded-lg border border-stone-200 bg-white overflow-hidden max-h-64 flex flex-col items-center justify-center p-2 relative">
-                  <img
-                    src={`/api/receipts/file?id=${selectedReceipt.id}`}
-                    alt={selectedReceipt.vendor_name}
-                    className="max-h-56 max-w-full object-contain rounded"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                  <div className="text-xs text-stone-500 py-2 flex items-center gap-2">
-                    <FileText className="w-3.5 h-3.5 text-stone-400" />
-                    <span className="truncate max-w-[280px]">
-                      {selectedReceipt.original_file_url || 'kvitto.jpg'}
-                    </span>
+                {/* Live Image / PDF / File Preview */}
+                {selectedReceipt.original_file_url ? (
+                  <div className="rounded-lg border border-stone-200 bg-white overflow-hidden flex flex-col items-center justify-center p-2 relative">
+                    {selectedReceipt.original_file_url.toLowerCase().includes('.pdf') ? (
+                      <div className="w-full py-6 flex flex-col items-center justify-center gap-2 bg-stone-50 rounded border border-stone-200">
+                        <FileText className="w-8 h-8 text-rose-600" />
+                        <span className="text-xs font-semibold text-stone-800">
+                          PDF-kvitto bifogat
+                        </span>
+                        <a
+                          href={`/api/receipts/file?id=${selectedReceipt.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 px-3 py-1.5 rounded-lg bg-[#1c1917] hover:bg-black text-white text-xs font-medium inline-flex items-center gap-1.5 shadow-2xs"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          <span>Öppna PDF i fullskärm</span>
+                        </a>
+                      </div>
+                    ) : (
+                      <img
+                        src={`/api/receipts/file?id=${selectedReceipt.id}`}
+                        alt={selectedReceipt.vendor_name}
+                        className="max-h-60 max-w-full object-contain rounded"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <div className="text-xs text-stone-500 py-2 flex items-center gap-2">
+                      <FileText className="w-3.5 h-3.5 text-stone-400" />
+                      <span className="truncate max-w-[280px]">
+                        {selectedReceipt.original_file_url}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="p-4 rounded-lg bg-stone-100 border border-stone-200 text-center text-xs text-stone-500">
+                    Inget bild- eller PDF-underlag sparat för denna post (skapad via e-posttext eller fritext).
+                  </div>
+                )}
 
                 <div className="flex items-start sm:items-center gap-2 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs">
                   <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5 sm:mt-0" />
