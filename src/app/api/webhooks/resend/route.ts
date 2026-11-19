@@ -76,14 +76,15 @@ export async function POST(req: NextRequest) {
 
     // 2. If no attachment parsed, parse email text body (e.g. Uber, SJ, Apple, Adobe invoices)
     if (!parsedData) {
-      // If emailId is provided and textBody is empty, fetch full email body from Resend
+      // If emailId is provided and textBody is empty, fetch full email body from Resend receiving
       if (!textBody && emailId && resendApiKey && !resendApiKey.startsWith('mock-')) {
         try {
-          const emailRes = await fetch(`https://api.resend.com/emails/${emailId}`, {
-            headers: { Authorization: `Bearer ${resendApiKey}` },
-          });
-          const fullEmail = await emailRes.json();
-          textBody = fullEmail.text || fullEmail.html || '';
+          const { Resend } = await import('resend');
+          const resendClient = new Resend(resendApiKey);
+          const { data: inboundEmail } = await resendClient.emails.receiving.get(emailId);
+          if (inboundEmail) {
+            textBody = inboundEmail.text || inboundEmail.html || '';
+          }
         } catch (e) {
           console.warn('Could not fetch full email body from Resend:', e);
         }
