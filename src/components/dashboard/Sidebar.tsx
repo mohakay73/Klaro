@@ -387,7 +387,7 @@ export function Sidebar({
                   {currentUser ? (currentUser.email || 'Inloggad') : 'Logga in'}
                 </div>
                 <div className="text-[11px] text-stone-500 font-medium">
-                  {currentUser ? 'Supabase Auth' : 'Synka data & moln'}
+                  {currentUser ? 'Aktivt molnkonto' : 'Synka data & moln'}
                 </div>
               </div>
               <ChevronRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-[#1c1917] transition shrink-0" />

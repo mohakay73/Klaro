@@ -245,12 +245,12 @@ export function Header({
             </button>
           )}
 
-          {/* User / Supabase Auth Button */}
+          {/* User / Neon Auth Button */}
           {onOpenAuth && (
             <button
               type="button"
               onClick={onOpenAuth}
-              className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition border ${
+              className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition border cursor-pointer ${
                 currentUser
                   ? 'bg-[#f7f4ee] hover:bg-[#eee9df] text-[#1c1917] border-[#e7e2d7]'
                   : 'bg-white hover:bg-stone-50 text-stone-700 hover:text-[#1c1917] border-[#e7e2d7]'
@@ -258,9 +258,12 @@ export function Header({
               title={currentUser ? `Inloggad som ${currentUser.email}` : 'Logga in eller skapa konto'}
             >
               <User className={`w-4 h-4 ${currentUser ? 'text-[#d97706]' : 'text-stone-400'}`} />
-              <span className="hidden sm:inline">
+              <span className="text-xs font-semibold max-w-[120px] truncate">
                 {currentUser ? (currentUser.email?.split('@')[0] || 'Konto') : 'Logga in'}
               </span>
+              {currentUser && (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="Inloggad" />
+              )}
             </button>
           )}
 
