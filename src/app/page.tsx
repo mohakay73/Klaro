@@ -27,7 +27,6 @@ import { tinkClient } from '@/lib/open-banking/tink-client';
 import { calculateSwedishTaxBuffer } from '@/lib/tax-calculator';
 import { generateSIE4File, downloadSIE4File } from '@/lib/sie-exporter';
 import { Receipt, Invoice, SwedishVatRate } from '@/types/database';
-import { createClient } from '@/lib/supabase/client';
 
 export default function DashboardPage() {
   // Active Navigation View (Left Sidebar)
@@ -109,54 +108,24 @@ export default function DashboardPage() {
     });
   }, [filteredInvoices, filteredReceipts, businessConfig]);
 
-  // Fetch user data from Supabase if authenticated
+  // Fetch user data from Neon via API
   const loadUserData = async (userId: string) => {
     try {
-      const supabase = createClient();
-
-      // 1. Fetch Profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (profile) {
-        setBusinessConfig((prev) => ({
-          ...prev,
-          companyName: profile.company_name || prev.companyName,
-          companyType: profile.company_type || prev.companyType,
-          orgNr: profile.org_nr || prev.orgNr,
-          hasFSkatt: profile.has_f_skatt ?? prev.hasFSkatt,
-          vatPeriod: profile.vat_period || prev.vatPeriod,
-          estimatedYearlyRevenue: Number(profile.estimated_yearly_revenue) || prev.estimatedYearlyRevenue,
-          municipalTaxRate: Number(profile.municipal_tax_rate) || prev.municipalTaxRate,
-        }));
+      // 1. Fetch Receipts for this user
+      const recRes = await fetch(`/api/receipts?userId=${encodeURIComponent(userId)}`);
+      const recData = await recRes.json();
+      if (recData.receipts) {
+        setReceipts(recData.receipts);
       }
 
-      // 2. Fetch Receipts
-      const { data: userReceipts } = await supabase
-        .from('receipts')
-        .select('*')
-        .eq('user_id', userId)
-        .order('invoice_date', { ascending: false });
-
-      if (userReceipts && userReceipts.length > 0) {
-        setReceipts(userReceipts);
-      }
-
-      // 3. Fetch Invoices
-      const { data: userInvoices } = await supabase
-        .from('invoices')
-        .select('*')
-        .eq('user_id', userId)
-        .order('invoice_date', { ascending: false });
-
-      if (userInvoices && userInvoices.length > 0) {
-        setInvoices(userInvoices);
+      // 2. Fetch Invoices for this user
+      const invRes = await fetch(`/api/invoices?userId=${encodeURIComponent(userId)}`);
+      const invData = await invRes.json();
+      if (invData.invoices) {
+        setInvoices(invData.invoices);
       }
     } catch (err) {
-      console.warn('Could not load user data from Supabase:', err);
+      console.warn('Could not load user data from database:', err);
     }
   };
 
@@ -367,32 +336,24 @@ export default function DashboardPage() {
       })
       .catch((err) => console.warn('Note on loading invoices:', err));
 
-    // Initialize Supabase Auth & Session Listener (if enabled)
-    try {
-      const supabase = createClient();
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          setCurrentUser(session.user);
-          loadUserData(session.user.id);
+    // Check active Neon user session
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user) {
+          setCurrentUser(data.user);
+          loadUserData(data.user.id);
+          if (data.user.company_name) {
+            setBusinessConfig((prev) => ({
+              ...prev,
+              companyName: data.user.company_name,
+              companyType: data.user.company_type || prev.companyType,
+              orgNr: data.user.org_nr || prev.orgNr,
+            }));
+          }
         }
-      }).catch((err) => {
-        console.warn('Supabase session init note:', err);
-      });
-
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        setCurrentUser(session?.user || null);
-        if (session?.user) {
-          loadUserData(session.user.id);
-        } else {
-          setInvoices(INITIAL_INVOICES);
-          setReceipts(INITIAL_RECEIPTS);
-        }
-      });
-
-      return () => subscription.unsubscribe();
-    } catch (err) {
-      console.warn('Supabase client init note:', err);
-    }
+      })
+      .catch((err) => console.warn('Auth session check note:', err));
   }, []);
 
   // Public Landing Page View Mode
@@ -644,7 +605,23 @@ export default function DashboardPage() {
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
         currentUser={currentUser}
-        onUserChange={setCurrentUser}
+        onUserChange={(user) => {
+          setCurrentUser(user);
+          if (user) {
+            loadUserData(user.id);
+            if (user.company_name) {
+              setBusinessConfig((prev) => ({
+                ...prev,
+                companyName: user.company_name,
+                companyType: user.company_type || prev.companyType,
+                orgNr: user.org_nr || prev.orgNr,
+              }));
+            }
+          } else {
+            setInvoices(INITIAL_INVOICES);
+            setReceipts(INITIAL_RECEIPTS);
+          }
+        }}
       />
 
       {/* Interactive 60s Demo Walkthrough Modal */}

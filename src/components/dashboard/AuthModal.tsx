@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { 
   X, 
   Mail, 
@@ -35,9 +34,7 @@ export function AuthModal({
 
   if (!isOpen) return null;
 
-  const supabase = createClient();
-
-  const handleMagicLink = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
@@ -45,65 +42,32 @@ export function AuthModal({
     setMessage(null);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}` : undefined,
-        },
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, mode }),
       });
 
-      if (error) throw error;
+      const data = await res.json();
 
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Inloggningen misslyckades.');
+      }
+
+      onUserChange(data.user);
       setMessage({
         type: 'success',
-        text: `En inloggningslänk har skickats till ${email}. Kontrollera din inkorg.`,
+        text: `Välkommen! Inloggad som ${data.user.email}`,
       });
+
+      setTimeout(() => {
+        onClose();
+        setMessage(null);
+      }, 900);
     } catch (err: any) {
       setMessage({
         type: 'error',
-        text: err.message || 'Kunde inte skicka inloggningslänk.',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handlePasswordSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) return;
-
-    setIsLoading(true);
-    setMessage(null);
-
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (signUpErr) throw signUpErr;
-        onUserChange(signUpData.user);
-        setMessage({
-          type: 'success',
-          text: 'Konto skapat och inloggad!',
-        });
-      } else {
-        onUserChange(data.user);
-        setMessage({
-          type: 'success',
-          text: 'Inloggad!',
-        });
-      }
-      setTimeout(() => onClose(), 1000);
-    } catch (err: any) {
-      setMessage({
-        type: 'error',
-        text: err.message || 'Ett fel uppstod vid inloggning.',
+        text: err.message || 'Kunde inte logga in. Kontrollera anslutningen.',
       });
     } finally {
       setIsLoading(false);
@@ -113,13 +77,16 @@ export function AuthModal({
   const handleSignOut = async () => {
     setIsLoading(true);
     try {
-      await supabase.auth.signOut();
+      await fetch('/api/auth/logout', { method: 'POST' });
       onUserChange(null);
       setMessage({
         type: 'success',
         text: 'Du har loggats ut.',
       });
-      setTimeout(() => onClose(), 800);
+      setTimeout(() => {
+        onClose();
+        setMessage(null);
+      }, 800);
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message });
     } finally {
@@ -139,7 +106,7 @@ export function AuthModal({
             </div>
             <div>
               <h3 className="font-bold text-sm text-[#1c1917]">Konto & Inloggning</h3>
-              <p className="text-xs text-stone-500">Säker krypterad databas (Supabase RLS)</p>
+              <p className="text-xs text-stone-500">Säker krypterad databas (Neon PostgreSQL)</p>
             </div>
           </div>
           <button
@@ -162,6 +129,11 @@ export function AuthModal({
               <div className="text-[11px] text-stone-500 font-mono">
                 ID: {currentUser.id}
               </div>
+              {currentUser.company_name && (
+                <div className="text-[11px] text-stone-600 font-medium">
+                  Företag: <span className="font-semibold">{currentUser.company_name}</span>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t border-[#e7e2d7]">
@@ -197,7 +169,7 @@ export function AuthModal({
                     : 'text-stone-600 hover:text-[#1c1917]'
                 }`}
               >
-                E-postlänk (Magic link)
+                Snabb inloggning (E-post)
               </button>
               <button
                 type="button"
@@ -212,7 +184,7 @@ export function AuthModal({
               </button>
             </div>
 
-            <form onSubmit={mode === 'magic_link' ? handleMagicLink : handlePasswordSignIn} className="space-y-3">
+            <form onSubmit={handleSignIn} className="space-y-3">
               <div>
                 <label className="text-stone-700 font-semibold block mb-1">E-postadress</label>
                 <div className="relative">
@@ -223,7 +195,7 @@ export function AuthModal({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="din.epost@foretag.se"
-                    className="w-full pl-9 pr-3 py-2 rounded-lg bg-white border border-[#e7e2d7] text-[#1c1917] placeholder-stone-400 focus:outline-none focus:border-[#1c1917]"
+                    className="w-full pl-9 pr-3 py-2 rounded-lg bg-white border border-[#e7e2d7] text-[#1c1917] placeholder-stone-400 focus:outline-hidden focus:border-[#1c1917]"
                   />
                 </div>
               </div>
@@ -235,11 +207,10 @@ export function AuthModal({
                     <Lock className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
                     <input
                       type="password"
-                      required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Minst 6 tecken"
-                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-white border border-[#e7e2d7] text-[#1c1917] placeholder-stone-400 focus:outline-none focus:border-[#1c1917]"
+                      placeholder="Valfritt lösenord"
+                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-white border border-[#e7e2d7] text-[#1c1917] placeholder-stone-400 focus:outline-hidden focus:border-[#1c1917]"
                     />
                   </div>
                 </div>
@@ -279,7 +250,7 @@ export function AuthModal({
                       <span>Bearbetar...</span>
                     </>
                   ) : (
-                    <span>{mode === 'magic_link' ? 'Skicka länk' : 'Logga in'}</span>
+                    <span>Logga in</span>
                   )}
                 </button>
               </div>
