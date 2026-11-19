@@ -57,7 +57,12 @@ export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
-    const userId = searchParams.get('userId') || DEFAULT_USER_ID;
+    const cookieHeader = req.cookies.get('klaro_user')?.value;
+    let cookieUserId = null;
+    if (cookieHeader) {
+      try { cookieUserId = JSON.parse(cookieHeader).id; } catch {}
+    }
+    const userId = searchParams.get('userId') || cookieUserId;
 
     if (!id) {
       return NextResponse.json({ error: 'Receipt ID krävs' }, { status: 400 });
@@ -76,14 +81,20 @@ export async function DELETE(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const { id, userId, ...updates } = body;
+    const { id, userId: bodyUserId, ...updates } = body;
+    const cookieHeader = req.cookies.get('klaro_user')?.value;
+    let cookieUserId = null;
+    if (cookieHeader) {
+      try { cookieUserId = JSON.parse(cookieHeader).id; } catch {}
+    }
+    const userId = bodyUserId || cookieUserId;
 
     if (!id) {
       return NextResponse.json({ error: 'Receipt ID krävs' }, { status: 400 });
     }
 
     if (process.env.DATABASE_URL) {
-      await updateReceiptInNeon(id, updates, userId || DEFAULT_USER_ID);
+      await updateReceiptInNeon(id, updates, userId);
     }
 
     return NextResponse.json({ success: true, id, updates });

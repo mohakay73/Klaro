@@ -99,13 +99,20 @@ export async function insertReceiptIntoNeon(receipt: Partial<Receipt>): Promise<
 /**
  * Delete a receipt from Neon
  */
-export async function deleteReceiptFromNeon(id: string, userId: string = DEFAULT_USER_ID): Promise<boolean> {
+export async function deleteReceiptFromNeon(id: string, userId?: string): Promise<boolean> {
   try {
     const sql = getDb();
-    await sql.query(
-      `DELETE FROM receipts WHERE id = $1 AND user_id = $2;`,
-      [id, userId]
-    );
+    if (userId && userId !== DEFAULT_USER_ID) {
+      await sql.query(
+        `DELETE FROM receipts WHERE id = $1 AND user_id = $2;`,
+        [id, userId]
+      );
+    } else {
+      await sql.query(
+        `DELETE FROM receipts WHERE id = $1;`,
+        [id]
+      );
+    }
     return true;
   } catch (error) {
     console.error('Error deleting receipt from Neon:', error);
@@ -119,7 +126,7 @@ export async function deleteReceiptFromNeon(id: string, userId: string = DEFAULT
 export async function updateReceiptInNeon(
   id: string,
   updates: Partial<Receipt>,
-  userId: string = DEFAULT_USER_ID
+  userId?: string
 ): Promise<boolean> {
   try {
     const sql = getDb();
@@ -151,12 +158,18 @@ export async function updateReceiptInNeon(
     if (sets.length === 0) return true;
 
     values.push(id);
-    values.push(userId);
-
-    await sql.query(
-      `UPDATE receipts SET ${sets.join(', ')} WHERE id = $${idx++} AND user_id = $${idx++};`,
-      values
-    );
+    if (userId && userId !== DEFAULT_USER_ID) {
+      values.push(userId);
+      await sql.query(
+        `UPDATE receipts SET ${sets.join(', ')} WHERE id = $${idx++} AND user_id = $${idx++};`,
+        values
+      );
+    } else {
+      await sql.query(
+        `UPDATE receipts SET ${sets.join(', ')} WHERE id = $${idx++};`,
+        values
+      );
+    }
     return true;
   } catch (error) {
     console.error('Error updating receipt in Neon:', error);

@@ -190,7 +190,8 @@ export default function DashboardPage() {
     setReceipts((prev) => prev.filter((r) => r.id !== id));
 
     // Delete from database
-    fetch(`/api/receipts?id=${encodeURIComponent(id)}`, {
+    const userParam = currentUser?.id ? `&userId=${encodeURIComponent(currentUser.id)}` : '';
+    fetch(`/api/receipts?id=${encodeURIComponent(id)}${userParam}`, {
       method: 'DELETE',
     }).catch((err) => console.warn('Receipt delete notice:', err));
   };
@@ -204,13 +205,13 @@ export default function DashboardPage() {
     fetch('/api/receipts', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, status: 'verified' }),
+      body: JSON.stringify({ id, status: 'verified', userId: currentUser?.id }),
     }).catch((err) => console.warn('Receipt verify notice:', err));
   };
 
   const handleUpdateReceiptVatRate = (id: string, newRate: SwedishVatRate) => {
     const target = receipts.find((r) => r.id === id);
-    const total = target ? target.total_amount : 0;
+    const total = target ? Number(target.total_amount) : 0;
     const newVat = newRate > 0 ? Math.round((total - total / (1 + newRate / 100)) * 100) / 100 : 0;
 
     setReceipts((prev) =>
@@ -229,7 +230,7 @@ export default function DashboardPage() {
     fetch('/api/receipts', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, vat_rate: newRate, vat_amount: newVat, status: 'verified' }),
+      body: JSON.stringify({ id, vat_rate: newRate, vat_amount: newVat, status: 'verified', userId: currentUser?.id }),
     }).catch((err) => console.warn('Receipt update notice:', err));
   };
 
