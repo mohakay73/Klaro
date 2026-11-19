@@ -45,8 +45,8 @@ export default function DashboardPage() {
     municipalTaxRate: 0.32,
   });
 
-  // Selected Period
-  const [selectedPeriod, setSelectedPeriod] = useState<QuarterPeriod>('Q2');
+  // Selected Period (Defaults to ALL so receipts in any quarter like Q4 are immediately visible)
+  const [selectedPeriod, setSelectedPeriod] = useState<QuarterPeriod>('ALL');
 
   // Supabase Auth User state
   const [currentUser, setCurrentUser] = useState<any>(null);

@@ -5,7 +5,15 @@ import { INITIAL_RECEIPTS } from '@/lib/mock-data';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId') || DEFAULT_USER_ID;
+    const cookieHeader = req.cookies.get('klaro_user')?.value;
+    let cookieUserId = null;
+    if (cookieHeader) {
+      try {
+        const parsed = JSON.parse(cookieHeader);
+        cookieUserId = parsed.id;
+      } catch {}
+    }
+    const userId = searchParams.get('userId') || cookieUserId || DEFAULT_USER_ID;
     const includeSample = searchParams.get('includeSample') !== 'false';
 
     if (process.env.DATABASE_URL) {
