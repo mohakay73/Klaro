@@ -245,6 +245,19 @@ export function Header({
             </button>
           )}
 
+          {/* Direct SIE-4 Export Button */}
+          {onExportSIE && (
+            <button
+              type="button"
+              onClick={onExportSIE}
+              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-stone-700 hover:text-[#1c1917] bg-white hover:bg-stone-50 border border-[#e7e2d7] transition shadow-2xs cursor-pointer active:scale-95"
+              title="Ladda ner SIE-4 bokföringsfil för Fortnox, Visma eller Bokio"
+            >
+              <Download className="w-3.5 h-3.5 text-stone-500" />
+              <span>SIE-4</span>
+            </button>
+          )}
+
           {/* User / Neon Auth Button */}
           {onOpenAuth && (
             <button

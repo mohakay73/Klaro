@@ -21,7 +21,8 @@ import {
   Sparkles,
   ChevronRight,
   Globe,
-  User
+  User,
+  Download
 } from 'lucide-react';
 
 export type ActiveView = 'overview' | 'expenses' | 'invoices' | 'tax' | 'bank' | 'landing';
@@ -38,6 +39,7 @@ interface SidebarProps {
   onOpenKivra: () => void;
   onOpenEmailForwarding: () => void;
   onOpenSettings: () => void;
+  onExportSIE?: () => void;
   receiptsCount: number;
   invoicesCount: number;
   missingBankReceiptsCount?: number;
@@ -60,6 +62,7 @@ export function Sidebar({
   onOpenKivra,
   onOpenEmailForwarding,
   onOpenSettings,
+  onExportSIE,
   onOpenDemoTour,
   receiptsCount,
   invoicesCount,
@@ -343,6 +346,33 @@ export function Sidebar({
                 </div>
               </div>
               <ChevronRight className="w-4 h-4 text-amber-800 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          )}
+
+          {/* Export SIE-4 Bokföringsfil Button */}
+          {onExportSIE && (
+            <button
+              onClick={() => {
+                onExportSIE();
+                onCloseMobile();
+              }}
+              className="w-full p-2.5 rounded-xl border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] flex items-center gap-3 transition shadow-xs text-left group cursor-pointer active:scale-98"
+              title="Exportera och ladda ner SIE-4 bokföringsfil (.se)"
+            >
+              <div className="w-8 h-8 rounded-lg bg-stone-100 border border-[#e7e2d7] flex items-center justify-center text-stone-700 shrink-0 shadow-2xs group-hover:bg-[#1c1917] group-hover:text-white transition">
+                <Download className="w-4 h-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-[#1c1917] leading-tight">
+                  Exportera SIE-4
+                </div>
+                <div className="text-[11px] text-stone-500 font-medium">
+                  Fortnox / Visma / Bokio
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-stone-600 bg-[#f7f4ee] px-1.5 py-0.5 rounded border border-[#e7e2d7]">
+                .se
+              </span>
             </button>
           )}
 

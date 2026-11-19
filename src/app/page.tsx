@@ -444,6 +444,7 @@ export default function DashboardPage() {
         onOpenEmailForwarding={() => setIsEmailForwardingOpen(true)}
         onOpenSettings={() => setIsOnboardingOpen(true)}
         onOpenDemoTour={() => setIsDemoTourOpen(true)}
+        onExportSIE={handleExportSIE}
         receiptsCount={filteredReceipts.length}
         invoicesCount={filteredInvoices.length}
         missingBankReceiptsCount={missingBankReceiptsCount}

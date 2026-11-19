@@ -26,8 +26,8 @@ export function generateSIE4File(options: {
   lines.push('#FORMAT PC8');
   lines.push(`#GEN ${dateStr} ${timeStr}`);
   lines.push('#SIETYP 4');
-  lines.push(`#FNAMN "${companyName}"`);
-  lines.push(`#ORGNR ${orgNr.replace(/[^0-9]/g, '')}`);
+  lines.push(`#FNAMN "${companyName || 'Mitt Företag'}"`);
+  lines.push(`#ORGNR ${(orgNr || '559123-4567').replace(/[^0-9]/g, '')}`);
   lines.push(`#RAR 0 ${year}0101 ${year}1231`);
   lines.push('#KPTYP EUBAS97');
 
@@ -60,50 +60,61 @@ export function generateSIE4File(options: {
     lines.push(`#KONTO ${acc} "${desc}"`);
   }
 
-  lines.push('');
+  // Helper date formatter
+  const formatDateToSIE = (d: any) => {
+    try {
+      return new Date(d).toISOString().slice(0, 10).replace(/-/g, '');
+    } catch {
+      return dateStr;
+    }
+  };
 
   // 3. Verifications for Invoices (Sales / Utgående Moms)
   let verNr = 1;
-  for (const inv of invoices) {
+  for (const inv of invoices || []) {
     if (inv.status === 'draft') continue;
-    const invDateStr = inv.invoice_date.replace(/-/g, '');
+    const invDateStr = formatDateToSIE(inv.invoice_date);
     const series = 'A'; // Kundfakturor series
+
+    const total = Number(inv.total_amount) || 0;
+    const subtotal = Number(inv.subtotal_amount) || total;
+    const vat = Number(inv.vat_amount) || 0;
+    const vatRate = Number(inv.vat_rate) || 25;
 
     let salesAccount = '3001';
     let vatAccount = '2611';
-    if (inv.vat_rate === 12) {
+    if (vatRate === 12) {
       salesAccount = '3002';
       vatAccount = '2621';
-    } else if (inv.vat_rate === 6) {
+    } else if (vatRate === 6) {
       salesAccount = '3003';
       vatAccount = '2631';
-    } else if (inv.vat_rate === 0) {
+    } else if (vatRate === 0) {
       salesAccount = '3004';
       vatAccount = '';
     }
 
-    lines.push(`#VER ${series} ${verNr} ${invDateStr} "Kundfaktura: ${inv.customer_name}"`);
+    lines.push(`#VER ${series} ${verNr} ${invDateStr} "Kundfaktura: ${inv.customer_name || 'Kund'}"`);
     lines.push('{');
     // Debet Bank/Kundfordran
-    lines.push(`  #TRANS 1930 {} ${inv.total_amount.toFixed(2)} ${invDateStr} "Betalning ${inv.invoice_number || ''}"`);
+    lines.push(`  #TRANS 1930 {} ${total.toFixed(2)} ${invDateStr} "Betalning ${inv.invoice_number || ''}"`);
     // Kredit Försäljning (Netto)
-    lines.push(`  #TRANS ${salesAccount} {} -${inv.subtotal_amount.toFixed(2)} ${invDateStr} "Intäkt exkl moms"`);
+    lines.push(`  #TRANS ${salesAccount} {} -${subtotal.toFixed(2)} ${invDateStr} "Intäkt exkl moms"`);
     // Kredit Utgående moms
-    if (inv.vat_amount > 0 && vatAccount) {
-      lines.push(`  #TRANS ${vatAccount} {} -${inv.vat_amount.toFixed(2)} ${invDateStr} "Utgående moms ${inv.vat_rate}%"`);
+    if (vat > 0 && vatAccount) {
+      lines.push(`  #TRANS ${vatAccount} {} -${vat.toFixed(2)} ${invDateStr} "Utgående moms ${vatRate}%"`);
     }
     lines.push('}');
     verNr++;
   }
 
   // 4. Verifications for Receipts (Expenses & Ingående Moms)
-  for (const rec of receipts) {
-    const recDateStr = rec.invoice_date.replace(/-/g, '');
+  for (const rec of receipts || []) {
+    const recDateStr = formatDateToSIE(rec.invoice_date);
     const series = 'B'; // Leverantörsfakturor / Kvitton series
 
     // Map category to BAS expense account
     let expenseAccount = rec.raw_ai_response?.bas_account || '6990';
-    // Clean up if composite e.g. "5420 / 6540" -> take first
     if (expenseAccount.includes('/')) {
       expenseAccount = expenseAccount.split('/')[0].trim();
     }
@@ -111,18 +122,21 @@ export function generateSIE4File(options: {
       expenseAccount = '6990';
     }
 
-    const netExpense = rec.total_amount - rec.vat_amount;
+    const total = Number(rec.total_amount) || 0;
+    const vat = Number(rec.vat_amount) || 0;
+    const vatRate = Number(rec.vat_rate) || 25;
+    const netExpense = Math.max(0, total - vat);
 
-    lines.push(`#VER ${series} ${verNr} ${recDateStr} "Kvitto: ${rec.vendor_name}"`);
+    lines.push(`#VER ${series} ${verNr} ${recDateStr} "Kvitto: ${rec.vendor_name || 'Inköp'}"`);
     lines.push('{');
     // Debet Kostnadskonto (exkl moms)
-    lines.push(`  #TRANS ${expenseAccount} {} ${netExpense.toFixed(2)} ${recDateStr} "${rec.category}"`);
+    lines.push(`  #TRANS ${expenseAccount} {} ${netExpense.toFixed(2)} ${recDateStr} "${rec.category || 'Kostnad'}"`);
     // Debet Ingående moms (2641)
-    if (rec.vat_amount > 0) {
-      lines.push(`  #TRANS 2641 {} ${rec.vat_amount.toFixed(2)} ${recDateStr} "Ingående moms ${rec.vat_rate}%"`);
+    if (vat > 0) {
+      lines.push(`  #TRANS 2641 {} ${vat.toFixed(2)} ${recDateStr} "Ingående moms ${vatRate}%"`);
     }
     // Kredit Bank/Företagskonto (1930)
-    lines.push(`  #TRANS 1930 {} -${rec.total_amount.toFixed(2)} ${recDateStr} "Utlägg/Kortbetalning"`);
+    lines.push(`  #TRANS 1930 {} -${total.toFixed(2)} ${recDateStr} "Utlägg/Kortbetalning"`);
     lines.push('}');
     verNr++;
   }
@@ -138,6 +152,10 @@ export function downloadSIE4File(content: string, filename = 'klaro-bokforing-20
   a.download = filename;
   document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(() => {
+    if (document.body.contains(a)) {
+      document.body.removeChild(a);
+    }
+    URL.revokeObjectURL(url);
+  }, 1000);
 }
