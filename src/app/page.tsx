@@ -166,12 +166,14 @@ export default function DashboardPage() {
   const handleReceiptAdded = (newReceipt: Receipt) => {
     setReceipts((prev) => [newReceipt, ...prev]);
 
-    // If added manually outside file upload, sync to database
-    fetch('/api/receipts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newReceipt),
-    }).catch((err) => console.warn('Receipt sync notice:', err));
+    // If added manually outside file upload (i.e. temporary client ID), sync to database
+    if (newReceipt.id.startsWith('rec-')) {
+      fetch('/api/receipts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newReceipt),
+      }).catch((err) => console.warn('Receipt sync notice:', err));
+    }
   };
 
   const handleInvoiceCreated = (newInvoice: Invoice) => {

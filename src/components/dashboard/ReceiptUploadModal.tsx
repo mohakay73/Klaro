@@ -85,6 +85,7 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [parsedPreview, setParsedPreview] = useState<ParsedReceiptData | null>(null);
+  const [savedReceiptData, setSavedReceiptData] = useState<Receipt | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -130,6 +131,9 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
       }
 
       setParsedPreview(json.data);
+      if (json.receipt) {
+        setSavedReceiptData(json.receipt);
+      }
     } catch (err: any) {
       setErrorMsg(err.message || 'Ett fel uppstod vid analys av kvittot.');
     } finally {
@@ -140,7 +144,7 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
   const handleConfirmAdd = () => {
     if (!parsedPreview) return;
 
-    const newReceipt: Receipt = {
+    const newReceipt: Receipt = savedReceiptData || {
       id: `rec-${Date.now()}`,
       user_id: '00000000-0000-0000-0000-000000000001',
       original_file_url: selectedFile ? selectedFile.name : null,
@@ -166,6 +170,7 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
     setSelectedFile(null);
     setPastedText('');
     setParsedPreview(null);
+    setSavedReceiptData(null);
     setErrorMsg(null);
   };
 

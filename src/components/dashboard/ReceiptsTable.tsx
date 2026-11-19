@@ -16,7 +16,12 @@ import {
   Check,
   Search,
   Filter,
-  X
+  X,
+  Paperclip,
+  ExternalLink,
+  ShieldCheck,
+  Eye,
+  FileText
 } from 'lucide-react';
 
 interface ReceiptsTableProps {
@@ -360,6 +365,16 @@ export function ReceiptsTable({
                           <span className="font-mono text-stone-700 bg-[#f7f4ee] px-2 py-0.5 rounded border border-[#e7e2d7] font-semibold">
                             BAS {rec.raw_ai_response?.bas_account || '6990'}
                           </span>
+                          {rec.original_file_url && (
+                            <button
+                              onClick={() => setSelectedReceipt(rec)}
+                              className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-700 hover:text-black bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded border border-stone-200 transition cursor-pointer"
+                              title="Visa verifikatsbilaga"
+                            >
+                              <Paperclip className="w-3 h-3 text-[#d97706]" />
+                              <span>Bilaga</span>
+                            </button>
+                          )}
                         </div>
 
                         {/* Ambiguous rate selector */}
@@ -461,71 +476,123 @@ export function ReceiptsTable({
         </>
       )}
 
-      {/* Detail / Reasoning Modal */}
+      {/* Detail / Reasoning & File Modal */}
       {selectedReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white border border-zinc-200 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-              <h3 className="font-bold text-base text-zinc-950">Underlagsdetaljer & Skattemotivering</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white border border-[#e7e2d7] rounded-2xl p-6 max-w-xl w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-[#e7e2d7]">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[#f7f4ee] border border-[#e7e2d7] flex items-center justify-center text-[#d97706]">
+                  <ReceiptIcon className="w-4 h-4 text-[#d97706]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-[#1c1917]">{selectedReceipt.vendor_name}</h3>
+                  <p className="text-xs text-stone-500 font-mono">{formatDate(selectedReceipt.invoice_date)}</p>
+                </div>
+              </div>
               <button
                 onClick={() => setSelectedReceipt(null)}
-                className="text-zinc-400 hover:text-zinc-700 text-xs font-semibold px-2.5 py-1.5 rounded hover:bg-zinc-100 transition"
+                className="text-stone-400 hover:text-stone-700 text-xs font-semibold px-2.5 py-1.5 rounded hover:bg-stone-100 transition cursor-pointer"
               >
-                Stäng
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3.5 text-sm">
-              <div>
-                <span className="text-zinc-500 text-xs block">Leverantör</span>
-                <div className="font-bold text-zinc-950 text-base mt-0.5">{selectedReceipt.vendor_name}</div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 p-3.5 bg-zinc-50 rounded-xl border border-zinc-200 font-mono">
+            <div className="space-y-4 text-sm">
+              <div className="grid grid-cols-2 gap-3 p-3.5 bg-[#f7f4ee] rounded-xl border border-[#e7e2d7] font-mono">
                 <div>
-                  <span className="text-zinc-500 text-xs block font-sans">Totalt belopp</span>
-                  <div className="text-zinc-950 font-bold tabular-nums text-base">{formatSEK(selectedReceipt.total_amount)}</div>
+                  <span className="text-stone-500 text-xs block font-sans">Totalt belopp</span>
+                  <div className="text-[#1c1917] font-bold tabular-nums text-lg">{formatSEK(selectedReceipt.total_amount)}</div>
                 </div>
                 <div>
-                  <span className="text-zinc-500 text-xs block font-sans">Avdragsgill moms ({selectedReceipt.vat_rate}%)</span>
-                  <div className="text-emerald-700 font-bold tabular-nums text-base">{formatSEK(selectedReceipt.vat_amount)}</div>
+                  <span className="text-stone-500 text-xs block font-sans">Avdragsgill moms ({selectedReceipt.vat_rate}%)</span>
+                  <div className="text-emerald-700 font-bold tabular-nums text-lg">{formatSEK(selectedReceipt.vat_amount)}</div>
                 </div>
               </div>
 
               <div>
-                <span className="text-zinc-500 text-xs block">Kategori & Kontoplan</span>
-                <div className="text-zinc-900 font-semibold mt-0.5 text-sm">{selectedReceipt.category}</div>
-                <div className="text-xs text-zinc-600 font-mono mt-0.5 font-semibold">
+                <span className="text-stone-500 text-xs block">Kategori & Kontoplan</span>
+                <div className="text-stone-900 font-semibold mt-0.5 text-sm">{selectedReceipt.category}</div>
+                <div className="text-xs text-stone-600 font-mono mt-0.5 font-semibold">
                   BAS-konto: {selectedReceipt.raw_ai_response?.bas_account || '6990'}
                 </div>
               </div>
 
-              <div className="p-3.5 bg-zinc-50 rounded-xl border border-zinc-200">
-                <span className="text-xs text-zinc-700 font-bold block mb-1">
+              {/* 7-Year Archival & Original File Section (Bokföringslagen 7 kap. 2 §) */}
+              <div className="p-3.5 bg-stone-50 rounded-xl border border-[#e7e2d7] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                    <Paperclip className="w-3.5 h-3.5 text-[#d97706]" />
+                    <span>Verifikatsunderlag (Originalbilaga)</span>
+                  </span>
+                  {selectedReceipt.original_file_url && (
+                    <a
+                      href={`/api/receipts/file?id=${selectedReceipt.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-semibold text-stone-800 hover:text-black flex items-center gap-1 underline"
+                    >
+                      <span>Öppna i ny flik</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+
+                {/* Live Image / File Preview */}
+                <div className="rounded-lg border border-stone-200 bg-white overflow-hidden max-h-64 flex flex-col items-center justify-center p-2 relative">
+                  <img
+                    src={`/api/receipts/file?id=${selectedReceipt.id}`}
+                    alt={selectedReceipt.vendor_name}
+                    className="max-h-56 max-w-full object-contain rounded"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                  <div className="text-xs text-stone-500 py-2 flex items-center gap-2">
+                    <FileText className="w-3.5 h-3.5 text-stone-400" />
+                    <span className="truncate max-w-[280px]">
+                      {selectedReceipt.original_file_url || 'kvitto.jpg'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-start sm:items-center gap-2 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs">
+                  <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5 sm:mt-0" />
+                  <span>
+                    <strong>Bokföringslagen 7 kap. 2 §:</strong> Originalunderlag sparat i arkiv (ska bevaras t.o.m. <strong>31 dec {new Date(selectedReceipt.invoice_date).getFullYear() + 7}</strong>).
+                  </span>
+                </div>
+              </div>
+
+              {/* Tax Reasoning */}
+              <div className="p-3.5 bg-[#f7f4ee]/70 rounded-xl border border-[#e7e2d7]">
+                <span className="text-xs text-stone-700 font-bold block mb-1">
                   Skattemässig motivering:
                 </span>
-                <p className="text-zinc-600 text-xs leading-relaxed">
+                <p className="text-stone-600 text-xs leading-relaxed">
                   {selectedReceipt.raw_ai_response?.reasoning || 'Standard momsavdrag för verksamhetens drift.'}
                 </p>
               </div>
             </div>
 
-            <div className="pt-3 flex justify-end gap-2.5 border-t border-zinc-100">
+            <div className="pt-3 flex justify-end gap-2.5 border-t border-[#e7e2d7]">
               <button
                 onClick={() => setSelectedReceipt(null)}
-                className="px-4 py-2 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-zinc-700 text-sm font-semibold transition"
+                className="px-4 py-2 rounded-lg border border-[#e7e2d7] hover:bg-stone-50 text-stone-700 text-sm font-semibold transition cursor-pointer"
               >
                 Stäng
               </button>
-              <button
-                onClick={() => {
-                  if (onVerifyReceipt) onVerifyReceipt(selectedReceipt.id);
-                  setSelectedReceipt(null);
-                }}
-                className="px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold transition shadow-xs"
-              >
-                Godkänn underlag
-              </button>
+              {selectedReceipt.status !== 'verified' && onVerifyReceipt && (
+                <button
+                  onClick={() => {
+                    onVerifyReceipt(selectedReceipt.id);
+                    setSelectedReceipt(null);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-[#1c1917] hover:bg-black text-white text-sm font-semibold transition shadow-xs cursor-pointer"
+                >
+                  Godkänn underlag
+                </button>
+              )}
             </div>
           </div>
         </div>

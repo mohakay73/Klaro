@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseReceiptWithAI } from '@/lib/ai-parser';
 import { insertReceiptIntoNeon, getOrCreateNeonProfile, DEFAULT_USER_ID } from '@/lib/neon';
+import { saveReceiptFile } from '@/lib/file-storage';
 
 /**
  * Resend Inbound Email Webhook Handler
@@ -123,6 +124,20 @@ export async function POST(req: NextRequest) {
           },
           status: 'parsed',
         });
+
+        // Archive attachment file permanently if bytes are available
+        if (fileBuffer && savedReceipt?.id && originalFilename) {
+          try {
+            await saveReceiptFile({
+              receiptId: savedReceipt.id,
+              filename: originalFilename,
+              mimeType: attachments[0]?.content_type || 'image/jpeg',
+              buffer: fileBuffer,
+            });
+          } catch (fileErr) {
+            console.warn('Webhook attachment archiving notice:', fileErr);
+          }
+        }
       } catch (dbErr) {
         console.warn('Webhook received but Neon database save failed:', dbErr);
       }

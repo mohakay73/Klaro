@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseReceiptWithAI } from '@/lib/ai-parser';
 import { insertReceiptIntoNeon, DEFAULT_USER_ID } from '@/lib/neon';
+import { saveReceiptFile } from '@/lib/file-storage';
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,15 +9,23 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File | null;
     const manualText = formData.get('text') as string | null;
     const sourceType = (formData.get('source_type') as string) || 'web_upload';
-    const userId = (formData.get('user_id') as string) || DEFAULT_USER_ID;
+    
+    // Check user from cookie or form data
+    const cookieHeader = req.cookies.get('klaro_user')?.value;
+    let cookieUserId = null;
+    if (cookieHeader) {
+      try { cookieUserId = JSON.parse(cookieHeader).id; } catch {}
+    }
+    const userId = (formData.get('user_id') as string) || cookieUserId || DEFAULT_USER_ID;
 
     let parsedResult;
     let fileBuffer: Buffer | null = null;
+    let mimeType = 'image/jpeg';
 
     if (file) {
       const arrayBuffer = await file.arrayBuffer();
       fileBuffer = Buffer.from(arrayBuffer);
-      const mimeType = file.type;
+      mimeType = file.type || 'image/jpeg';
 
       if (mimeType.startsWith('image/')) {
         const base64Image = fileBuffer.toString('base64');
@@ -41,7 +50,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Persist in Neon PostgreSQL if configured
-    let savedReceipt = null;
+    let savedReceipt: any = null;
     if (process.env.DATABASE_URL) {
       try {
         savedReceipt = await insertReceiptIntoNeon({
@@ -60,8 +69,23 @@ export async function POST(req: NextRequest) {
             ...parsedResult,
             uploaded_at: new Date().toISOString(),
           },
-          status: 'parsed',
+          status: 'verified',
         });
+
+        // If file buffer exists, save permanently to Vercel Blob / Neon receipt_files
+        if (file && fileBuffer && savedReceipt?.id) {
+          try {
+            const savedFile = await saveReceiptFile({
+              receiptId: savedReceipt.id,
+              filename: file.name,
+              mimeType,
+              buffer: fileBuffer,
+            });
+            savedReceipt.original_file_url = savedFile.url;
+          } catch (fileErr) {
+            console.warn('File archiving notice:', fileErr);
+          }
+        }
       } catch (dbErr) {
         console.warn('Neon database insert skipped/failed:', dbErr);
       }
@@ -85,7 +109,7 @@ export async function POST(req: NextRequest) {
         category: parsedResult.category,
         bas_account: parsedResult.bas_account || null,
         raw_ai_response: parsedResult,
-        status: 'parsed',
+        status: 'verified',
         created_at: new Date().toISOString(),
       },
     });
