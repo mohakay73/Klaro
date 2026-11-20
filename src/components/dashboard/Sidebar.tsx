@@ -97,7 +97,7 @@ export function Sidebar({
   const navItems: { id: ActiveView; label: string; icon: React.ElementType; badge?: number; isAlert?: boolean }[] = [
     { id: 'overview', label: 'Översikt', icon: LayoutDashboard },
     { id: 'expenses', label: 'Utgifter & Kvitton', icon: Receipt, badge: receiptsCount },
-    { id: 'invoices', label: 'Kundfakturor', icon: FileCheck, badge: invoicesCount },
+    { id: 'invoices', label: 'Fakturor (Kundfakturor)', icon: FileCheck, badge: invoicesCount },
     { id: 'tax', label: 'Skatt & Deklaration', icon: Calculator },
     { 
       id: 'bank', 
@@ -318,6 +318,26 @@ export function Sidebar({
               );
             })}
           </nav>
+
+          {/* Direct Settings Navigation Button in Main List */}
+          <div className="pt-2 px-1">
+            <button
+              type="button"
+              onClick={() => {
+                onOpenSettings();
+                onCloseMobile();
+              }}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold text-stone-700 hover:text-[#1c1917] hover:bg-[#e7e2d7]/50 border border-[#e7e2d7] bg-white transition cursor-pointer shadow-2xs"
+            >
+              <div className="flex items-center gap-2.5">
+                <Settings className="w-4 h-4 text-[#d97706]" />
+                <span>Inställningar</span>
+              </div>
+              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#f7f4ee] text-stone-500 border border-[#e7e2d7]">
+                Profil
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Bottom Area: Docked Kivra Digital Post Card + Settings */}

@@ -10,7 +10,8 @@ import {
   FileText, 
   RefreshCw,
   Sparkles,
-  User
+  User,
+  Settings
 } from 'lucide-react';
 import { formatSEK } from '@/lib/utils';
 import { ActiveView } from './Sidebar';
@@ -30,6 +31,7 @@ interface HeaderProps {
   onExportSIE?: () => void;
   onSyncBank?: () => void;
   onOpenDemoTour?: () => void;
+  onOpenSettings?: () => void;
   currentUser?: any;
   onOpenAuth?: () => void;
 }
@@ -74,6 +76,7 @@ export function Header({
   onExportSIE,
   onSyncBank,
   onOpenDemoTour,
+  onOpenSettings,
   currentUser,
   onOpenAuth,
 }: HeaderProps) {
@@ -214,6 +217,19 @@ export function Header({
             >
               <RefreshCw className="w-4 h-4 text-[#d97706]" />
               <span>Synka bankfeed</span>
+            </button>
+          )}
+
+          {/* Settings Button (Always visible on all screens) */}
+          {onOpenSettings && (
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-[#f7f4ee] text-stone-700 hover:text-[#1c1917] border border-[#e7e2d7] transition shadow-2xs cursor-pointer active:scale-95"
+              title="Företagsprofil & Inställningar"
+            >
+              <Settings className="w-4 h-4 text-[#d97706]" />
+              <span className="hidden sm:inline">Inställningar</span>
             </button>
           )}
 

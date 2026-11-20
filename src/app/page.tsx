@@ -609,6 +609,7 @@ export default function DashboardPage() {
           onExportSIE={handleExportSIE}
           onSyncBank={handleSyncTransactions}
           onOpenDemoTour={() => setIsDemoTourOpen(true)}
+          onOpenSettings={() => setIsOnboardingOpen(true)}
           currentUser={currentUser}
           onOpenAuth={() => setIsAuthOpen(true)}
         />

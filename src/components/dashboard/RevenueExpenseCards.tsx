@@ -6,9 +6,15 @@ import { formatSEK } from '@/lib/utils';
 
 interface RevenueExpenseCardsProps {
   taxBuffer: SwedishTaxBuffer;
+  onNavigateToInvoices?: () => void;
+  onNavigateToExpenses?: () => void;
 }
 
-export function RevenueExpenseCards({ taxBuffer }: RevenueExpenseCardsProps) {
+export function RevenueExpenseCards({
+  taxBuffer,
+  onNavigateToInvoices,
+  onNavigateToExpenses,
+}: RevenueExpenseCardsProps) {
   const {
     totalGrossRevenue,
     netRevenue,
@@ -21,11 +27,23 @@ export function RevenueExpenseCards({ taxBuffer }: RevenueExpenseCardsProps) {
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
       
       {/* 1. Fakturerade Intäkter */}
-      <div className="rounded-2xl border border-[#e7e2d7] bg-white p-5 sm:p-6 space-y-3 shadow-[0_4px_20px_rgba(28,25,23,0.03)] flex flex-col justify-between overflow-hidden">
+      <div 
+        onClick={onNavigateToInvoices}
+        className={`rounded-2xl border border-[#e7e2d7] bg-white p-5 sm:p-6 space-y-3 shadow-[0_4px_20px_rgba(28,25,23,0.03)] flex flex-col justify-between overflow-hidden transition ${
+          onNavigateToInvoices ? 'cursor-pointer hover:border-stone-400 hover:shadow-md group' : ''
+        }`}
+      >
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block font-mono">
-            Fakturerade Intäkter:
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block font-mono">
+              Fakturerade Intäkter:
+            </span>
+            {onNavigateToInvoices && (
+              <span className="text-[11px] font-bold text-[#b45309] opacity-0 group-hover:opacity-100 transition-opacity">
+                Visa fakturor →
+              </span>
+            )}
+          </div>
           <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-[#1c1917] tabular-nums mt-1">
             {formatSEK(totalGrossRevenue)}
           </div>
@@ -48,11 +66,23 @@ export function RevenueExpenseCards({ taxBuffer }: RevenueExpenseCardsProps) {
       </div>
 
       {/* 2. Avdragsgilla Kostnader */}
-      <div className="rounded-2xl border border-[#e7e2d7] bg-white p-5 sm:p-6 space-y-3 shadow-[0_4px_20px_rgba(28,25,23,0.03)] flex flex-col justify-between overflow-hidden">
+      <div 
+        onClick={onNavigateToExpenses}
+        className={`rounded-2xl border border-[#e7e2d7] bg-white p-5 sm:p-6 space-y-3 shadow-[0_4px_20px_rgba(28,25,23,0.03)] flex flex-col justify-between overflow-hidden transition ${
+          onNavigateToExpenses ? 'cursor-pointer hover:border-stone-400 hover:shadow-md group' : ''
+        }`}
+      >
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block font-mono">
-            Avdragsgilla Kostnader:
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block font-mono">
+              Avdragsgilla Kostnader:
+            </span>
+            {onNavigateToExpenses && (
+              <span className="text-[11px] font-bold text-[#b45309] opacity-0 group-hover:opacity-100 transition-opacity">
+                Visa kvitton →
+              </span>
+            )}
+          </div>
           <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-[#1c1917] tabular-nums mt-1">
             {formatSEK(totalGrossExpenses)}
           </div>

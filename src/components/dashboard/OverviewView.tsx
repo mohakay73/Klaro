@@ -71,7 +71,11 @@ export function OverviewView({
       <SafeToSpendWidget taxBuffer={taxBuffer} companyType={companyType} />
 
       {/* 2. Top 3 Stat Cards with Financial Trend Sparklines */}
-      <RevenueExpenseCards taxBuffer={taxBuffer} />
+      <RevenueExpenseCards 
+        taxBuffer={taxBuffer} 
+        onNavigateToInvoices={onNavigateToInvoices}
+        onNavigateToExpenses={onNavigateToExpenses}
+      />
 
       {/* 2.5 Bank Reconciliation Alert Callout if missing receipts exist */}
       {missingBankCount > 0 && onNavigateToBank && (
@@ -178,66 +182,93 @@ export function OverviewView({
           </div>
         </div>
 
-        {/* Right (5 cols): Momsdeklaration (Skatteverket) */}
-        <div className="lg:col-span-5 rounded-2xl border border-[#e7e2d7] bg-white p-6 shadow-[0_4px_20px_rgba(28,25,23,0.03)] space-y-5">
-          <div className="flex items-center justify-between pb-3.5 border-b border-[#e7e2d7]/80">
-            <h3 className="text-base font-bold text-[#1c1917]">
-              Momsdeklaration (Skatteverket)
-            </h3>
-            <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-md bg-[#f7f4ee] text-stone-700 border border-[#e7e2d7]">
-              Period: Q2
-            </span>
-          </div>
-
-          {/* Big Bold Net Moms Callout */}
-          <div className="space-y-1">
-            <span className="text-xs text-stone-500 font-medium block">
-              Moms att betala:
-            </span>
-            <div className="text-3xl font-black font-mono tracking-tight text-[#1c1917] tabular-nums">
-              {formatSEK(moms.netMoms)}
-            </div>
-          </div>
-
-          {/* Skatteverkets Rutor table rows */}
-          <div className="space-y-2.5 pt-2 border-t border-[#e7e2d7]/80 text-sm font-mono">
-            <div className="flex items-center justify-between py-1.5 border-b border-[#e7e2d7]/50 text-xs">
-              <span className="text-stone-600 font-sans">Ruta 05 (Momspliktig försäljning):</span>
-              <span className="text-[#1c1917] font-bold tabular-nums">
-                {formatSEK(moms.utgaendeBreakdown[25]?.netBase || moms.utgaendeMoms * 4)}
+        {/* Right (5 cols): Momsdeklaration + Kundfakturor */}
+        <div className="lg:col-span-5 space-y-5">
+          
+          {/* Momsdeklaration Card */}
+          <div className="rounded-2xl border border-[#e7e2d7] bg-white p-6 shadow-[0_4px_20px_rgba(28,25,23,0.03)] space-y-5">
+            <div className="flex items-center justify-between pb-3.5 border-b border-[#e7e2d7]/80">
+              <h3 className="text-base font-bold text-[#1c1917]">
+                Momsdeklaration (Skatteverket)
+              </h3>
+              <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-md bg-[#f7f4ee] text-stone-700 border border-[#e7e2d7]">
+                Period: Q2
               </span>
             </div>
 
-            <div className="flex items-center justify-between py-1.5 border-b border-[#e7e2d7]/50 text-xs">
-              <span className="text-stone-600 font-sans">Ruta 48 (Ingående avdragsgill moms):</span>
-              <span className="text-[#15803d] font-bold tabular-nums">
-                -{formatSEK(moms.ingaendeMoms)}
+            {/* Big Bold Net Moms Callout */}
+            <div className="space-y-1">
+              <span className="text-xs text-stone-500 font-medium block">
+                Moms att betala:
               </span>
-            </div>
-
-            <div className="flex items-center justify-between py-1.5 text-xs">
-              <span className="text-stone-600 font-sans font-semibold">Ruta 49 (Moms att inbetala):</span>
-              <span className="text-[#1c1917] font-black tabular-nums">
+              <div className="text-3xl font-black font-mono tracking-tight text-[#1c1917] tabular-nums">
                 {formatSEK(moms.netMoms)}
-              </span>
+              </div>
+            </div>
+
+            {/* Skatteverkets Rutor table rows */}
+            <div className="space-y-2.5 pt-2 border-t border-[#e7e2d7]/80 text-sm font-mono">
+              <div className="flex items-center justify-between py-1.5 border-b border-[#e7e2d7]/50 text-xs">
+                <span className="text-stone-600 font-sans">Ruta 05 (Momspliktig försäljning):</span>
+                <span className="text-[#1c1917] font-bold tabular-nums">
+                  {formatSEK(moms.utgaendeBreakdown[25]?.netBase || moms.utgaendeMoms * 4)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between py-1.5 border-b border-[#e7e2d7]/50 text-xs">
+                <span className="text-stone-600 font-sans">Ruta 48 (Ingående avdragsgill moms):</span>
+                <span className="text-[#15803d] font-bold tabular-nums">
+                  -{formatSEK(moms.ingaendeMoms)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between py-1.5 text-xs">
+                <span className="text-stone-600 font-sans font-semibold">Ruta 49 (Moms att inbetala):</span>
+                <span className="text-[#1c1917] font-black tabular-nums">
+                  {formatSEK(moms.netMoms)}
+                </span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="pt-3 border-t border-[#e7e2d7]/80 flex items-center gap-3">
+              <button
+                onClick={onNavigateToTax}
+                className="flex-1 py-2.5 px-3 rounded-xl border border-[#e7e2d7] hover:bg-[#f7f4ee] text-[#1c1917] text-xs font-semibold text-center transition cursor-pointer"
+              >
+                Öppna Deklaration
+              </button>
+              <button
+                onClick={onOpenPayMoms}
+                className="py-2.5 px-4 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-semibold text-center transition shadow-xs cursor-pointer"
+              >
+                Betala moms
+              </button>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="pt-3 border-t border-[#e7e2d7]/80 flex items-center gap-3">
-            <button
-              onClick={onNavigateToTax}
-              className="flex-1 py-2.5 px-3 rounded-xl border border-[#e7e2d7] hover:bg-[#f7f4ee] text-[#1c1917] text-xs font-semibold text-center transition"
-            >
-              Öppna Deklaration
-            </button>
-            <button
-              onClick={onOpenPayMoms}
-              className="py-2.5 px-4 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-semibold text-center transition shadow-xs"
-            >
-              Betala moms
-            </button>
+          {/* Quick Kundfakturor Card */}
+          <div className="rounded-2xl border border-[#e7e2d7] bg-white p-5 shadow-[0_4px_20px_rgba(28,25,23,0.03)] space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#1c1917] flex items-center justify-center text-[#f59e0b] font-bold text-xs">
+                  PDF
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-[#1c1917]">Kundfakturor ({invoices.length})</h4>
+                  <p className="text-[11px] text-stone-500">Med Swish QR-kod, Bankgiro & F-skatt</p>
+                </div>
+              </div>
+              <button
+                onClick={onNavigateToInvoices}
+                className="px-3.5 py-1.5 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-xs cursor-pointer active:scale-95"
+              >
+                <span>Öppna fakturor</span>
+                <ArrowRight className="w-3.5 h-3.5 text-[#f59e0b]" />
+              </button>
+            </div>
           </div>
+
         </div>
 
       </div>
