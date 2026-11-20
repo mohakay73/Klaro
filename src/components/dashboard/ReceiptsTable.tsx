@@ -289,7 +289,14 @@ export function ReceiptsTable({
                         {getSourceIcon(rec.source_type)}
                       </div>
                       <div className="min-w-0">
-                        <h4 className="font-bold text-sm text-zinc-950 truncate">{rec.vendor_name}</h4>
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="font-bold text-sm text-zinc-950 truncate">{rec.vendor_name}</h4>
+                          {(rec.original_file_url?.includes('kivra') || rec.raw_ai_response?.source?.includes('Kivra')) && (
+                            <span className="px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold bg-[#5cc971]/15 text-[#1b7030] border border-[#5cc971]/30">
+                              Kivra
+                            </span>
+                          )}
+                        </div>
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-500 font-mono mt-0.5">
                           <span>{formatDate(rec.invoice_date)}</span>
                           <span>•</span>
@@ -487,10 +494,18 @@ export function ReceiptsTable({
 
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-2 text-zinc-600 text-xs">
-                          {getSourceIcon(rec.source_type)}
-                          <span className="capitalize font-medium">
-                            {rec.source_type === 'email_forward' ? 'E-post' : rec.source_type === 'mobile_scan' ? 'Mobil' : 'Webb'}
-                          </span>
+                          {rec.original_file_url?.includes('kivra') || rec.raw_ai_response?.source?.includes('Kivra') ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#5cc971]/15 text-[#1b7030] border border-[#5cc971]/30">
+                              Kivra
+                            </span>
+                          ) : (
+                            <>
+                              {getSourceIcon(rec.source_type)}
+                              <span className="capitalize font-medium">
+                                {rec.source_type === 'email_forward' ? 'E-post' : rec.source_type === 'mobile_scan' ? 'Mobil' : 'Webb'}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </td>
 
