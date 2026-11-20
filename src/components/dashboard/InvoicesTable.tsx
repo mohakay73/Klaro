@@ -255,11 +255,11 @@ export function InvoicesTable({
                           e.stopPropagation();
                           if (onSelectInvoice) onSelectInvoice(inv);
                         }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-emerald-50 hover:text-emerald-900 border border-zinc-200 text-zinc-800 text-xs font-semibold transition"
-                        title="Visa och ladda ner svensk PDF faktura"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f7f4ee] hover:bg-[#1c1917] hover:text-white border border-[#e7e2d7] text-[#1c1917] text-xs font-semibold transition cursor-pointer group shadow-2xs"
+                        title="Visa faktura med Swish QR-kod & skriv ut / spara som PDF"
                       >
-                        <FileText className="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-700" />
-                        <span>Visa PDF</span>
+                        <FileText className="w-3.5 h-3.5 text-[#d97706] group-hover:text-[#f59e0b]" />
+                        <span>PDF & Swish</span>
                       </button>
                     </td>
                   </tr>

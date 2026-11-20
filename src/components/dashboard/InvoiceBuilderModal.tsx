@@ -30,6 +30,9 @@ interface InvoiceBuilderModalProps {
   onInvoiceCreated: (invoice: Invoice) => void;
   companyName: string;
   orgNr: string;
+  bankgiro?: string;
+  swishNumber?: string;
+  hasFSkatt?: boolean;
 }
 
 export function InvoiceBuilderModal({
@@ -38,6 +41,9 @@ export function InvoiceBuilderModal({
   onInvoiceCreated,
   companyName,
   orgNr,
+  bankgiro = '5050-1055',
+  swishNumber = '123 456 78 90',
+  hasFSkatt = true,
 }: InvoiceBuilderModalProps) {
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
 
@@ -45,7 +51,7 @@ export function InvoiceBuilderModal({
   const [senderName, setSenderName] = useState(companyName || 'Lindqvist Digital Design');
   const [senderOrgNr, setSenderOrgNr] = useState(orgNr || '559123-4567');
   const [senderVatNo, setSenderVatNo] = useState(`SE${orgNr.replace(/[^0-9]/g, '') || '5591234567'}01`);
-  const [senderBankgiro, setSenderBankgiro] = useState('5123-4567');
+  const [senderBankgiro, setSenderBankgiro] = useState(bankgiro || '5050-1055');
   const [senderEmail, setSenderEmail] = useState('faktura@lindqvist.se');
 
   // Customer info
@@ -501,7 +507,9 @@ export function InvoiceBuilderModal({
                 <div className="text-xs text-stone-600 mt-1 space-y-0.5">
                   <p>Org.nr: <span className="font-mono">{senderOrgNr}</span></p>
                   <p>Momsreg.nr: <span className="font-mono">{senderVatNo}</span></p>
-                  <p className="text-[#1c1917] font-semibold">Godkänd för F-skatt</p>
+                  <p className={`font-semibold ${hasFSkatt ? 'text-[#15803d]' : 'text-stone-500'}`}>
+                    {hasFSkatt ? 'Godkänd för F-skatt' : 'Ej godkänd för F-skatt'}
+                  </p>
                 </div>
               </div>
 

@@ -43,6 +43,8 @@ export default function DashboardPage() {
     vatPeriod: 'quarterly',
     estimatedYearlyRevenue: 950000,
     municipalTaxRate: 0.32,
+    bankgiro: '5050-1055',
+    swishNumber: '123 456 78 90',
   });
 
   // Selected Period (Defaults to ALL so receipts in any quarter like Q4 are immediately visible)
@@ -270,6 +272,42 @@ export default function DashboardPage() {
     downloadSIE4File(sieContent, `klaro-${businessConfig.orgNr.replace(/[^0-9]/g, '')}-2026.se`);
   };
 
+  const handleSaveBusinessConfig = async (newConfig: BusinessConfig) => {
+    setBusinessConfig(newConfig);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('klaro_business_config', JSON.stringify(newConfig));
+      } catch {}
+    }
+
+    // Persist to Neon PostgreSQL
+    try {
+      const res = await fetch('/api/auth/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: currentUser?.id,
+          email: currentUser?.email,
+          companyName: newConfig.companyName,
+          companyType: newConfig.companyType,
+          orgNr: newConfig.orgNr,
+          hasFSkatt: newConfig.hasFSkatt,
+          vatPeriod: newConfig.vatPeriod,
+          municipalTaxRate: newConfig.municipalTaxRate,
+          estimatedYearlyRevenue: newConfig.estimatedYearlyRevenue,
+          bankgiro: newConfig.bankgiro,
+          swishNumber: newConfig.swishNumber,
+        }),
+      });
+      const data = await res.json();
+      if (data.user) {
+        setCurrentUser(data.user);
+      }
+    } catch (err) {
+      console.warn('Note on persisting business settings to Neon:', err);
+    }
+  };
+
   const handleConnectBankAccount = (account: ConnectedBankAccount, txs: PSD2Transaction[]) => {
     setConnectedAccount(account);
     setBankTransactions(txs);
@@ -424,6 +462,14 @@ export default function DashboardPage() {
       const hideBankMock = localStorage.getItem('klaro_hide_bank_mock') === 'true';
       const savedBankTx = localStorage.getItem('klaro_bank_transactions');
       const savedBankAcc = localStorage.getItem('klaro_connected_account');
+      const savedConfig = localStorage.getItem('klaro_business_config');
+
+      if (savedConfig) {
+        try {
+          const parsed = JSON.parse(savedConfig);
+          setBusinessConfig((prev) => ({ ...prev, ...parsed }));
+        } catch {}
+      }
 
       if (savedHidePref) {
         setHideSampleData(true);
@@ -469,14 +515,18 @@ export default function DashboardPage() {
         if (data.user) {
           setCurrentUser(data.user);
           loadUserData(data.user.id, savedHidePref);
-          if (data.user.company_name) {
-            setBusinessConfig((prev) => ({
-              ...prev,
-              companyName: data.user.company_name,
-              companyType: data.user.company_type || prev.companyType,
-              orgNr: data.user.org_nr || prev.orgNr,
-            }));
-          }
+          setBusinessConfig((prev) => ({
+            ...prev,
+            companyName: data.user.company_name || prev.companyName,
+            companyType: data.user.company_type || prev.companyType,
+            orgNr: data.user.org_nr || prev.orgNr,
+            hasFSkatt: data.user.has_f_skatt ?? prev.hasFSkatt,
+            vatPeriod: data.user.vat_period || prev.vatPeriod,
+            estimatedYearlyRevenue: data.user.estimated_yearly_revenue || prev.estimatedYearlyRevenue,
+            municipalTaxRate: data.user.municipal_tax_rate || prev.municipalTaxRate,
+            bankgiro: data.user.bankgiro || prev.bankgiro,
+            swishNumber: data.user.swish_number || prev.swishNumber,
+          }));
         }
       })
       .catch((err) => console.warn('Auth session check note:', err));
@@ -518,12 +568,13 @@ export default function DashboardPage() {
         companyName={businessConfig.companyName}
         orgNr={businessConfig.orgNr}
         onSwitchCompanyType={(newType) => {
-          setBusinessConfig((prev) => ({
-            ...prev,
+          const updated: BusinessConfig = {
+            ...businessConfig,
             companyType: newType,
             companyName: newType === 'aktiebolag' ? 'Nordic Tech Solutions AB' : 'Mohak Konsulting EF',
             orgNr: newType === 'aktiebolag' ? '559123-4567' : '19890412-1234',
-          }));
+          };
+          handleSaveBusinessConfig(updated);
         }}
         onOpenUpload={() => setIsUploadOpen(true)}
         onOpenInvoiceBuilder={() => setIsInvoiceBuilderOpen(true)}
@@ -729,6 +780,9 @@ export default function DashboardPage() {
         onInvoiceCreated={handleInvoiceCreated}
         companyName={businessConfig.companyName}
         orgNr={businessConfig.orgNr}
+        bankgiro={businessConfig.bankgiro}
+        swishNumber={businessConfig.swishNumber}
+        hasFSkatt={businessConfig.hasFSkatt}
       />
 
       <InvoicePreviewModal
@@ -737,6 +791,9 @@ export default function DashboardPage() {
         invoice={previewInvoice}
         companyName={businessConfig.companyName}
         orgNr={businessConfig.orgNr}
+        bankgiro={businessConfig.bankgiro}
+        swishNumber={businessConfig.swishNumber}
+        hasFSkatt={businessConfig.hasFSkatt}
       />
 
       <PayMomsModal
@@ -761,7 +818,7 @@ export default function DashboardPage() {
         isOpen={isOnboardingOpen}
         onClose={() => setIsOnboardingOpen(false)}
         initialConfig={businessConfig}
-        onComplete={(newConfig) => setBusinessConfig(newConfig)}
+        onComplete={handleSaveBusinessConfig}
       />
 
       <KivraInboxModal
@@ -794,14 +851,18 @@ export default function DashboardPage() {
           setCurrentUser(user);
           if (user) {
             loadUserData(user.id);
-            if (user.company_name) {
-              setBusinessConfig((prev) => ({
-                ...prev,
-                companyName: user.company_name,
-                companyType: user.company_type || prev.companyType,
-                orgNr: user.org_nr || prev.orgNr,
-              }));
-            }
+            setBusinessConfig((prev) => ({
+              ...prev,
+              companyName: user.company_name || prev.companyName,
+              companyType: user.company_type || prev.companyType,
+              orgNr: user.org_nr || prev.orgNr,
+              hasFSkatt: user.has_f_skatt ?? prev.hasFSkatt,
+              vatPeriod: user.vat_period || prev.vatPeriod,
+              estimatedYearlyRevenue: user.estimated_yearly_revenue || prev.estimatedYearlyRevenue,
+              municipalTaxRate: user.municipal_tax_rate || prev.municipalTaxRate,
+              bankgiro: user.bankgiro || prev.bankgiro,
+              swishNumber: user.swish_number || prev.swishNumber,
+            }));
           } else {
             setInvoices(INITIAL_INVOICES);
             setReceipts(INITIAL_RECEIPTS);

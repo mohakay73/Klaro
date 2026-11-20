@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Invoice } from '@/types/database';
 import { formatSEK, formatDate } from '@/lib/utils';
+import { generateSwishQrSvg, getSwishDeepLink } from '@/lib/swish-qr';
 import { 
   X, 
   Printer, 
@@ -11,10 +12,11 @@ import {
   Building2, 
   Landmark, 
   QrCode, 
-  Copy,
+  Smartphone,
   ExternalLink,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  Copy
 } from 'lucide-react';
 
 interface InvoicePreviewModalProps {
@@ -23,6 +25,9 @@ interface InvoicePreviewModalProps {
   invoice: Invoice | null;
   companyName: string;
   orgNr: string;
+  bankgiro?: string;
+  swishNumber?: string;
+  hasFSkatt?: boolean;
 }
 
 export function InvoicePreviewModal({
@@ -31,27 +36,61 @@ export function InvoicePreviewModal({
   invoice,
   companyName,
   orgNr,
+  bankgiro = '5050-1055',
+  swishNumber = '123 456 78 90',
+  hasFSkatt = true,
 }: InvoicePreviewModalProps) {
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const [swishSvg, setSwishSvg] = useState<string>('');
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const cleanOrgNr = orgNr || '559123-4567';
+  const vatNumber = `SE${cleanOrgNr.replace(/[^0-9]/g, '') || '5591234567'}01`;
+  const invoiceNum = invoice?.invoice_number || (invoice?.id ? `FAKTURA-${invoice.id.slice(0, 6).toUpperCase()}` : 'FAKTURA-1001');
+  const dueDate = invoice?.due_date || (invoice?.invoice_date ? new Date(new Date(invoice.invoice_date).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : '2026-12-15');
+  const ocrReference = invoiceNum.replace(/[^0-9]/g, '') || '20261001';
+
+  // Generate dynamic Swish QR code on open
+  useEffect(() => {
+    if (!isOpen || !invoice) return;
+
+    let isMounted = true;
+    generateSwishQrSvg({
+      payee: swishNumber,
+      amount: invoice.total_amount,
+      message: invoiceNum,
+    }).then((svg) => {
+      if (isMounted) {
+        setSwishSvg(svg);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, invoice, swishNumber, invoiceNum]);
 
   if (!isOpen || !invoice) return null;
 
-  // Clean Swedish Org & VAT numbers
-  const cleanOrgNr = orgNr || '559123-4567';
-  const vatNumber = `SE${cleanOrgNr.replace(/[^0-9]/g, '') || '5591234567'}01`;
-  const invoiceNum = invoice.invoice_number || `FAKTURA-${invoice.id.slice(0, 6).toUpperCase()}`;
-  const dueDate = invoice.due_date || new Date(new Date(invoice.invoice_date).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-  
-  // OCR reference (commonly invoice number with Luhn check, or standard invoice number)
-  const ocrReference = invoiceNum.replace(/[^0-9]/g, '') || '20260412';
+  const handleCopy = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
 
-  // Print function using an isolated printable window
+  const swishDeepLink = getSwishDeepLink({
+    payee: swishNumber,
+    amount: invoice.total_amount,
+    message: invoiceNum,
+  });
+
+  // Print function generating vector PDF via system print
   const handlePrint = () => {
     if (!invoiceRef.current) return;
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      alert('Vänligen tillåt popup-fönster för att skriva ut/ladda ner PDF.');
+      alert('Vänligen tillåt popup-fönster för att skriva ut eller ladda ner fakturan som PDF.');
       return;
     }
 
@@ -66,7 +105,7 @@ export function InvoicePreviewModal({
         <style>
           @page {
             size: A4 portrait;
-            margin: 15mm;
+            margin: 12mm 15mm;
           }
           * {
             box-sizing: border-box;
@@ -75,156 +114,55 @@ export function InvoicePreviewModal({
           }
           body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            color: #18181b;
+            color: #1c1917;
             background: #ffffff;
             font-size: 13px;
             line-height: 1.5;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
-          .invoice-container {
+          .invoice-sheet {
             width: 100%;
-            max-width: 800px;
+            max-width: 780px;
             margin: 0 auto;
-            padding: 24px;
-          }
-          .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            border-bottom: 2px solid #e4e4e7;
-            padding-bottom: 24px;
-            margin-bottom: 24px;
-          }
-          .company-title {
-            font-size: 22px;
-            font-weight: 800;
-            color: #0d3829;
-            margin-bottom: 6px;
-          }
-          .invoice-badge {
-            font-size: 26px;
-            font-weight: 900;
-            letter-spacing: 0.05em;
-            color: #18181b;
-            text-align: right;
-          }
-          .meta-text {
-            color: #52525b;
-            font-size: 12px;
-            line-height: 1.6;
-          }
-          .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 28px;
-          }
-          .info-card {
-            background: #fbfbfa;
-            border: 1px solid #e4e4e7;
-            border-radius: 8px;
-            padding: 16px;
-          }
-          .card-label {
-            font-size: 10px;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            color: #71717a;
-            margin-bottom: 6px;
-            display: block;
-          }
-          .customer-name {
-            font-size: 15px;
-            font-weight: 700;
-            color: #18181b;
-            margin-bottom: 4px;
+            background: #ffffff;
           }
           table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 28px;
-            font-size: 12px;
           }
           th {
-            background: #f4f4f5;
-            color: #3f3f46;
+            background: #f7f4ee;
+            color: #1c1917;
             text-align: left;
             padding: 10px 12px;
+            font-size: 11px;
             font-weight: 700;
-            border-bottom: 1px solid #d4d4d8;
+            border-bottom: 2px solid #e7e2d7;
           }
           td {
             padding: 12px;
-            border-bottom: 1px solid #e4e4e7;
+            border-bottom: 1px solid #e7e2d7;
+            font-size: 12px;
+          }
+          .font-mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
           }
           .text-right { text-align: right; }
           .text-center { text-align: center; }
-          .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-          .font-bold { font-weight: 700; }
-          .totals-wrapper {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 32px;
+          .tabular-nums { font-variant-numeric: tabular-nums; }
+          .swish-qr-svg svg {
+            width: 90px;
+            height: 90px;
+            display: block;
           }
-          .totals-table {
-            width: 320px;
-          }
-          .totals-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            font-size: 12px;
-            color: #52525b;
-          }
-          .total-due {
-            border-top: 2px solid #18181b;
-            margin-top: 8px;
-            padding-top: 10px;
-            font-size: 16px;
-            font-weight: 900;
-            color: #18181b;
-            display: flex;
-            justify-content: space-between;
-          }
-          .payment-footer {
-            border-top: 1px solid #e4e4e7;
-            padding-top: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 16px;
-            font-size: 11px;
-            color: #52525b;
-            background: #fafafa;
-            border-radius: 8px;
-            padding: 16px;
-          }
-          .swish-box {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #ffffff;
-            border: 1px solid #e4e4e7;
-            border-radius: 6px;
-            padding: 8px 12px;
-            margin-top: 8px;
-          }
-          .f-skatt-pill {
-            display: inline-block;
-            background: #ecfdf5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: 700;
-            font-size: 11px;
-            margin-top: 6px;
+          .no-print {
+            display: none !important;
           }
         </style>
       </head>
       <body>
-        <div class="invoice-container">
+        <div class="invoice-sheet">
           ${invoiceHtml}
         </div>
         <script>
@@ -256,12 +194,22 @@ export function InvoicePreviewModal({
             <div>
               <h3 className="font-bold text-sm text-[#1c1917] flex items-center gap-2">
                 <span>{invoiceNum}</span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-[#15803d] border border-emerald-200 font-semibold">
-                  {invoice.status === 'paid' ? 'Betald' : 'Fakturerad'}
+                <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${
+                  invoice.status === 'paid' 
+                    ? 'bg-emerald-50 text-[#15803d] border-emerald-200' 
+                    : 'bg-amber-50 text-[#b45309] border-amber-200'
+                }`}>
+                  {invoice.status === 'paid' ? 'Betald' : 'Väntar på betalning'}
                 </span>
+                {hasFSkatt && (
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-[#15803d] border border-emerald-200 font-bold">
+                    <ShieldCheck className="w-3 h-3" />
+                    <span>F-skatt</span>
+                  </span>
+                )}
               </h3>
               <p className="text-xs text-stone-500">
-                Svensk standardfaktura enligt Mervärdesskattelagen & Bokföringslagen
+                Svensk standardfaktura med Swish Företag QR-kod & Bankgiro
               </p>
             </div>
           </div>
@@ -269,11 +217,12 @@ export function InvoicePreviewModal({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-bold transition shadow-xs cursor-pointer"
-              title="Ladda ner som PDF eller skriv ut"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
+              title="Skriv ut eller spara som PDF"
             >
-              <Printer className="w-4 h-4 text-[#f59e0b]" />
-              <span>Ladda ner PDF / Skriv ut</span>
+              <Download className="w-4 h-4 text-[#f59e0b]" />
+              <span className="hidden sm:inline">Ladda ner PDF / Skriv ut</span>
+              <span className="sm:hidden">Ladda ner PDF</span>
             </button>
             
             <button
@@ -287,12 +236,12 @@ export function InvoicePreviewModal({
         </div>
 
         {/* Invoice Printable Viewport */}
-        <div className="flex-1 overflow-y-auto p-6 sm:p-10 bg-[#f7f4ee] flex justify-center">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-[#f7f4ee] flex justify-center">
           
           {/* Printable White A4 Sheet */}
           <div 
             ref={invoiceRef}
-            className="w-full max-w-2xl bg-white rounded-xl p-8 sm:p-12 shadow-[0_4px_24px_rgba(28,25,23,0.06)] border border-[#e7e2d7] text-[#1c1917] font-sans space-y-8"
+            className="w-full max-w-2xl bg-white rounded-xl p-6 sm:p-10 shadow-[0_4px_24px_rgba(28,25,23,0.06)] border border-[#e7e2d7] text-[#1c1917] font-sans space-y-7"
           >
             {/* Header: Company & Faktura Title */}
             <div className="flex justify-between items-start border-b-2 border-[#e7e2d7] pb-6">
@@ -303,10 +252,17 @@ export function InvoicePreviewModal({
                 <div className="text-xs text-stone-600 mt-1.5 space-y-0.5 font-sans">
                   <p>Organisationsnummer: <strong className="font-mono text-[#1c1917]">{cleanOrgNr}</strong></p>
                   <p>Momsregistreringsnummer: <strong className="font-mono text-[#1c1917]">{vatNumber}</strong></p>
-                  <div className="pt-1">
-                    <span className="inline-block bg-emerald-50 text-[#15803d] border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-bold">
-                      ✔ Innehar F-skattsedel
-                    </span>
+                  <div className="pt-1.5 flex items-center gap-2">
+                    {hasFSkatt ? (
+                      <span className="inline-flex items-center gap-1 bg-emerald-50 text-[#15803d] border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-bold">
+                        <Check className="w-3 h-3 text-[#15803d]" />
+                        <span>Godkänd för F-skatt</span>
+                      </span>
+                    ) : (
+                      <span className="inline-block bg-stone-100 text-stone-600 border border-stone-200 px-2 py-0.5 rounded text-[11px] font-medium">
+                        Ej godkänd för F-skatt
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -316,7 +272,7 @@ export function InvoicePreviewModal({
                   FAKTURA
                 </span>
                 <div className="text-xs text-stone-600 mt-2 font-mono space-y-1">
-                  <p>Fakturanr: <strong className="text-[#1c1917]">{invoiceNum}</strong></p>
+                  <p>Fakturanummer: <strong className="text-[#1c1917]">{invoiceNum}</strong></p>
                   <p>Fakturadatum: <strong>{formatDate(invoice.invoice_date)}</strong></p>
                   <p>Förfallodatum: <strong className="text-[#1c1917] font-bold">{dueDate}</strong></p>
                   <p>Betalningsvillkor: <strong>30 dagar netto</strong></p>
@@ -325,7 +281,7 @@ export function InvoicePreviewModal({
             </div>
 
             {/* Customer & Reference Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="bg-[#f7f4ee] p-4 rounded-xl border border-[#e7e2d7] space-y-1">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-stone-400 block">
                   Faktureras till:
@@ -343,7 +299,7 @@ export function InvoicePreviewModal({
 
               <div className="bg-[#f7f4ee] p-4 rounded-xl border border-[#e7e2d7] space-y-1.5 text-stone-700">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-stone-400 block">
-                  Referenser & Betalning:
+                  Referenser & Dröjsmål:
                 </span>
                 <div className="flex justify-between">
                   <span>Vår referens:</span>
@@ -406,36 +362,86 @@ export function InvoicePreviewModal({
               </div>
             </div>
 
-            {/* Swedish Payment Footer: Bankgiro, Swish, OCR */}
-            <div className="border-t-2 border-[#e7e2d7] pt-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs text-stone-600 bg-[#f7f4ee] p-5 rounded-xl border border-[#e7e2d7]">
-              <div className="space-y-1">
-                <span className="font-bold text-[#1c1917] block uppercase tracking-wider text-[10px]">
-                  Bankgiro
-                </span>
-                <span className="font-mono text-sm font-bold text-[#1c1917] block">5050-1055</span>
-                <span className="text-[11px] text-stone-500">Mottagare: {companyName}</span>
-              </div>
-
-              <div className="space-y-1">
-                <span className="font-bold text-[#1c1917] block uppercase tracking-wider text-[10px]">
-                  Betalningsreferens (OCR)
-                </span>
-                <span className="font-mono text-sm font-bold text-[#1c1917] block">{invoiceNum}</span>
-                <span className="text-[11px] text-stone-500">Ange vid bankinbetalning</span>
-              </div>
-
-              <div className="space-y-1">
-                <span className="font-bold text-[#1c1917] block uppercase tracking-wider text-[10px]">
-                  Swish Företag
-                </span>
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded bg-[#15803d] flex items-center justify-center text-white font-bold text-[10px]">
-                    S
+            {/* Payment Section: Bankgiro + Swish with Dynamic QR Code */}
+            <div className="border-t-2 border-[#e7e2d7] pt-5">
+              <div className="bg-[#f7f4ee] p-5 rounded-xl border border-[#e7e2d7] grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
+                
+                {/* Left: Bankgiro & OCR reference */}
+                <div className="sm:col-span-7 space-y-3 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <Landmark className="w-4 h-4 text-[#1c1917]" />
+                    <span className="font-bold text-[#1c1917] uppercase tracking-wider text-[11px]">
+                      Betalningsinformation
+                    </span>
                   </div>
-                  <span className="font-mono font-bold text-[#1c1917]">123 456 78 90</span>
+
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="bg-white p-3 rounded-lg border border-[#e7e2d7]">
+                      <span className="text-[10px] uppercase font-bold text-stone-400 block">Bankgiro</span>
+                      <span className="font-mono text-sm font-bold text-[#1c1917] block mt-0.5">{bankgiro}</span>
+                      <span className="text-[10px] text-stone-500 truncate block">Mottagare: {companyName}</span>
+                    </div>
+
+                    <div className="bg-white p-3 rounded-lg border border-[#e7e2d7]">
+                      <span className="text-[10px] uppercase font-bold text-stone-400 block">Referens (OCR)</span>
+                      <span className="font-mono text-sm font-bold text-[#1c1917] block mt-0.5">{invoiceNum}</span>
+                      <span className="text-[10px] text-stone-500 block">Ange vid betalning</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-1 text-[11px] text-stone-500">
+                    Betalning ska vara oss tillhanda senast förfallodagen <strong>{dueDate}</strong>.
+                  </div>
                 </div>
-                <span className="text-[11px] text-stone-500">Scanna i Swish-appen</span>
+
+                {/* Right: Dynamic Swish Företag QR Code */}
+                <div className="sm:col-span-5 bg-white p-3.5 rounded-xl border border-[#e7e2d7] flex items-center gap-3.5 shadow-2xs">
+                  <div className="w-24 h-24 shrink-0 bg-white rounded-lg p-1 border border-[#e7e2d7] flex items-center justify-center swish-qr-svg">
+                    {swishSvg ? (
+                      <div 
+                        dangerouslySetInnerHTML={{ __html: swishSvg }}
+                        className="w-full h-full flex items-center justify-center"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-stone-100 rounded text-stone-400">
+                        <QrCode className="w-8 h-8" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-1 text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-4 h-4 rounded-full bg-[#15803d] text-white text-[9px] font-bold flex items-center justify-center">
+                        S
+                      </span>
+                      <span className="font-bold text-[#1c1917] text-xs">Swish Företag</span>
+                    </div>
+                    <p className="font-mono font-bold text-[#1c1917] text-xs">
+                      {swishNumber}
+                    </p>
+                    <p className="text-[10px] text-stone-500 leading-tight">
+                      Scanna med Swish-appen för ifylld betalning
+                    </p>
+                    <div className="pt-1">
+                      <a
+                        href={swishDeepLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-[#15803d] hover:underline"
+                      >
+                        <span>Öppna i Swish</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
               </div>
+            </div>
+
+            {/* Bottom Official Disclaimer Footer */}
+            <div className="pt-2 text-center text-[10px] text-stone-400 border-t border-[#e7e2d7]">
+              <span>{companyName} • Org.nr {cleanOrgNr} • Momsnr {vatNumber} • {hasFSkatt ? 'Godkänd för F-skatt' : 'Ej godkänd för F-skatt'}</span>
             </div>
 
           </div>
