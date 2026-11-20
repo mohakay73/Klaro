@@ -292,7 +292,7 @@ export default function DashboardPage() {
 
   const handleLoadDemoBankData = () => {
     const acc = tinkClient.getMockSandboxAccounts('handelsbanken')[0];
-    const txs = tinkClient.getMockSandboxTransactions('acc-handelsbanken-main');
+    const txs = tinkClient.getMockSandboxTransactions('acc-handelsbanken-main', receipts, invoices);
     setConnectedAccount(acc);
     setBankTransactions(txs);
     if (typeof window !== 'undefined') {
@@ -317,9 +317,13 @@ export default function DashboardPage() {
   };
 
   const handleUpdateTransaction = (updatedTx: PSD2Transaction) => {
-    setBankTransactions((prev) =>
-      prev.map((t) => (t.id === updatedTx.id ? updatedTx : t))
-    );
+    setBankTransactions((prev) => {
+      const next = prev.map((t) => (t.id === updatedTx.id ? updatedTx : t));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('klaro_bank_transactions', JSON.stringify(next));
+      }
+      return next;
+    });
   };
 
   const handleSyncTransactions = async () => {
@@ -673,7 +677,7 @@ export default function DashboardPage() {
                 receipts={filteredReceipts}
                 invoices={filteredInvoices}
                 companyType={businessConfig.companyType}
-                onOpenUpload={() => setIsUploadOpen(true)}
+                onOpenUpload={(mode = 'default') => handleOpenUpload(mode)}
                 onOpenConnectBank={() => setIsOpenBankingOpen(true)}
                 onSyncTransactions={handleSyncTransactions}
                 onUpdateTransaction={handleUpdateTransaction}

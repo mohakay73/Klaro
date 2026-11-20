@@ -29,7 +29,9 @@ import {
   ShieldAlert,
   ChevronRight,
   SlidersHorizontal,
-  ExternalLink
+  ExternalLink,
+  Camera,
+  Download
 } from 'lucide-react';
 
 interface BankReconciliationTabProps {
@@ -38,7 +40,7 @@ interface BankReconciliationTabProps {
   receipts?: Receipt[];
   invoices?: Invoice[];
   companyType?: CompanyType;
-  onOpenUpload: () => void;
+  onOpenUpload: (mode?: 'default' | 'camera' | 'text') => void;
   onOpenConnectBank: () => void;
   onSyncTransactions: () => Promise<void>;
   onUpdateTransaction?: (updatedTx: PSD2Transaction) => void;
@@ -157,6 +159,30 @@ export function BankReconciliationTab({
       `Bokförde ${newTxs.length} banktransaktioner från dina kvitton. Båda är nu fullständigt avstämda mot banken!`
     );
     setTimeout(() => setImportNotification(null), 8000);
+  };
+
+  const handleDownloadSampleCsv = () => {
+    const headers = 'Bokföringsdatum;Transaktionsdatum;Text;Belopp;Bokfört saldo';
+    const rows = [
+      '2026-11-18;2026-11-18;Kortköp CIRCLE K SÖDERMÄLARSTRAND;-680,00;154285,00',
+      '2026-11-17;2026-11-17;Kortköp HOTEL AT SIX STOCKHOLM;-2450,00;154965,00',
+      '2026-11-16;2026-11-16;Klarna Bankgiro utb: KONTORSMATERIAL;-1290,00;157415,00',
+      '2026-11-15;2026-11-15;Swish till privat konto;-1500,00;158705,00',
+      '2026-11-14;2026-11-14;Bankgiro inbetalning: SPOTIFY AB FAKTURA-2026-001;45000,00;160205,00',
+      '2026-11-10;2026-11-10;Kortköp BAUHAUS BARKARBY;-1502,00;115205,00',
+      '2026-11-05;2026-11-05;Kortköp APPLE RETAIL SWEDEN TÄBY;-19990,00;116707,00',
+      '2026-11-02;2026-11-02;Kortköp JYSK SVERIGE;-350,00;136697,00',
+    ];
+    const csvContent = '\uFEFF' + [headers, ...rows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'swedbank-kontoutdrag-exempel.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // Quick Receipt Creator State inside the link modal
@@ -343,6 +369,15 @@ export function BankReconciliationTab({
                 onChange={handleCsvFileInput}
               />
             </label>
+
+            <button
+              onClick={handleDownloadSampleCsv}
+              className="px-4 py-2.5 rounded-xl border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] text-stone-700 text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer"
+              title="Ladda ner ett förifyllt svenskt bankkontoutdrag (Swedbank CSV) för testning"
+            >
+              <Download className="w-4 h-4 text-[#d97706]" />
+              <span>Ladda ner Swedbank exempel-CSV</span>
+            </button>
           </div>
 
           {onLoadDemoBankData && (
@@ -409,6 +444,15 @@ export function BankReconciliationTab({
                 className="px-3.5 py-2 rounded-xl border border-[#e7e2d7] bg-[#f7f4ee] hover:bg-[#eee8dc] text-stone-700 text-xs font-semibold transition shadow-xs cursor-pointer"
               >
                 Byt bank
+              </button>
+
+              <button
+                onClick={handleDownloadSampleCsv}
+                className="px-3 py-2 rounded-xl border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] text-stone-700 text-xs font-semibold flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+                title="Ladda ner Swedbank exempel-CSV för testning"
+              >
+                <Download className="w-3.5 h-3.5 text-[#d97706]" />
+                <span>Exempel-CSV</span>
               </button>
 
               {onClearBankData && (
@@ -512,6 +556,15 @@ export function BankReconciliationTab({
               </div>
             </div>
           )}
+
+          {receipts.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-[#e7e2d7] bg-white p-8 text-center space-y-2">
+              <p className="text-sm font-semibold text-[#1c1917]">Inga kvitton eller banktransaktioner inlästa än</p>
+              <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                Börja med att ladda upp eller fota ett kvitto, importera ett kontoutdrag (CSV), eller klicka på &apos;Ladda exempeltransaktioner&apos; ovan för att testa bankavstämningen.
+              </p>
+            </div>
+          )}
         </div>
       ) : (
         <>
@@ -591,7 +644,7 @@ export function BankReconciliationTab({
             onClick={() => setStatusFilter('ALL')}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer whitespace-nowrap ${
               statusFilter === 'ALL'
-                ? 'bg-[#0c3123] text-white shadow-2xs font-semibold'
+                ? 'bg-[#1c1917] text-white shadow-2xs font-semibold'
                 : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
             }`}
           >
@@ -650,7 +703,7 @@ export function BankReconciliationTab({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Sök handlare, belopp, konto..."
-            className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-[#0c3123]/20 focus:border-[#0c3123] transition shadow-2xs"
+            className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-[#d97706]/20 focus:border-[#d97706] transition shadow-2xs"
           />
           {searchQuery && (
             <button
@@ -759,15 +812,23 @@ export function BankReconciliationTab({
                       <span>Visa kontering</span>
                     </button>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap justify-end">
                       {isMissing && (
                         <>
                           <button
+                            onClick={() => onOpenUpload('camera')}
+                            className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold border border-amber-300 transition flex items-center gap-1 active:scale-95"
+                            title="Fota kvitto med mobilkameran"
+                          >
+                            <Camera className="w-3.5 h-3.5 text-amber-700" />
+                            <span>Fota kvitto</span>
+                          </button>
+                          <button
                             onClick={() => setSelectedTxForLink(tx)}
-                            className="px-3 py-1.5 rounded-lg bg-[#0c3123] text-white text-xs font-semibold shadow-xs active:scale-95 transition flex items-center gap-1"
+                            className="px-3 py-1.5 rounded-lg bg-[#1c1917] hover:bg-black text-white text-xs font-semibold shadow-xs active:scale-95 transition flex items-center gap-1"
                           >
                             <Link2 className="w-3 h-3" />
-                            <span>Koppla kvitto</span>
+                            <span>Koppla</span>
                           </button>
                           <button
                             onClick={(e) => handleTogglePrivateDraw(tx, e)}
@@ -853,7 +914,7 @@ export function BankReconciliationTab({
                             )}
                           </span>
                           <div>
-                            <div className="font-semibold text-zinc-900 group-hover:text-[#0c3123] transition flex items-center gap-2">
+                            <div className="font-semibold text-zinc-900 group-hover:text-[#d97706] transition flex items-center gap-2">
                               <span>{tx.description}</span>
                               {tx.reference && (
                                 <span className="font-mono text-[10px] text-zinc-400 font-normal">
@@ -930,8 +991,17 @@ export function BankReconciliationTab({
                         {isMissing ? (
                           <div className="flex items-center justify-end gap-1.5">
                             <button
+                              onClick={() => onOpenUpload('camera')}
+                              className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 text-[11px] font-semibold border border-amber-300 transition shadow-2xs flex items-center gap-1 cursor-pointer active:scale-95"
+                              title="Fota kvitto med mobilkameran direkt"
+                            >
+                              <Camera className="w-3 h-3 text-amber-700" />
+                              <span>Fota</span>
+                            </button>
+
+                            <button
                               onClick={() => setSelectedTxForLink(tx)}
-                              className="px-2.5 py-1 rounded-lg bg-[#0c3123] hover:bg-[#144734] text-white text-[11px] font-semibold transition shadow-xs flex items-center gap-1 cursor-pointer active:scale-95"
+                              className="px-2.5 py-1 rounded-lg bg-[#1c1917] hover:bg-black text-white text-[11px] font-semibold transition shadow-xs flex items-center gap-1 cursor-pointer active:scale-95"
                               title="Koppla eller generera kvitto för denna transaktion"
                             >
                               <Link2 className="w-3 h-3" />
@@ -983,8 +1053,8 @@ export function BankReconciliationTab({
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#0c3123]/10 border border-[#0c3123]/20 flex items-center justify-center text-[#0c3123]">
-                  <Link2 className="w-4 h-4" />
+                <div className="w-9 h-9 rounded-xl bg-[#1c1917]/10 border border-[#1c1917]/20 flex items-center justify-center text-[#1c1917]">
+                  <Link2 className="w-4 h-4 text-[#d97706]" />
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-zinc-900">Koppla underlag till banktransaktion</h3>
@@ -1014,6 +1084,18 @@ export function BankReconciliationTab({
               </div>
             </div>
 
+            {/* Quick Mobile Camera Trigger */}
+            <button
+              onClick={() => {
+                setSelectedTxForLink(null);
+                onOpenUpload('camera');
+              }}
+              className="w-full py-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-xs active:scale-98"
+            >
+              <Camera className="w-4 h-4 text-amber-700" />
+              <span>Fota kvitto med mobilkameran direkt</span>
+            </button>
+
             {/* Option A: Quick Generate Digital Verifikat */}
             <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-3">
               <div className="flex items-center justify-between">
@@ -1032,7 +1114,7 @@ export function BankReconciliationTab({
                   <select
                     value={quickVatRate}
                     onChange={(e) => setQuickVatRate(Number(e.target.value) as SwedishVatRate)}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#0c3123]"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#d97706]"
                   >
                     <option value={25}>25% Moms (Standard, IT, Konsult)</option>
                     <option value={12}>12% Moms (Mat, Hotell)</option>
@@ -1046,7 +1128,7 @@ export function BankReconciliationTab({
                   <select
                     value={quickCategory}
                     onChange={(e) => setQuickCategory(e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#0c3123]"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#d97706]"
                   >
                     <option value="Programvaror & Molntjänster">Programvaror (BAS 5420)</option>
                     <option value="Persontransport (Tåg, Taxi, Flyg)">Resor & Transport (BAS 5800)</option>
@@ -1059,7 +1141,7 @@ export function BankReconciliationTab({
 
               <button
                 onClick={() => handleCreateAndMatchReceipt(selectedTxForLink)}
-                className="w-full py-2.5 rounded-xl bg-[#0c3123] hover:bg-[#144734] text-white text-xs font-semibold transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-[#1c1917] hover:bg-black text-white text-xs font-semibold transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Skapa verifikat & Avstäm transaktion</span>
@@ -1113,7 +1195,7 @@ export function BankReconciliationTab({
                   setSelectedTxForLink(null);
                   onOpenUpload();
                 }}
-                className="text-[#0c3123] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                className="text-[#d97706] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
               >
                 <Upload className="w-3.5 h-3.5" />
                 <span>Ladda upp kvittofil (PDF/JPG)</span>
@@ -1294,7 +1376,7 @@ export function BankReconciliationTab({
                     setSelectedTxForDetails(null);
                     setSelectedTxForLink(tx);
                   }}
-                  className="px-4 py-2 rounded-xl bg-[#0c3123] hover:bg-[#144734] text-white text-xs font-semibold cursor-pointer transition"
+                  className="px-4 py-2 rounded-xl bg-[#1c1917] hover:bg-black text-white text-xs font-semibold cursor-pointer transition shadow-xs"
                 >
                   Koppla kvitto nu
                 </button>

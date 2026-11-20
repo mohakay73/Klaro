@@ -1,4 +1,5 @@
 import { ConnectedBankAccount, PSD2Transaction, SwedishBankId, SWEDISH_BANKS } from './types';
+import { Receipt, Invoice } from '@/types/database';
 
 export class TinkOpenBankingClient {
   private clientId: string;
@@ -99,20 +100,23 @@ export class TinkOpenBankingClient {
       accountNumber: acc.accountNumber || '6123-123 456 789',
       iban: acc.identifiers?.iban?.iban || 'SE4560000000000123456789',
       currency: acc.currencyCode || 'SEK',
-      balance: acc.balances?.booked?.amount?.value?.unscaledValue 
-        ? acc.balances.booked.amount.value.unscaledValue / 100 
-        : 154285,
+      balance: acc.balances?.booked?.amount?.value || 0,
       lastSyncedAt: new Date().toISOString(),
       status: 'active' as const,
     }));
   }
 
   /**
-   * Fetches booked transactions for an account
+   * Fetches transactions for an account
    */
-  public async getTransactions(accessToken: string, accountId: string): Promise<PSD2Transaction[]> {
+  public async getTransactions(
+    accessToken: string,
+    accountId: string,
+    currentReceipts: Receipt[] = [],
+    currentInvoices: Invoice[] = []
+  ): Promise<PSD2Transaction[]> {
     if (!this.isLiveConfigured()) {
-      return this.getMockSandboxTransactions(accountId);
+      return this.getMockSandboxTransactions(accountId, currentReceipts, currentInvoices);
     }
 
     const res = await fetch(`https://api.tink.com/data/v2/transactions?accountId=${accountId}`, {
@@ -127,16 +131,20 @@ export class TinkOpenBankingClient {
 
     const json = await res.json();
     return json.transactions.map((t: any) => {
-      const amount = (t.amount?.value?.unscaledValue || 0) / 100;
+      const amount = t.amount?.value?.unscaledValue 
+        ? t.amount.value.unscaledValue / Math.pow(10, t.amount.value.scale) 
+        : 0;
+
       return {
         id: t.id,
-        accountId,
+        accountId: t.accountId,
         bookingDate: t.dates?.booked || new Date().toISOString().split('T')[0],
-        valueDate: t.dates?.value || t.dates?.booked,
+        valueDate: t.dates?.value || new Date().toISOString().split('T')[0],
         amount,
         currency: t.amount?.currencyCode || 'SEK',
-        description: t.descriptions?.original || 'Korttransaktion',
-        merchantName: t.merchantInformation?.merchantName,
+        description: t.descriptions?.original || 'Okänd korttransaktion',
+        merchantName: t.descriptions?.display,
+        category: t.categories?.pfm?.name,
         reference: t.reference,
         reconciliationStatus: 'pending' as const,
       };
@@ -173,150 +181,118 @@ export class TinkOpenBankingClient {
     ];
   }
 
-  public getMockSandboxTransactions(accountId: string): PSD2Transaction[] {
-    return [
+  /**
+   * Generates realistic Swedish bank transactions matching the user's real receipts
+   * plus authentic missing-receipt expenses (Hotel, Gas, Hardware) to showcase tax risk alerts.
+   */
+  public getMockSandboxTransactions(
+    accountId: string,
+    currentReceipts: Receipt[] = [],
+    currentInvoices: Invoice[] = []
+  ): PSD2Transaction[] {
+    const txs: PSD2Transaction[] = [];
+
+    // 1. If user has real receipts, create matching bank transactions for each
+    if (currentReceipts && currentReceipts.length > 0) {
+      currentReceipts.forEach((rec, idx) => {
+        const rawDate = typeof rec.invoice_date === 'string' 
+          ? rec.invoice_date.split('T')[0] 
+          : String(rec.invoice_date).split('T')[0];
+
+        txs.push({
+          id: `tx-match-${rec.id}`,
+          accountId,
+          bookingDate: rawDate,
+          valueDate: rawDate,
+          amount: -Number(rec.total_amount),
+          currency: rec.currency || 'SEK',
+          description: `Kortköp ${rec.vendor_name.toUpperCase()}`,
+          merchantName: rec.vendor_name,
+          category: rec.category,
+          basAccount: rec.raw_ai_response?.bas_account || '5400',
+          matchedReceiptId: rec.id,
+          reconciliationStatus: 'reconciled',
+        });
+      });
+    }
+
+    // 2. Realistic business transactions that SAKNAR KVITTO (Unreconciled) -> Triggers Skatterisk banner!
+    txs.push(
       {
-        id: 'psd2-tx-101',
+        id: 'psd2-missing-1',
         accountId,
-        bookingDate: '2026-04-05',
-        valueDate: '2026-04-05',
-        amount: 106250.00,
+        bookingDate: '2026-11-17',
+        valueDate: '2026-11-17',
+        amount: -2450.00,
         currency: 'SEK',
-        description: 'Bankgiro inbetalning: SPOTIFY AB FAKTURA-2026-001',
-        merchantName: 'Spotify AB',
-        reference: 'FAKTURA-2026-001',
-        category: 'Försäljning tjänster 25%',
-        basAccount: '1510',
-        matchedInvoiceId: 'inv-101',
-        reconciliationStatus: 'reconciled',
-      },
-      {
-        id: 'psd2-tx-102',
-        accountId,
-        bookingDate: '2026-04-10',
-        valueDate: '2026-04-10',
-        amount: -720.00,
-        currency: 'SEK',
-        description: 'Kortköp ADOBE *CREATIVE CLOUD DUBLIN',
-        merchantName: 'Adobe Systems Software',
-        category: 'Programvaror & Molntjänster',
-        basAccount: '5420',
-        matchedReceiptId: 'rec-201',
-        reconciliationStatus: 'reconciled',
-      },
-      {
-        id: 'psd2-tx-103',
-        accountId,
-        bookingDate: '2026-04-15',
-        valueDate: '2026-04-15',
-        amount: -1195.00,
-        currency: 'SEK',
-        description: 'Kortköp SJ AB INTERNET STOCKHOLM',
-        merchantName: 'SJ AB',
-        category: 'Persontransport',
-        basAccount: '5800',
-        matchedReceiptId: 'rec-202',
-        reconciliationStatus: 'reconciled',
-      },
-      {
-        id: 'psd2-tx-104',
-        accountId,
-        bookingDate: '2026-04-16',
-        valueDate: '2026-04-16',
-        amount: -185.00,
-        currency: 'SEK',
-        description: 'Kortköp ESPRESSO HOUSE STOCKHOLM C',
-        merchantName: 'Espresso House Sweden AB',
-        category: 'Måltider & Representation',
-        basAccount: '6072',
-        matchedReceiptId: 'rec-203',
-        reconciliationStatus: 'reconciled',
-      },
-      {
-        id: 'psd2-tx-105',
-        accountId,
-        bookingDate: '2026-04-20',
-        valueDate: '2026-04-20',
-        amount: -6490.00,
-        currency: 'SEK',
-        description: 'Klarna Bankgiro utb: WEBHALLEN SVERIGE AB',
-        merchantName: 'Webhallen Sverige AB',
-        category: 'Kontorsmaterial & Datatillbehör',
-        basAccount: '5410',
-        matchedReceiptId: 'rec-204',
-        reconciliationStatus: 'reconciled',
-      },
-      {
-        id: 'psd2-tx-106',
-        accountId,
-        bookingDate: '2026-04-24',
-        valueDate: '2026-04-24',
-        amount: -149.00,
-        currency: 'SEK',
-        description: 'Kortköp APPLE.COM/BILL ITUNES.COM',
-        merchantName: 'Apple Distribution International',
-        category: 'Programvaror & Molntjänster',
-        basAccount: '5420',
-        reconciliationStatus: 'missing_receipt',
-      },
-      {
-        id: 'psd2-tx-107',
-        accountId,
-        bookingDate: '2026-04-28',
-        valueDate: '2026-04-28',
-        amount: -129.00,
-        currency: 'SEK',
-        description: 'Kortköp FLYGBUSSARNA STOCKHOLM C',
-        merchantName: 'Flygbussarna Airport Coaches',
-        category: 'Persontransport',
+        description: 'Kortköp HOTEL AT SIX STOCKHOLM',
+        merchantName: 'Hotel At Six Stockholm',
+        category: 'Hotell & Resor',
         basAccount: '5800',
         reconciliationStatus: 'missing_receipt',
       },
       {
-        id: 'psd2-tx-108',
+        id: 'psd2-missing-2',
         accountId,
-        bookingDate: '2026-05-02',
-        valueDate: '2026-05-02',
-        amount: 19080.00,
+        bookingDate: '2026-11-18',
+        valueDate: '2026-11-18',
+        amount: -680.00,
         currency: 'SEK',
-        description: 'Bankgiro inbetalning: GÖTEBORGS STAD FAKTURA-2026-003',
-        merchantName: 'Göteborgs Stad',
-        reference: 'FAKTURA-2026-003',
-        category: 'Försäljning kultur/skola 6%',
-        basAccount: '1510',
-        matchedInvoiceId: 'inv-103',
-        reconciliationStatus: 'reconciled',
+        description: 'Kortköp CIRCLE K SÖDERMÄLARSTRAND',
+        merchantName: 'Circle K Sverige AB',
+        category: 'Drivmedel & Transport',
+        basAccount: '5800',
+        reconciliationStatus: 'missing_receipt',
       },
       {
-        id: 'psd2-tx-109',
+        id: 'psd2-missing-3',
         accountId,
-        bookingDate: '2026-05-05',
-        valueDate: '2026-05-05',
-        amount: -340.00,
+        bookingDate: '2026-11-16',
+        valueDate: '2026-11-16',
+        amount: -1290.00,
         currency: 'SEK',
-        description: 'Swish betalning: ICA Supermarket Hornstull',
-        merchantName: 'ICA Supermarket',
-        category: 'Privat / Eget uttag',
-        basAccount: '2013',
-        reconciliationStatus: 'private_draw',
-        note: 'Privat matinköp - bokförs som eget uttag (påverkar ej resultatet)',
-      },
-      {
-        id: 'psd2-tx-110',
-        accountId,
-        bookingDate: '2026-05-12',
-        valueDate: '2026-05-12',
-        amount: 56250.00,
-        currency: 'SEK',
-        description: 'Bankgiro inbetalning: KLARNA BANK AB FAKTURA-2026-002',
+        description: 'Klarna Bankgiro utb: KONTORSMATERIAL',
         merchantName: 'Klarna Bank AB',
-        reference: 'FAKTURA-2026-002',
-        category: 'Försäljning tjänster 25%',
-        basAccount: '1510',
-        matchedInvoiceId: 'inv-102',
-        reconciliationStatus: 'reconciled',
-      },
-    ];
+        category: 'Kontorsmaterial & Trycksaker',
+        basAccount: '5410',
+        reconciliationStatus: 'missing_receipt',
+      }
+    );
+
+    // 3. Private draw (Eget uttag 2013)
+    txs.push({
+      id: 'psd2-private-1',
+      accountId,
+      bookingDate: '2026-11-15',
+      valueDate: '2026-11-15',
+      amount: -1500.00,
+      currency: 'SEK',
+      description: 'Swish till privat konto',
+      merchantName: 'Swish Privat',
+      category: 'Privat / Eget uttag',
+      basAccount: '2013',
+      reconciliationStatus: 'private_draw',
+      note: 'Eget uttag (Enskild firma) - påverkar ej resultatet',
+    });
+
+    // 4. Inbound customer invoice revenue
+    txs.push({
+      id: 'psd2-income-1',
+      accountId,
+      bookingDate: '2026-11-14',
+      valueDate: '2026-11-14',
+      amount: 45000.00,
+      currency: 'SEK',
+      description: 'Bankgiro inbetalning: SPOTIFY AB FAKTURA-2026-001',
+      merchantName: 'Spotify AB',
+      reference: 'FAKTURA-2026-001',
+      category: 'Försäljning tjänster 25%',
+      basAccount: '1510',
+      reconciliationStatus: 'reconciled',
+    });
+
+    // Sort by bookingDate DESC
+    return txs.sort((a, b) => new Date(b.bookingDate).getTime() - new Date(a.bookingDate).getTime());
   }
 }
 
