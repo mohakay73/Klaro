@@ -458,6 +458,19 @@ export default function DashboardPage() {
       if (params.get('view') === 'landing') {
         setActiveView('landing');
       }
+      if (params.get('view') === 'bank') {
+        setActiveView('bank');
+      }
+      if (params.get('bankConnected') === 'true') {
+        setActiveView('bank');
+        try {
+          const bankCookie = document.cookie.split('; ').find((row) => row.startsWith('klaro_connected_bank='));
+          if (bankCookie) {
+            const parsed = JSON.parse(decodeURIComponent(bankCookie.split('=')[1]));
+            setConnectedAccount(parsed);
+          }
+        } catch {}
+      }
       savedHidePref = localStorage.getItem('klaro_hide_sample_data') === 'true';
       const hideBankMock = localStorage.getItem('klaro_hide_bank_mock') === 'true';
       const savedBankTx = localStorage.getItem('klaro_bank_transactions');

@@ -12,6 +12,12 @@ export class TinkOpenBankingClient {
     this.environment = process.env.TINK_ENVIRONMENT || 'sandbox';
   }
 
+  public setCredentials(clientId: string, clientSecret: string, environment: string = 'sandbox') {
+    this.clientId = clientId;
+    this.clientSecret = clientSecret;
+    this.environment = environment;
+  }
+
   public isLiveConfigured(): boolean {
     return (
       Boolean(this.clientId) &&
