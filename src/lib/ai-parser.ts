@@ -1,9 +1,21 @@
 import { ParsedReceiptData, SwedishVatRate, SWEDISH_BAS_CATEGORIES } from '@/types/tax';
 
-const SWEDISH_TAX_SYSTEM_PROMPT = `
+function getSwedishTaxSystemPrompt(): string {
+  const today = new Date().toISOString().split('T')[0];
+  const year = new Date().getFullYear();
+  return `
 You are a licensed Swedish accountant (auktoriserad redovisningskonsult) and tax expert specialized in Skatteverket rules for Swedish freelancers (enskild firma) and micro-aktiebolag.
 
 Your task is to analyze receipt text or invoice details and extract structured accounting and VAT (moms) data.
+
+Current date context:
+- TODAY'S DATE: ${today}
+- CURRENT YEAR: ${year}
+
+Date Extraction Rules:
+- If a clear transaction or receipt date is present (e.g. 2026-11-19, 19 nov 2026, 19/11/26), extract that exact date in YYYY-MM-DD format.
+- If NO clear transaction date is mentioned in the text or email, YOU MUST DEFAULT TO TODAY'S DATE (${today}). NEVER invent or hallucinate random past dates like 2024 or 2023!
+- If only month and day are present (e.g. "19 nov"), assume the current year (${year}).
 
 Strict Swedish VAT (Moms) brackets according to Mervärdesskattelagen (ML):
 - 25% (Standard): Most goods & services, consulting, SaaS, software licenses, IT hardware, telephony, legal services, advertising, office supplies.
@@ -19,6 +31,7 @@ Rules:
 5. If the vendor is outside Sweden (e.g. GitHub, Google, OpenAI, AWS) and 0% VAT is charged under EU reverse charge, set vat_rate to 0 and category to "Programvaror & Molntjänster (Omvänd skattskyldighet)".
 6. Map the category to one of the standard Swedish BAS categories.
 `;
+}
 
 const SWEDISH_RECEIPT_SCHEMA = {
   type: "object",
@@ -108,7 +121,7 @@ async function parseWithGemini(
 ): Promise<ParsedReceiptData> {
   const parts: any[] = [
     {
-      text: `${SWEDISH_TAX_SYSTEM_PROMPT}
+      text: `${getSwedishTaxSystemPrompt()}
 
 Vänligen analysera detta svenska kvitto/faktura och extrahera strukturerad redovisningsdata.
 Svara med ett giltigt JSON-objekt som strikt följer detta schema:
@@ -187,7 +200,7 @@ async function parseWithOpenAI(
   apiKey: string
 ): Promise<ParsedReceiptData> {
   const messages: any[] = [
-    { role: "system", content: SWEDISH_TAX_SYSTEM_PROMPT }
+    { role: "system", content: getSwedishTaxSystemPrompt() }
   ];
 
   if (input.base64Image) {
@@ -280,7 +293,7 @@ async function parseWithAnthropic(
     body: JSON.stringify({
       model: "claude-3-5-haiku-20241022",
       max_tokens: 1000,
-      system: SWEDISH_TAX_SYSTEM_PROMPT + "\nReturn ONLY a valid JSON object matching the schema, with no markdown code blocks.",
+      system: getSwedishTaxSystemPrompt() + "\nReturn ONLY a valid JSON object matching the schema, with no markdown code blocks.",
       messages: [{ role: "user", content }],
       temperature: 0.1,
     })

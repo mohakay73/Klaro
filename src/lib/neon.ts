@@ -18,7 +18,7 @@ export async function getReceiptsFromNeon(userId: string = DEFAULT_USER_ID): Pro
   try {
     const sql = getDb();
     const rows = await sql.query(
-      `SELECT * FROM receipts WHERE user_id = $1 ORDER BY invoice_date DESC, created_at DESC;`,
+      `SELECT * FROM receipts WHERE user_id = $1 ORDER BY created_at DESC, invoice_date DESC;`,
       [userId]
     );
 
@@ -137,6 +137,14 @@ export async function updateReceiptInNeon(
     if (updates.status !== undefined) {
       sets.push(`status = $${idx++}`);
       values.push(updates.status);
+    }
+    if (updates.invoice_date !== undefined) {
+      sets.push(`invoice_date = $${idx++}`);
+      values.push(updates.invoice_date);
+    }
+    if (updates.vendor_name !== undefined) {
+      sets.push(`vendor_name = $${idx++}`);
+      values.push(updates.vendor_name);
     }
     if (updates.vat_rate !== undefined) {
       sets.push(`vat_rate = $${idx++}`);

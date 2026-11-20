@@ -236,6 +236,19 @@ export default function DashboardPage() {
     }).catch((err) => console.warn('Receipt update notice:', err));
   };
 
+  const handleUpdateReceiptDate = (id: string, newDate: string) => {
+    setReceipts((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, invoice_date: newDate } : r))
+    );
+
+    // Update in database
+    fetch('/api/receipts', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, invoice_date: newDate, userId: currentUser?.id }),
+    }).catch((err) => console.warn('Receipt date update notice:', err));
+  };
+
   const handleExportSIE = () => {
     const sieContent = generateSIE4File({
       companyName: businessConfig.companyName,
@@ -553,6 +566,7 @@ export default function DashboardPage() {
                 onDeleteReceipt={handleDeleteReceipt}
                 onVerifyReceipt={handleVerifyReceipt}
                 onUpdateReceiptVatRate={handleUpdateReceiptVatRate}
+                onUpdateReceiptDate={handleUpdateReceiptDate}
                 onExportSIE={handleExportSIE}
               />
             </div>

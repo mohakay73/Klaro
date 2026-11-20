@@ -29,6 +29,7 @@ interface ReceiptsTableProps {
   onDeleteReceipt?: (id: string) => void;
   onVerifyReceipt?: (id: string) => void;
   onUpdateReceiptVatRate?: (id: string, rate: SwedishVatRate) => void;
+  onUpdateReceiptDate?: (id: string, newDate: string) => void;
   onExportSIE?: () => void;
 }
 
@@ -37,15 +38,19 @@ export function ReceiptsTable({
   onDeleteReceipt,
   onVerifyReceipt,
   onUpdateReceiptVatRate,
+  onUpdateReceiptDate,
   onExportSIE,
 }: ReceiptsTableProps) {
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [vatFilter, setVatFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [sortBy, setSortBy] = useState<'created_desc' | 'date_desc' | 'date_asc' | 'amount_desc'>('created_desc');
+  const [isEditingDate, setIsEditingDate] = useState(false);
+  const [editDateValue, setEditDateValue] = useState('');
 
   const filteredReceipts = useMemo(() => {
-    return receipts.filter((rec) => {
+    const list = receipts.filter((rec) => {
       // Search text match
       const query = searchQuery.toLowerCase().trim();
       const matchesSearch = 
@@ -66,7 +71,29 @@ export function ReceiptsTable({
 
       return matchesSearch && matchesVat && matchesStatus;
     });
-  }, [receipts, searchQuery, vatFilter, statusFilter]);
+
+    return list.sort((a, b) => {
+      if (sortBy === 'created_desc') {
+        const timeA = new Date(a.created_at || a.invoice_date).getTime();
+        const timeB = new Date(b.created_at || b.invoice_date).getTime();
+        return timeB - timeA;
+      }
+      if (sortBy === 'date_desc') {
+        const dateA = new Date(a.invoice_date).getTime();
+        const dateB = new Date(b.invoice_date).getTime();
+        return dateB - dateA;
+      }
+      if (sortBy === 'date_asc') {
+        const dateA = new Date(a.invoice_date).getTime();
+        const dateB = new Date(b.invoice_date).getTime();
+        return dateA - dateB;
+      }
+      if (sortBy === 'amount_desc') {
+        return Number(b.total_amount) - Number(a.total_amount);
+      }
+      return 0;
+    });
+  }, [receipts, searchQuery, vatFilter, statusFilter, sortBy]);
 
   const hasActiveFilters = searchQuery.length > 0 || vatFilter !== 'ALL' || statusFilter !== 'ALL';
 
@@ -151,6 +178,18 @@ export function ReceiptsTable({
             <option value="ALL">Alla statusar</option>
             <option value="verified">Godkända verifikationer</option>
             <option value="parsed">Kräver granskning</option>
+          </select>
+
+          {/* Sortering Dropdown */}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="py-2 px-3 rounded-lg border border-[#e7e2d7] bg-[#f7f4ee] text-[#1c1917] font-medium focus:outline-none focus:bg-white focus:border-stone-400 text-sm shadow-2xs cursor-pointer"
+          >
+            <option value="created_desc">Sortera: Senast inkomna</option>
+            <option value="date_desc">Sortera: Fakturadatum (nyast)</option>
+            <option value="date_asc">Sortera: Fakturadatum (äldst)</option>
+            <option value="amount_desc">Sortera: Belopp (högst)</option>
           </select>
 
           {/* Clear Filters */}
@@ -497,7 +536,50 @@ export function ReceiptsTable({
                 </div>
                 <div>
                   <h3 className="font-bold text-base text-[#1c1917]">{selectedReceipt.vendor_name}</h3>
-                  <p className="text-xs text-stone-500 font-mono">{formatDate(selectedReceipt.invoice_date)}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {isEditingDate ? (
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="date"
+                          value={editDateValue}
+                          onChange={(e) => setEditDateValue(e.target.value)}
+                          className="px-2 py-0.5 text-xs font-mono border border-stone-300 rounded bg-white text-stone-900 focus:outline-none focus:border-stone-500"
+                        />
+                        <button
+                          onClick={() => {
+                            if (editDateValue && onUpdateReceiptDate) {
+                              onUpdateReceiptDate(selectedReceipt.id, editDateValue);
+                              setSelectedReceipt({ ...selectedReceipt, invoice_date: editDateValue });
+                            }
+                            setIsEditingDate(false);
+                          }}
+                          className="px-2 py-0.5 text-xs bg-[#1c1917] hover:bg-black text-white rounded font-medium cursor-pointer"
+                        >
+                          Spara
+                        </button>
+                        <button
+                          onClick={() => setIsEditingDate(false)}
+                          className="px-1.5 py-0.5 text-xs text-stone-500 hover:text-stone-800 cursor-pointer"
+                        >
+                          Avbryt
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-stone-500 font-mono">{formatDate(selectedReceipt.invoice_date)}</p>
+                        <button
+                          onClick={() => {
+                            setEditDateValue(selectedReceipt.invoice_date.split('T')[0]);
+                            setIsEditingDate(true);
+                          }}
+                          className="text-[11px] text-[#d97706] hover:underline font-semibold cursor-pointer"
+                          title="Klicka för att korrigera datum"
+                        >
+                          Ändra datum
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <button

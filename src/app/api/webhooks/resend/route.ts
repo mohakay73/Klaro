@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseReceiptWithAI } from '@/lib/ai-parser';
-import { insertReceiptIntoNeon, getOrCreateNeonProfile, DEFAULT_USER_ID } from '@/lib/neon';
+import { insertReceiptIntoNeon, getOrCreateNeonProfile, getDb, DEFAULT_USER_ID } from '@/lib/neon';
 import { saveReceiptFile } from '@/lib/file-storage';
 
 /**
@@ -100,8 +100,46 @@ export async function POST(req: NextRequest) {
     let savedReceipt = null;
     if (process.env.DATABASE_URL) {
       try {
+        const sql = getDb();
         const profile = await getOrCreateNeonProfile(fromAddress);
         const userId = profile?.id || DEFAULT_USER_ID;
+
+        // Deduplication 1: Check if this Resend email_id was already processed
+        if (emailId) {
+          const existingEmail = await sql.query(
+            `SELECT id, vendor_name, total_amount FROM receipts WHERE raw_ai_response->>'email_id' = $1 LIMIT 1;`,
+            [emailId]
+          );
+          if (existingEmail && existingEmail.length > 0) {
+            console.log(`Receipt already processed for email_id ${emailId}, skipping duplicate.`);
+            return NextResponse.json({
+              received: true,
+              deduplicated: true,
+              receipt_id: existingEmail[0].id,
+              message: 'Kvitto från detta e-postmeddelande har redan registrerats.',
+            });
+          }
+        }
+
+        // Deduplication 2: Check for identical vendor, amount and subject within the last 24 hours
+        const recentDuplicate = await sql.query(
+          `SELECT id FROM receipts 
+           WHERE user_id = $1 
+             AND vendor_name = $2 
+             AND total_amount = $3 
+             AND created_at > NOW() - INTERVAL '24 hours'
+           LIMIT 1;`,
+          [userId, parsedData.vendor_name, parsedData.total_amount]
+        );
+        if (recentDuplicate && recentDuplicate.length > 0) {
+          console.log(`Duplicate receipt found for ${parsedData.vendor_name} ${parsedData.total_amount} kr within 24h, skipping.`);
+          return NextResponse.json({
+            received: true,
+            deduplicated: true,
+            receipt_id: recentDuplicate[0].id,
+            message: 'Ett identiskt kvitto har redan registrerats det senaste dygnet.',
+          });
+        }
 
         savedReceipt = await insertReceiptIntoNeon({
           user_id: userId,
