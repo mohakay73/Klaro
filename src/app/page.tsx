@@ -52,12 +52,8 @@ export default function DashboardPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Connected Bank Account & PSD2 Transactions
-  const [connectedAccount, setConnectedAccount] = useState<ConnectedBankAccount | null>(
-    tinkClient.getMockSandboxAccounts('handelsbanken')[0]
-  );
-  const [bankTransactions, setBankTransactions] = useState<PSD2Transaction[]>(
-    tinkClient.getMockSandboxTransactions('acc-handelsbanken-main')
-  );
+  const [connectedAccount, setConnectedAccount] = useState<ConnectedBankAccount | null>(null);
+  const [bankTransactions, setBankTransactions] = useState<PSD2Transaction[]>([]);
 
   // Data collections
   const [invoices, setInvoices] = useState<Invoice[]>(INITIAL_INVOICES);
@@ -137,8 +133,13 @@ export default function DashboardPage() {
   const handleClearSampleData = () => {
     setHideSampleData(true);
     setIsSampleDataActive(false);
+    setConnectedAccount(null);
+    setBankTransactions([]);
     if (typeof window !== 'undefined') {
       localStorage.setItem('klaro_hide_sample_data', 'true');
+      localStorage.setItem('klaro_hide_bank_mock', 'true');
+      localStorage.removeItem('klaro_bank_transactions');
+      localStorage.removeItem('klaro_connected_account');
     }
     if (currentUser) {
       loadUserData(currentUser.id, true);
@@ -152,7 +153,10 @@ export default function DashboardPage() {
     setHideSampleData(false);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('klaro_hide_sample_data');
+      localStorage.removeItem('klaro_hide_bank_mock');
     }
+    setConnectedAccount(tinkClient.getMockSandboxAccounts('handelsbanken')[0]);
+    setBankTransactions(tinkClient.getMockSandboxTransactions('acc-handelsbanken-main'));
     if (currentUser) {
       loadUserData(currentUser.id, false);
     } else {
@@ -263,6 +267,47 @@ export default function DashboardPage() {
   const handleConnectBankAccount = (account: ConnectedBankAccount, txs: PSD2Transaction[]) => {
     setConnectedAccount(account);
     setBankTransactions(txs);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('klaro_connected_account', JSON.stringify(account));
+      localStorage.setItem('klaro_bank_transactions', JSON.stringify(txs));
+      localStorage.removeItem('klaro_hide_bank_mock');
+    }
+  };
+
+  const handleClearBankData = () => {
+    setConnectedAccount(null);
+    setBankTransactions([]);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('klaro_bank_transactions');
+      localStorage.removeItem('klaro_connected_account');
+      localStorage.setItem('klaro_hide_bank_mock', 'true');
+    }
+  };
+
+  const handleLoadDemoBankData = () => {
+    const acc = tinkClient.getMockSandboxAccounts('handelsbanken')[0];
+    const txs = tinkClient.getMockSandboxTransactions('acc-handelsbanken-main');
+    setConnectedAccount(acc);
+    setBankTransactions(txs);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('klaro_hide_bank_mock');
+      localStorage.setItem('klaro_connected_account', JSON.stringify(acc));
+      localStorage.setItem('klaro_bank_transactions', JSON.stringify(txs));
+    }
+  };
+
+  const handleImportCsvTransactions = (txs: PSD2Transaction[], account?: ConnectedBankAccount) => {
+    setBankTransactions(txs);
+    if (account) {
+      setConnectedAccount(account);
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('klaro_bank_transactions', JSON.stringify(txs));
+      if (account) {
+        localStorage.setItem('klaro_connected_account', JSON.stringify(account));
+      }
+      localStorage.setItem('klaro_hide_bank_mock', 'true');
+    }
   };
 
   const handleUpdateTransaction = (updatedTx: PSD2Transaction) => {
@@ -366,8 +411,24 @@ export default function DashboardPage() {
         setActiveView('landing');
       }
       savedHidePref = localStorage.getItem('klaro_hide_sample_data') === 'true';
+      const hideBankMock = localStorage.getItem('klaro_hide_bank_mock') === 'true';
+      const savedBankTx = localStorage.getItem('klaro_bank_transactions');
+      const savedBankAcc = localStorage.getItem('klaro_connected_account');
+
       if (savedHidePref) {
         setHideSampleData(true);
+      }
+
+      if (savedBankTx) {
+        try {
+          setBankTransactions(JSON.parse(savedBankTx));
+          if (savedBankAcc) {
+            setConnectedAccount(JSON.parse(savedBankAcc));
+          }
+        } catch {}
+      } else if (!savedHidePref && !hideBankMock) {
+        setConnectedAccount(tinkClient.getMockSandboxAccounts('handelsbanken')[0]);
+        setBankTransactions(tinkClient.getMockSandboxTransactions('acc-handelsbanken-main'));
       }
     }
 
@@ -609,6 +670,9 @@ export default function DashboardPage() {
                 onSyncTransactions={handleSyncTransactions}
                 onUpdateTransaction={handleUpdateTransaction}
                 onAddReceipt={handleReceiptAdded}
+                onClearBankData={handleClearBankData}
+                onImportCsvTransactions={handleImportCsvTransactions}
+                onLoadDemoBankData={handleLoadDemoBankData}
               />
             </div>
           )}

@@ -4,7 +4,8 @@ import React, { useState, useMemo } from 'react';
 import { PSD2Transaction, ConnectedBankAccount, ReconciliationStatus } from '@/lib/open-banking/types';
 import { Receipt, Invoice, SwedishVatRate, CompanyType } from '@/types/database';
 import { formatSEK, formatDate } from '@/lib/utils';
-import { calculateTaxDeductionLoss } from '@/lib/open-banking/reconciliation-engine';
+import { calculateTaxDeductionLoss, reconcileTransactions } from '@/lib/open-banking/reconciliation-engine';
+import { parseSwedishBankCsv } from '@/lib/open-banking/csv-importer';
 import { 
   Landmark, 
   CheckCircle2, 
@@ -43,6 +44,9 @@ interface BankReconciliationTabProps {
   onUpdateTransaction?: (updatedTx: PSD2Transaction) => void;
   onLinkReceiptToTransaction?: (txId: string, receipt: Receipt) => void;
   onAddReceipt?: (receipt: Receipt) => void;
+  onClearBankData?: () => void;
+  onImportCsvTransactions?: (txs: PSD2Transaction[], account?: ConnectedBankAccount) => void;
+  onLoadDemoBankData?: () => void;
 }
 
 type FilterStatus = 'ALL' | 'MISSING' | 'RECONCILED' | 'PRIVATE' | 'INCOME';
@@ -59,14 +63,61 @@ export function BankReconciliationTab({
   onUpdateTransaction,
   onLinkReceiptToTransaction,
   onAddReceipt,
+  onClearBankData,
+  onImportCsvTransactions,
+  onLoadDemoBankData,
 }: BankReconciliationTabProps) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [importNotification, setImportNotification] = useState<string | null>(null);
   
   // Modal states
   const [selectedTxForLink, setSelectedTxForLink] = useState<PSD2Transaction | null>(null);
   const [selectedTxForDetails, setSelectedTxForDetails] = useState<PSD2Transaction | null>(null);
+
+  const handleCsvFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (!text) return;
+
+      const rawTxs = parseSwedishBankCsv(text);
+      if (rawTxs.length === 0) {
+        alert('Kunde inte hitta några giltiga transaktioner i CSV-filen. Kontrollera att filen innehåller kolumner för datum och belopp.');
+        return;
+      }
+
+      // Reconcile against receipts and invoices
+      const { reconciledTransactions, result } = reconcileTransactions(rawTxs, invoices, receipts);
+
+      const fakeAccount: ConnectedBankAccount = {
+        id: `acc-csv-${Date.now()}`,
+        bankId: 'swedbank',
+        bankName: `Kontoutdrag (${file.name})`,
+        accountNumber: 'Importerad bankfil',
+        iban: 'CSV Kontoutdrag',
+        currency: 'SEK',
+        balance: Math.round(reconciledTransactions.reduce((acc, t) => acc + t.amount, 0) * 100) / 100,
+        lastSyncedAt: new Date().toISOString(),
+        status: 'active',
+      };
+
+      if (onImportCsvTransactions) {
+        onImportCsvTransactions(reconciledTransactions, fakeAccount);
+      }
+
+      setImportNotification(
+        `Importerade ${rawTxs.length} transaktioner från ${file.name}. ${result.reconciledCount} poster matchades automatiskt mot dina verifikationer!`
+      );
+      setTimeout(() => setImportNotification(null), 8000);
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
 
   // Quick Receipt Creator State inside the link modal
   const [quickVatRate, setQuickVatRate] = useState<SwedishVatRate>(25);
@@ -196,89 +247,173 @@ export function BankReconciliationTab({
     });
   }, [transactions, statusFilter, searchQuery]);
 
-  const accountName = connectedAccount?.bankName || 'Handelsbanken Företagskonto';
-  const iban = connectedAccount?.iban || 'SE45 6000 0000 0001 2345 6789';
-  const balance = connectedAccount?.balance ?? 154285.00;
+  const accountName = connectedAccount?.bankName || 'Företagskonto';
+  const iban = connectedAccount?.iban || '';
+  const balance = connectedAccount?.balance ?? 0;
 
   return (
     <div className="space-y-6">
       
-      {/* 1. Bank Account Header Card */}
-      <div className="bg-white rounded-2xl border border-[#e7e2d7] p-5 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-          
-          <div className="flex items-start sm:items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[#1c1917]/5 border border-[#1c1917]/15 flex items-center justify-center text-[#1c1917] shrink-0">
-              <Landmark className="w-6 h-6 text-[#d97706]" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-bold text-base text-[#1c1917] tracking-tight">{accountName}</h3>
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#15803d] border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#15803d] animate-pulse"></span>
-                  PSD2 Live Feed
-                </span>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-[#f7f4ee] text-stone-600 border border-[#e7e2d7]">
-                  Handelsbanken API
-                </span>
-              </div>
-              <p className="text-xs text-stone-500 font-mono mt-1">
-                IBAN: {iban} • Bokfört banksaldo: <span className="font-bold text-[#1c1917] tabular-nums">{formatSEK(balance)}</span>
-              </p>
-            </div>
+      {/* Import Notification Banner */}
+      {importNotification && (
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-medium flex items-center justify-between gap-3 shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <span>{importNotification}</span>
+          </div>
+          <button
+            onClick={() => setImportNotification(null)}
+            className="text-emerald-700 hover:text-emerald-900 p-1 cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* 1. If No Bank Account Connected & No Transactions */}
+      {!connectedAccount && transactions.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-[#e7e2d7] p-8 sm:p-10 shadow-xs text-center space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-[#f7f4ee] border border-[#e7e2d7] flex items-center justify-center text-[#d97706] mx-auto shadow-2xs">
+            <Landmark className="w-8 h-8" />
           </div>
 
-          <div className="flex items-center gap-2.5 self-start lg:self-center">
-            <button
-              onClick={handleSync}
-              disabled={isSyncing}
-              className="px-3.5 py-2 rounded-xl border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] text-stone-700 text-xs font-semibold flex items-center gap-2 transition shadow-xs cursor-pointer disabled:opacity-50"
-              title="Hämta senaste transaktioner via PSD2 Open Banking"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 text-stone-500 ${isSyncing ? 'animate-spin text-[#d97706]' : ''}`} />
-              <span>{isSyncing ? 'Synkroniserar...' : 'Synka bankfeed'}</span>
-            </button>
+          <div className="max-w-md mx-auto space-y-2">
+            <h3 className="font-bold text-lg text-[#1c1917]">Inget bankkonto anslutet</h3>
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+              Koppla ditt svenska företagskonto med BankID eller importera ett kontoutdrag (CSV) från din internetbank för att automatiskt matcha transaktioner mot dina kvitton.
+            </p>
+          </div>
 
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <button
               onClick={onOpenConnectBank}
-              className="px-3.5 py-2 rounded-xl border border-[#e7e2d7] bg-[#f7f4ee] hover:bg-[#eee8dc] text-stone-700 text-xs font-semibold transition shadow-xs cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-[#1c1917] hover:bg-black text-white text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer"
             >
-              Byt bankkonto
+              <Landmark className="w-4 h-4 text-[#d97706]" />
+              <span>Koppla bank via BankID</span>
             </button>
+
+            <label className="px-5 py-2.5 rounded-xl border border-[#e7e2d7] bg-[#f7f4ee] hover:bg-[#eee8dc] text-stone-800 text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer">
+              <Upload className="w-4 h-4 text-stone-600" />
+              <span>Importera kontoutdrag (CSV)</span>
+              <input
+                type="file"
+                accept=".csv,.txt"
+                className="hidden"
+                onChange={handleCsvFileInput}
+              />
+            </label>
           </div>
 
+          {onLoadDemoBankData && (
+            <div className="pt-4 border-t border-[#e7e2d7]/60 max-w-xs mx-auto">
+              <button
+                onClick={onLoadDemoBankData}
+                className="text-xs text-stone-500 hover:text-stone-800 underline transition cursor-pointer"
+              >
+                Vill du testa först? Ladda exempeltransaktioner
+              </button>
+            </div>
+          )}
         </div>
+      ) : (
+        /* Connected / Has Transactions Header Card */
+        <div className="bg-white rounded-2xl border border-[#e7e2d7] p-5 shadow-xs">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            
+            <div className="flex items-start sm:items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-[#1c1917]/5 border border-[#1c1917]/15 flex items-center justify-center text-[#1c1917] shrink-0">
+                <Landmark className="w-6 h-6 text-[#d97706]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-bold text-base text-[#1c1917] tracking-tight">{accountName}</h3>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#15803d] border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#15803d] animate-pulse"></span>
+                    {connectedAccount?.iban === 'CSV Kontoutdrag' ? 'CSV Import' : 'PSD2 Live Feed'}
+                  </span>
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-[#f7f4ee] text-stone-600 border border-[#e7e2d7]">
+                    {connectedAccount?.bankId ? connectedAccount.bankId.toUpperCase() : 'BANK FEED'}
+                  </span>
+                </div>
+                <p className="text-xs text-stone-500 font-mono mt-1">
+                  {iban ? `IBAN: ${iban} • ` : ''}Bokfört saldo: <span className="font-bold text-[#1c1917] tabular-nums">{formatSEK(balance)}</span>
+                </p>
+              </div>
+            </div>
 
-        {/* Quick KPI Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-zinc-100">
-          <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-100">
-            <span className="text-xs text-zinc-500 font-medium">Totalt transaktioner</span>
-            <div className="text-lg font-bold text-zinc-900 tabular-nums mt-0.5">{transactions.length} st</div>
+            <div className="flex flex-wrap items-center gap-2 self-start lg:self-center">
+              <button
+                onClick={handleSync}
+                disabled={isSyncing}
+                className="px-3.5 py-2 rounded-xl border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] text-stone-700 text-xs font-semibold flex items-center gap-2 transition shadow-xs cursor-pointer disabled:opacity-50"
+                title="Hämta senaste transaktioner via PSD2 Open Banking"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-stone-500 ${isSyncing ? 'animate-spin text-[#d97706]' : ''}`} />
+                <span>{isSyncing ? 'Synkroniserar...' : 'Synka bankfeed'}</span>
+              </button>
+
+              <label className="px-3 py-2 rounded-xl border border-[#e7e2d7] bg-[#f7f4ee] hover:bg-[#eee8dc] text-stone-700 text-xs font-semibold flex items-center gap-1.5 transition shadow-xs cursor-pointer">
+                <Upload className="w-3.5 h-3.5 text-stone-500" />
+                <span>Importera CSV</span>
+                <input
+                  type="file"
+                  accept=".csv,.txt"
+                  className="hidden"
+                  onChange={handleCsvFileInput}
+                />
+              </label>
+
+              <button
+                onClick={onOpenConnectBank}
+                className="px-3.5 py-2 rounded-xl border border-[#e7e2d7] bg-[#f7f4ee] hover:bg-[#eee8dc] text-stone-700 text-xs font-semibold transition shadow-xs cursor-pointer"
+              >
+                Byt bank
+              </button>
+
+              {onClearBankData && (
+                <button
+                  onClick={onClearBankData}
+                  className="px-3 py-2 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-700 text-xs font-semibold transition shadow-xs cursor-pointer"
+                  title="Rensa bankdata och koppla från"
+                >
+                  Rensa bankdata
+                </button>
+              )}
+            </div>
+
           </div>
-          <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-100">
-            <span className="text-xs text-emerald-800 font-medium flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              Avstämda poster
-            </span>
-            <div className="text-lg font-bold text-emerald-900 tabular-nums mt-0.5">{reconciledCount} st</div>
-          </div>
-          <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/70">
-            <span className="text-xs text-amber-800 font-medium flex items-center gap-1">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-              Saknar underlag
-            </span>
-            <div className="text-lg font-bold text-amber-900 tabular-nums mt-0.5">{missingCount} st</div>
-          </div>
-          <div className="p-3 rounded-xl bg-purple-50/60 border border-purple-100">
-            <span className="text-xs text-purple-800 font-medium flex items-center gap-1">
-              <UserCheck className="w-3.5 h-3.5 text-purple-600" />
-              Eget uttag (Privat)
-            </span>
-            <div className="text-lg font-bold text-purple-900 tabular-nums mt-0.5">{privateCount} st</div>
+
+          {/* Quick KPI Strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-zinc-100">
+            <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-100">
+              <span className="text-xs text-zinc-500 font-medium">Totalt transaktioner</span>
+              <div className="text-lg font-bold text-zinc-900 tabular-nums mt-0.5">{transactions.length} st</div>
+            </div>
+            <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-100">
+              <span className="text-xs text-emerald-800 font-medium flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                Avstämda poster
+              </span>
+              <div className="text-lg font-bold text-emerald-900 tabular-nums mt-0.5">{reconciledCount} st</div>
+            </div>
+            <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/70">
+              <span className="text-xs text-amber-800 font-medium flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                Saknar underlag
+              </span>
+              <div className="text-lg font-bold text-amber-900 tabular-nums mt-0.5">{missingCount} st</div>
+            </div>
+            <div className="p-3 rounded-xl bg-purple-50/60 border border-purple-100">
+              <span className="text-xs text-purple-800 font-medium flex items-center gap-1">
+                <UserCheck className="w-3.5 h-3.5 text-purple-600" />
+                Eget uttag (Privat)
+              </span>
+              <div className="text-lg font-bold text-purple-900 tabular-nums mt-0.5">{privateCount} st</div>
+            </div>
           </div>
         </div>
-
-      </div>
+      )}
 
       {/* 2. Swedish Tax Deduction Loss Calculator Banner (Skatteavdragsrisk) */}
       {missingCount > 0 ? (
