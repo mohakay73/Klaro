@@ -1,5 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 import { Receipt, Invoice, Profile } from '@/types/database';
+import { PSD2Transaction } from '@/lib/open-banking/types';
 
 export function getDb() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -303,4 +304,159 @@ export async function getOrCreateNeonProfile(email: string, companyName?: string
     vat_period: p.vat_period,
     created_at: p.created_at instanceof Date ? p.created_at.toISOString() : String(p.created_at),
   };
+}
+
+/**
+ * Fetch all bank transactions for a user from Neon
+ */
+export async function getBankTransactionsFromNeon(userId: string = DEFAULT_USER_ID): Promise<PSD2Transaction[]> {
+  try {
+    const sql = getDb();
+    const rows = await sql.query(
+      `SELECT * FROM bank_transactions WHERE user_id = $1 ORDER BY booking_date DESC, created_at DESC;`,
+      [userId]
+    );
+
+    return rows.map((r: any) => ({
+      id: r.id,
+      accountId: r.account_id,
+      bookingDate: r.booking_date instanceof Date ? r.booking_date.toISOString().split('T')[0] : String(r.booking_date),
+      valueDate: r.value_date instanceof Date ? r.value_date.toISOString().split('T')[0] : String(r.value_date || r.booking_date),
+      amount: Number(r.amount),
+      currency: r.currency || 'SEK',
+      description: r.description,
+      merchantName: r.merchant_name || undefined,
+      category: r.category || undefined,
+      basAccount: r.bas_account || undefined,
+      reconciliationStatus: r.reconciliation_status || 'missing_receipt',
+      matchedReceiptId: r.matched_receipt_id || undefined,
+      matchedInvoiceId: r.matched_invoice_id || undefined,
+      matchConfidence: r.match_confidence ? Number(r.match_confidence) : undefined,
+      matchReason: r.match_reason || undefined,
+      note: r.note || undefined,
+      reference: r.reference || undefined,
+    }));
+  } catch (error) {
+    console.error('Error fetching bank transactions from Neon:', error);
+    return [];
+  }
+}
+
+/**
+ * Update a bank transaction's reconciliation state in Neon
+ */
+export async function updateBankTransactionInNeon(
+  id: string,
+  updates: Partial<PSD2Transaction>,
+  userId?: string
+): Promise<boolean> {
+  try {
+    const sql = getDb();
+    const sets: string[] = [];
+    const values: any[] = [];
+    let idx = 1;
+
+    if (updates.reconciliationStatus !== undefined) {
+      sets.push(`reconciliation_status = $${idx++}`);
+      values.push(updates.reconciliationStatus);
+    }
+    if (updates.matchedReceiptId !== undefined) {
+      sets.push(`matched_receipt_id = $${idx++}`);
+      values.push(updates.matchedReceiptId || null);
+    }
+    if (updates.matchedInvoiceId !== undefined) {
+      sets.push(`matched_invoice_id = $${idx++}`);
+      values.push(updates.matchedInvoiceId || null);
+    }
+    if (updates.basAccount !== undefined) {
+      sets.push(`bas_account = $${idx++}`);
+      values.push(updates.basAccount);
+    }
+    if (updates.matchConfidence !== undefined) {
+      sets.push(`match_confidence = $${idx++}`);
+      values.push(updates.matchConfidence);
+    }
+    if (updates.matchReason !== undefined) {
+      sets.push(`match_reason = $${idx++}`);
+      values.push(updates.matchReason);
+    }
+    if (updates.note !== undefined) {
+      sets.push(`note = $${idx++}`);
+      values.push(updates.note);
+    }
+
+    if (sets.length === 0) return true;
+
+    values.push(id);
+    if (userId && userId !== DEFAULT_USER_ID) {
+      values.push(userId);
+      await sql.query(
+        `UPDATE bank_transactions SET ${sets.join(', ')} WHERE id = $${idx++} AND user_id = $${idx++};`,
+        values
+      );
+    } else {
+      await sql.query(
+        `UPDATE bank_transactions SET ${sets.join(', ')} WHERE id = $${idx++};`,
+        values
+      );
+    }
+    return true;
+  } catch (error) {
+    console.error('Error updating bank transaction in Neon:', error);
+    return false;
+  }
+}
+
+/**
+ * Upsert bank transactions in batch
+ */
+export async function upsertBankTransactionsInNeon(
+  transactions: PSD2Transaction[],
+  userId: string = DEFAULT_USER_ID,
+  accountId: string = 'acc-default'
+): Promise<void> {
+  if (!transactions.length) return;
+  const sql = getDb();
+
+  for (const tx of transactions) {
+    try {
+      await sql.query(
+        `INSERT INTO bank_transactions (
+          id, user_id, account_id, booking_date, value_date, amount, currency,
+          description, merchant_name, category, bas_account, reconciliation_status,
+          matched_receipt_id, matched_invoice_id, match_confidence, match_reason, note, reference
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+        ON CONFLICT (id) DO UPDATE SET
+          reconciliation_status = EXCLUDED.reconciliation_status,
+          matched_receipt_id = EXCLUDED.matched_receipt_id,
+          matched_invoice_id = EXCLUDED.matched_invoice_id,
+          bas_account = EXCLUDED.bas_account,
+          match_confidence = EXCLUDED.match_confidence,
+          match_reason = EXCLUDED.match_reason,
+          note = EXCLUDED.note;`,
+        [
+          tx.id,
+          userId,
+          tx.accountId || accountId,
+          tx.bookingDate,
+          tx.valueDate || tx.bookingDate,
+          tx.amount,
+          tx.currency || 'SEK',
+          tx.description,
+          tx.merchantName || null,
+          tx.category || null,
+          tx.basAccount || null,
+          tx.reconciliationStatus || 'missing_receipt',
+          tx.matchedReceiptId || null,
+          tx.matchedInvoiceId || null,
+          tx.matchConfidence || null,
+          tx.matchReason || null,
+          tx.note || null,
+          tx.reference || null,
+        ]
+      );
+    } catch (err) {
+      console.warn('Upsert single tx notice:', err);
+    }
+  }
 }

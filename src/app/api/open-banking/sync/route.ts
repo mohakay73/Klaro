@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { tinkClient } from '@/lib/open-banking/tink-client';
 import { reconcileTransactions } from '@/lib/open-banking/reconciliation-engine';
 import { INITIAL_INVOICES, INITIAL_RECEIPTS } from '@/lib/mock-data';
+import { upsertBankTransactionsInNeon, DEFAULT_USER_ID } from '@/lib/neon';
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,6 +13,16 @@ export async function POST(req: NextRequest) {
     const invList = invoices || INITIAL_INVOICES;
     const recList = receipts || INITIAL_RECEIPTS;
 
+    // Identify user from session cookie
+    const cookie = req.cookies.get('klaro_user');
+    let sessionUserId = DEFAULT_USER_ID;
+    if (cookie?.value) {
+      try {
+        const parsed = JSON.parse(cookie.value);
+        if (parsed.id) sessionUserId = parsed.id;
+      } catch {}
+    }
+
     // Fetch raw transactions from PSD2 provider
     const rawTransactions = await tinkClient.getTransactions('token', accId);
 
@@ -21,6 +32,13 @@ export async function POST(req: NextRequest) {
       invList,
       recList
     );
+
+    // Persist to Neon
+    try {
+      await upsertBankTransactionsInNeon(reconciledTransactions, sessionUserId, accId);
+    } catch (dbErr) {
+      console.warn('Could not persist synced transactions to Neon:', dbErr);
+    }
 
     return NextResponse.json({
       success: true,

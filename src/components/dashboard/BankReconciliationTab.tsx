@@ -44,6 +44,7 @@ interface BankReconciliationTabProps {
   onOpenConnectBank: () => void;
   onSyncTransactions: () => Promise<void>;
   onUpdateTransaction?: (updatedTx: PSD2Transaction) => void;
+  onBatchUpdateTransactions?: (updatedTxs: PSD2Transaction[]) => void;
   onLinkReceiptToTransaction?: (txId: string, receipt: Receipt) => void;
   onAddReceipt?: (receipt: Receipt) => void;
   onClearBankData?: () => void;
@@ -63,6 +64,7 @@ export function BankReconciliationTab({
   onOpenConnectBank,
   onSyncTransactions,
   onUpdateTransaction,
+  onBatchUpdateTransactions,
   onLinkReceiptToTransaction,
   onAddReceipt,
   onClearBankData,
@@ -77,6 +79,50 @@ export function BankReconciliationTab({
   // Modal states
   const [selectedTxForLink, setSelectedTxForLink] = useState<PSD2Transaction | null>(null);
   const [selectedTxForDetails, setSelectedTxForDetails] = useState<PSD2Transaction | null>(null);
+
+  // Auto-Reconciliation Modal State
+  const [autoReconcileModal, setAutoReconcileModal] = useState<{
+    isOpen: boolean;
+    result: any;
+    newlyMatchedCount: number;
+  } | null>(null);
+
+  const handleRunAutoReconciliation = () => {
+    const { reconciledTransactions, result } = reconcileTransactions(transactions, invoices, receipts);
+    const prevReconciled = transactions.filter((t) => t.reconciliationStatus === 'reconciled').length;
+    const newlyMatched = Math.max(0, result.reconciledCount - prevReconciled);
+
+    if (onBatchUpdateTransactions) {
+      onBatchUpdateTransactions(reconciledTransactions);
+    } else if (onUpdateTransaction) {
+      reconciledTransactions.forEach((tx) => onUpdateTransaction(tx));
+    }
+
+    setAutoReconcileModal({
+      isOpen: true,
+      result,
+      newlyMatchedCount: newlyMatched,
+    });
+  };
+
+  const handleUnlinkTransaction = (tx: PSD2Transaction, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onUpdateTransaction) return;
+
+    onUpdateTransaction({
+      ...tx,
+      reconciliationStatus: tx.amount > 0 ? 'pending' : 'missing_receipt',
+      matchedReceiptId: undefined,
+      matchedInvoiceId: undefined,
+      matchConfidence: undefined,
+      matchReason: undefined,
+    });
+  };
+
+  const handleAcceptSuggestedMatch = (tx: PSD2Transaction, receipt: Receipt, e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleLinkExistingReceipt(tx, receipt);
+  };
 
   const handleCsvFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -420,6 +466,15 @@ export function BankReconciliationTab({
 
             <div className="flex flex-wrap items-center gap-2 self-start lg:self-center">
               <button
+                onClick={handleRunAutoReconciliation}
+                className="px-3.5 py-2 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-xs cursor-pointer active:scale-98"
+                title="Matcha alla banktransaktioner automatiskt mot dina kvitton och kundfakturor"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+                <span>Kör Auto-avstämning</span>
+              </button>
+
+              <button
                 onClick={handleSync}
                 disabled={isSyncing}
                 className="px-3.5 py-2 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-semibold flex items-center gap-2 transition shadow-xs cursor-pointer disabled:opacity-50 active:scale-98"
@@ -734,6 +789,9 @@ export function BankReconciliationTab({
               const isMissing = tx.reconciliationStatus === 'missing_receipt';
               const isPrivate = tx.reconciliationStatus === 'private_draw';
               const isReconciled = tx.reconciliationStatus === 'reconciled';
+              const suggestedReceipt = tx.suggestedReceiptId ? receipts.find((r) => r.id === tx.suggestedReceiptId) : null;
+              const matchedReceipt = tx.matchedReceiptId ? receipts.find((r) => r.id === tx.matchedReceiptId) : null;
+              const matchedInvoice = tx.matchedInvoiceId ? invoices.find((i) => i.id === tx.matchedInvoiceId) : null;
 
               return (
                 <div
@@ -775,6 +833,30 @@ export function BankReconciliationTab({
                       </span>
                     </div>
                   </div>
+
+                  {/* Smart Match Reason / Confidence */}
+                  {isReconciled && tx.matchReason && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200/80 rounded-md px-2 py-0.5 w-fit">
+                      <Sparkles className="w-3 h-3 text-emerald-600 shrink-0" />
+                      <span>{tx.matchReason}</span>
+                    </div>
+                  )}
+
+                  {/* Suggested Receipt Match */}
+                  {isMissing && suggestedReceipt && (
+                    <div className="flex items-center justify-between gap-2 text-[11px] text-amber-900 bg-amber-50 border border-amber-300 rounded-lg p-2" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0 animate-pulse" />
+                        <span className="truncate">Förslag: <strong>{suggestedReceipt.vendor_name}</strong> ({formatSEK(suggestedReceipt.total_amount)})</span>
+                      </div>
+                      <button
+                        onClick={(e) => handleAcceptSuggestedMatch(tx, suggestedReceipt, e)}
+                        className="px-2.5 py-1 rounded-md bg-amber-600 hover:bg-amber-700 text-white font-semibold text-[10px] shadow-2xs transition shrink-0 cursor-pointer"
+                      >
+                        Koppla ✓
+                      </button>
+                    </div>
+                  )}
 
                   {/* Status & Category Strip */}
                   <div className="flex items-center justify-between text-xs pt-1">
@@ -848,10 +930,18 @@ export function BankReconciliationTab({
                         </button>
                       )}
                       {isReconciled && (
-                        <span className="font-mono text-[11px] text-zinc-500 flex items-center gap-1">
-                          <Link2 className="w-3 h-3 text-zinc-400" />
-                          <span>{tx.matchedInvoiceId || tx.matchedReceiptId || 'Verifikat'}</span>
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            <span>{matchedReceipt ? matchedReceipt.vendor_name : matchedInvoice ? `Faktura #${matchedInvoice.invoice_number}` : (tx.matchedInvoiceId || tx.matchedReceiptId || 'Verifikat')}</span>
+                          </span>
+                          <button
+                            onClick={(e) => handleUnlinkTransaction(tx, e)}
+                            className="text-stone-400 hover:text-rose-600 text-[11px] underline cursor-pointer"
+                          >
+                            Ångra
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -888,6 +978,9 @@ export function BankReconciliationTab({
                   const isMissing = tx.reconciliationStatus === 'missing_receipt';
                   const isPrivate = tx.reconciliationStatus === 'private_draw';
                   const isReconciled = tx.reconciliationStatus === 'reconciled';
+                  const suggestedReceipt = tx.suggestedReceiptId ? receipts.find((r) => r.id === tx.suggestedReceiptId) : null;
+                  const matchedReceipt = tx.matchedReceiptId ? receipts.find((r) => r.id === tx.matchedReceiptId) : null;
+                  const matchedInvoice = tx.matchedInvoiceId ? invoices.find((i) => i.id === tx.matchedInvoiceId) : null;
 
                   return (
                     <tr 
@@ -940,6 +1033,34 @@ export function BankReconciliationTab({
                                 </>
                               )}
                             </div>
+
+                            {/* Smart Match Reason / Confidence */}
+                            {isReconciled && tx.matchReason && (
+                              <div className="flex items-center gap-1.5 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200/80 rounded-md px-2 py-0.5 mt-1 w-fit">
+                                <Sparkles className="w-3 h-3 text-emerald-600 shrink-0" />
+                                <span>{tx.matchReason}</span>
+                                {tx.matchConfidence && (
+                                  <span className="font-mono text-[9px] bg-emerald-100 text-emerald-900 px-1 rounded font-bold">
+                                    {Math.round(tx.matchConfidence * 100)}% match
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Suggested Receipt Match Pill */}
+                            {isMissing && suggestedReceipt && (
+                              <div className="flex items-center gap-2 text-[11px] text-amber-900 bg-amber-50 border border-amber-300 rounded-lg px-2.5 py-1 mt-1.5 w-fit shadow-2xs" onClick={(e) => e.stopPropagation()}>
+                                <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0 animate-pulse" />
+                                <span>Föreslagen match: <strong>{suggestedReceipt.vendor_name}</strong> ({formatSEK(suggestedReceipt.total_amount)})</span>
+                                <button
+                                  onClick={(e) => handleAcceptSuggestedMatch(tx, suggestedReceipt, e)}
+                                  className="px-2 py-0.5 rounded bg-amber-600 hover:bg-amber-700 text-white font-semibold text-[10px] shadow-2xs transition cursor-pointer"
+                                  title="Koppla kvitto direkt med 1 klick"
+                                >
+                                  Koppla ✓
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -991,6 +1112,17 @@ export function BankReconciliationTab({
                       <td className="py-3.5 px-4 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
                         {isMissing ? (
                           <div className="flex items-center justify-end gap-1.5">
+                            {suggestedReceipt && (
+                              <button
+                                onClick={(e) => handleAcceptSuggestedMatch(tx, suggestedReceipt, e)}
+                                className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-semibold transition shadow-xs flex items-center gap-1 cursor-pointer active:scale-95"
+                                title="Godkänn föreslagen kvitto-matchning"
+                              >
+                                <Sparkles className="w-3 h-3 text-amber-200" />
+                                <span>Koppla {suggestedReceipt.vendor_name}</span>
+                              </button>
+                            )}
+
                             <button
                               onClick={() => onOpenUpload('camera')}
                               className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 text-[11px] font-semibold border border-amber-300 transition shadow-2xs flex items-center gap-1 cursor-pointer active:scale-95"
@@ -1026,9 +1158,18 @@ export function BankReconciliationTab({
                             Ångra uttag
                           </button>
                         ) : (
-                          <div className="flex items-center justify-end gap-1 font-mono text-[11px] text-zinc-500">
-                            <Link2 className="w-3 h-3 text-zinc-400" />
-                            <span>{tx.matchedInvoiceId || tx.matchedReceiptId || 'Verifikat'}</span>
+                          <div className="flex items-center justify-end gap-2">
+                            <div className="flex items-center gap-1 font-mono text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-md">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              <span className="font-semibold">{matchedReceipt ? matchedReceipt.vendor_name : matchedInvoice ? `Faktura #${matchedInvoice.invoice_number}` : (tx.matchedInvoiceId || tx.matchedReceiptId || 'Verifikat')}</span>
+                            </div>
+                            <button
+                              onClick={(e) => handleUnlinkTransaction(tx, e)}
+                              className="text-stone-400 hover:text-rose-600 text-[11px] underline cursor-pointer"
+                              title="Koppla loss kvitto/faktura från denna transaktion"
+                            >
+                              Ångra
+                            </button>
                           </div>
                         )}
                       </td>
@@ -1384,6 +1525,95 @@ export function BankReconciliationTab({
               )}
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* 6. Modal: Auto-Reconciliation Summary Modal */}
+      {autoReconcileModal?.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white border border-[#e7e2d7] rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-[#d97706] shrink-0">
+                  <Sparkles className="w-6 h-6 text-[#d97706]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-[#1c1917] tracking-tight">Auto-avstämning klar!</h3>
+                  <p className="text-xs text-stone-500">
+                    Klaros intelligenta motor har gått igenom banken mot dina kvitton och fakturor.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setAutoReconcileModal(null)}
+                className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-500 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200">
+                <span className="text-xs text-emerald-800 font-medium flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  Avstämda poster
+                </span>
+                <div className="text-xl font-bold text-emerald-950 tabular-nums mt-1">
+                  {autoReconcileModal.result.reconciledCount} st
+                </div>
+                {autoReconcileModal.newlyMatchedCount > 0 && (
+                  <span className="text-[11px] font-semibold text-emerald-700 mt-0.5 block">
+                    +{autoReconcileModal.newlyMatchedCount} nya matchades nyss!
+                  </span>
+                )}
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200">
+                <span className="text-xs text-stone-600 font-medium flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 text-amber-600" />
+                  Saknar underlag
+                </span>
+                <div className="text-xl font-bold text-stone-900 tabular-nums mt-1">
+                  {autoReconcileModal.result.unreconciledExpensesCount} st
+                </div>
+                <span className="text-[11px] text-stone-500 mt-0.5 block">
+                  Kräver kvitto eller foto
+                </span>
+              </div>
+            </div>
+
+            {/* Tax Savings Summary */}
+            <div className="p-4 rounded-2xl bg-[#f7f4ee] border border-[#e7e2d7] space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold text-stone-700">
+                <span>Säkrat skatteavdrag för avstämda inköp</span>
+                <span className="font-bold text-[#15803d] font-mono text-sm">
+                  {formatSEK(
+                    Math.round(
+                      (transactions
+                        .filter((t) => t.reconciliationStatus === 'reconciled' && t.amount < 0)
+                        .reduce((sum, t) => sum + Math.abs(t.amount), 0) *
+                        0.54)
+                    )
+                  )}
+                </span>
+              </div>
+              <p className="text-[11px] text-stone-500 leading-relaxed">
+                Varje avstämd transaktion är 100% säkrad för Skatteverkets revision enligt Bokföringslagen. Momsen och kostnadsavdraget dras automatiskt i din moms- & skattedeklaration.
+              </p>
+            </div>
+
+            {/* Close Button */}
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => setAutoReconcileModal(null)}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#1c1917] hover:bg-black text-white text-xs font-semibold shadow-xs transition cursor-pointer"
+              >
+                Klar, visa bankflödet
+              </button>
+            </div>
           </div>
         </div>
       )}

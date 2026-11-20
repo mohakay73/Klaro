@@ -94,6 +94,10 @@ export interface PSD2Transaction {
   basAccount?: string; // e.g. 2013 (Eget uttag), 5420 (Programvaror), 1510 (Kundfordran)
   matchedReceiptId?: string;
   matchedInvoiceId?: string;
+  suggestedReceiptId?: string;
+  suggestedInvoiceId?: string;
+  matchConfidence?: number; // 0.0 to 1.0 (e.g. 0.98)
+  matchReason?: string; // Reason e.g. "Exakt belopp (680 kr) + leverantör 'Circle K' + 1 dag"
   reconciliationStatus: ReconciliationStatus;
   note?: string;
   rawPsd2Data?: Record<string, any>;

@@ -24,10 +24,12 @@ import { LandingPage } from '@/components/landing/LandingPage';
 import { INITIAL_INVOICES, INITIAL_RECEIPTS } from '@/lib/mock-data';
 import { ConnectedBankAccount, PSD2Transaction } from '@/lib/open-banking/types';
 import { tinkClient } from '@/lib/open-banking/tink-client';
+import { autoMatchNewReceipt, reconcileTransactions } from '@/lib/open-banking/reconciliation-engine';
 import { calculateSwedishTaxBuffer } from '@/lib/tax-calculator';
 import { generateSIE4File, downloadSIE4File } from '@/lib/sie-exporter';
+import { formatSEK } from '@/lib/utils';
 import { Receipt, Invoice, SwedishVatRate } from '@/types/database';
-import { Sparkles, ShieldCheck, RotateCcw } from 'lucide-react';
+import { Sparkles, ShieldCheck, RotateCcw, X, CheckCircle2 } from 'lucide-react';
 
 export default function DashboardPage() {
   // Active Navigation View (Left Sidebar)
@@ -76,6 +78,13 @@ export default function DashboardPage() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isDemoTourOpen, setIsDemoTourOpen] = useState(false);
   const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
+
+  // Floating Toast Notification
+  const [toastNotification, setToastNotification] = useState<{
+    type: 'success' | 'info' | 'amber';
+    title: string;
+    message: string;
+  } | null>(null);
 
   // Filter items by selected quarter if applicable
   const filteredInvoices = useMemo(() => {
@@ -128,6 +137,15 @@ export default function DashboardPage() {
       if (invData.invoices) {
         setInvoices(invData.invoices);
       }
+
+      // 3. Fetch Bank Transactions for this user from Neon
+      try {
+        const txRes = await fetch(`/api/open-banking/transactions`);
+        const txData = await txRes.json();
+        if (txData.transactions && txData.transactions.length > 0) {
+          setBankTransactions(txData.transactions);
+        }
+      } catch {}
     } catch (err) {
       console.warn('Could not load user data from database:', err);
     }
@@ -173,6 +191,46 @@ export default function DashboardPage() {
   const handleReceiptAdded = (newReceipt: Receipt) => {
     setReceipts((prev) => [newReceipt, ...prev]);
 
+    // Automatically evaluate against bank transactions!
+    setBankTransactions((prevTxs) => {
+      if (!prevTxs || prevTxs.length === 0) return prevTxs;
+
+      const { matchedTx, updatedTransactions, reason } = autoMatchNewReceipt(newReceipt, prevTxs);
+      if (matchedTx) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('klaro_bank_transactions', JSON.stringify(updatedTransactions));
+        }
+
+        // Persist to Neon
+        fetch('/api/open-banking/transactions', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: matchedTx.id,
+            updates: {
+              reconciliationStatus: 'reconciled',
+              matchedReceiptId: newReceipt.id,
+              basAccount: matchedTx.basAccount,
+              matchConfidence: matchedTx.matchConfidence,
+              matchReason: reason,
+            },
+            userId: currentUser?.id,
+          }),
+        }).catch((err) => console.warn('Auto match update error:', err));
+
+        // Toast notification
+        setToastNotification({
+          type: 'success',
+          title: '🎉 Automatisk bankmatchning!',
+          message: `Kvittot från "${newReceipt.vendor_name}" (${formatSEK(newReceipt.total_amount)}) matchades automatiskt mot "${matchedTx.description}". Transaktionen är nu avstämd!`,
+        });
+        setTimeout(() => setToastNotification(null), 7000);
+
+        return updatedTransactions;
+      }
+      return prevTxs;
+    });
+
     // If added manually outside file upload (i.e. temporary client ID), sync to database
     if (newReceipt.id.startsWith('rec-')) {
       fetch('/api/receipts', {
@@ -186,6 +244,62 @@ export default function DashboardPage() {
   const handleInvoiceCreated = (newInvoice: Invoice) => {
     setInvoices((prev) => [newInvoice, ...prev]);
     setPreviewInvoice(newInvoice);
+
+    // Also check if an incoming bank transaction matches this customer invoice
+    setBankTransactions((prevTxs) => {
+      const match = prevTxs.find((t) => {
+        if (t.amount <= 0 || t.reconciliationStatus === 'reconciled') return false;
+        const desc = (t.description || '').toUpperCase();
+        const invNum = (newInvoice.invoice_number || '').toUpperCase();
+        const hasNumMatch = invNum && desc.includes(invNum);
+        const hasAmountMatch = Math.abs(t.amount - newInvoice.total_amount) < 1.0;
+        return hasNumMatch || hasAmountMatch;
+      });
+
+      if (match) {
+        const updated = prevTxs.map((t) =>
+          t.id === match.id
+            ? {
+                ...t,
+                reconciliationStatus: 'reconciled' as const,
+                matchedInvoiceId: newInvoice.id,
+                basAccount: '1510',
+                matchConfidence: 0.95,
+                matchReason: `Matchades mot kundfaktura #${newInvoice.invoice_number}`,
+              }
+            : t
+        );
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('klaro_bank_transactions', JSON.stringify(updated));
+        }
+
+        fetch('/api/open-banking/transactions', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: match.id,
+            updates: {
+              reconciliationStatus: 'reconciled',
+              matchedInvoiceId: newInvoice.id,
+              basAccount: '1510',
+              matchConfidence: 0.95,
+              matchReason: `Matchades mot kundfaktura #${newInvoice.invoice_number}`,
+            },
+            userId: currentUser?.id,
+          }),
+        }).catch((err) => console.warn('Invoice match notice:', err));
+
+        setToastNotification({
+          type: 'success',
+          title: '🎉 Inbetalning avstämd mot kundfaktura!',
+          message: `Banktransaktionen på ${formatSEK(match.amount)} matchades automatiskt mot faktura #${newInvoice.invoice_number}.`,
+        });
+        setTimeout(() => setToastNotification(null), 7000);
+
+        return updated;
+      }
+      return prevTxs;
+    });
 
     // Persist invoice to database
     fetch('/api/invoices', {
@@ -352,6 +466,17 @@ export default function DashboardPage() {
       }
       localStorage.setItem('klaro_hide_bank_mock', 'true');
     }
+
+    // Persist imported transactions to Neon
+    fetch('/api/open-banking/transactions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        transactions: txs,
+        accountId: account?.id || 'acc-csv-import',
+        userId: currentUser?.id,
+      }),
+    }).catch((err) => console.warn('CSV transactions persist notice:', err));
   };
 
   const handleUpdateTransaction = (updatedTx: PSD2Transaction) => {
@@ -362,6 +487,43 @@ export default function DashboardPage() {
       }
       return next;
     });
+
+    // Persist single update to Neon
+    fetch('/api/open-banking/transactions', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: updatedTx.id,
+        updates: {
+          reconciliationStatus: updatedTx.reconciliationStatus,
+          matchedReceiptId: updatedTx.matchedReceiptId || null,
+          matchedInvoiceId: updatedTx.matchedInvoiceId || null,
+          basAccount: updatedTx.basAccount,
+          matchConfidence: updatedTx.matchConfidence,
+          matchReason: updatedTx.matchReason,
+          note: updatedTx.note,
+        },
+        userId: currentUser?.id,
+      }),
+    }).catch((err) => console.warn('Transaction update error:', err));
+  };
+
+  const handleBatchUpdateTransactions = (updatedTxs: PSD2Transaction[]) => {
+    setBankTransactions(updatedTxs);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('klaro_bank_transactions', JSON.stringify(updatedTxs));
+    }
+
+    // Persist batch to Neon
+    fetch('/api/open-banking/transactions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        transactions: updatedTxs,
+        accountId: connectedAccount?.id,
+        userId: currentUser?.id,
+      }),
+    }).catch((err) => console.warn('Batch transactions persist error:', err));
   };
 
   const handleSyncTransactions = async () => {
@@ -378,6 +540,15 @@ export default function DashboardPage() {
       const data = await res.json();
       if (data.transactions) {
         setBankTransactions(data.transactions);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('klaro_bank_transactions', JSON.stringify(data.transactions));
+        }
+        setToastNotification({
+          type: 'success',
+          title: '🎉 Bankfeed synkad!',
+          message: `${data.transactions.length} transaktioner hämtades (${data.summary?.reconciledCount || 0} st automatiskt avstämda).`,
+        });
+        setTimeout(() => setToastNotification(null), 7000);
       }
     } catch (err) {
       console.error('Error syncing transactions:', err);
@@ -746,6 +917,7 @@ export default function DashboardPage() {
                 onOpenConnectBank={() => setIsOpenBankingOpen(true)}
                 onSyncTransactions={handleSyncTransactions}
                 onUpdateTransaction={handleUpdateTransaction}
+                onBatchUpdateTransactions={handleBatchUpdateTransactions}
                 onAddReceipt={handleReceiptAdded}
                 onClearBankData={handleClearBankData}
                 onImportCsvTransactions={handleImportCsvTransactions}
@@ -897,6 +1069,25 @@ export default function DashboardPage() {
         onOpenPayMoms={() => setIsPayMomsOpen(true)}
         onOpenDeclaration={() => setIsDeclarationOpen(true)}
       />
+
+      {/* Floating Toast Notification */}
+      {toastNotification && (
+        <div className="fixed bottom-6 right-6 z-50 max-w-md p-4 rounded-2xl bg-[#1c1917] text-white shadow-2xl border border-amber-500/30 flex items-start gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-[#d97706] flex items-center justify-center shrink-0 mt-0.5">
+            <Sparkles className="w-4 h-4 text-amber-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="font-bold text-sm text-stone-100">{toastNotification.title}</h4>
+            <p className="text-xs text-stone-300 mt-0.5 leading-relaxed">{toastNotification.message}</p>
+          </div>
+          <button
+            onClick={() => setToastNotification(null)}
+            className="text-stone-400 hover:text-white p-1 rounded-lg transition shrink-0 cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
     </div>
   );
