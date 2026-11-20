@@ -765,6 +765,7 @@ export default function DashboardPage() {
         onClose={() => setIsKivraOpen(false)}
         onImportReceipt={handleReceiptAdded}
         userId={currentUser?.id || '00000000-0000-0000-0000-000000000001'}
+        userEmail={currentUser?.email || 'mohakay73@gmail.com'}
         existingReceipts={receipts}
       />
 

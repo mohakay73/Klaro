@@ -89,6 +89,7 @@ interface KivraInboxModalProps {
   onClose: () => void;
   onImportReceipt: (receipt: Receipt) => void;
   userId?: string;
+  userEmail?: string;
   existingReceipts?: Receipt[];
 }
 
@@ -97,6 +98,7 @@ export function KivraInboxModal({
   onClose,
   onImportReceipt,
   userId = '00000000-0000-0000-0000-000000000001',
+  userEmail = 'mohakay73@gmail.com',
   existingReceipts = [],
 }: KivraInboxModalProps) {
   const [activeTab, setActiveTab] = useState<'inbox' | 'guide'>('inbox');
@@ -105,7 +107,8 @@ export function KivraInboxModal({
   const [justImportedIds, setJustImportedIds] = useState<string[]>([]);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
-  const inboundEmailAddress = 'kvitto@nexougwen.resend.app';
+  const emailSlug = userEmail ? userEmail.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '') : 'mohakay73';
+  const inboundEmailAddress = `kvitto+${emailSlug}@nexougwen.resend.app`;
 
   // Check if a document is already imported in the user's database
   const isDocumentImported = useMemo(() => {

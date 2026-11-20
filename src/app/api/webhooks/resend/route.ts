@@ -101,8 +101,33 @@ export async function POST(req: NextRequest) {
     if (process.env.DATABASE_URL) {
       try {
         const sql = getDb();
-        const profile = await getOrCreateNeonProfile(fromAddress);
-        const userId = profile?.id || DEFAULT_USER_ID;
+
+        // Multi-tenant resolution:
+        // 1. Check if recipient "to" address contains a plus tag (e.g. kvitto+mohakay73@nexougwen.resend.app)
+        const toRaw = Array.isArray(emailData.to) ? emailData.to[0] : (emailData.to || '');
+        let targetUserTag: string | null = null;
+        const plusMatch = toRaw.match(/\+([^@]+)@/);
+        if (plusMatch) {
+          targetUserTag = plusMatch[1];
+        }
+
+        let matchedProfile: any = null;
+        if (targetUserTag) {
+          const profileRows = await sql.query(
+            `SELECT * FROM profiles WHERE email ILIKE $1 OR id::text ILIKE $2 LIMIT 1;`,
+            [`%${targetUserTag}%`, `${targetUserTag}%`]
+          );
+          if (profileRows && profileRows.length > 0) {
+            matchedProfile = profileRows[0];
+          }
+        }
+
+        // 2. If no plus tag match, check fromAddress (when forwarded from personal Gmail/Outlook)
+        if (!matchedProfile && fromAddress && !fromAddress.includes('kivra') && !fromAddress.includes('resend')) {
+          matchedProfile = await getOrCreateNeonProfile(fromAddress);
+        }
+
+        const userId = matchedProfile?.id || DEFAULT_USER_ID;
 
         // Deduplication 1: Check if this Resend email_id was already processed
         if (emailId) {
