@@ -119,6 +119,46 @@ export function BankReconciliationTab({
     e.target.value = '';
   };
 
+  const handleCreateBankTxFromReceipts = () => {
+    if (receipts.length === 0) return;
+
+    const newTxs: PSD2Transaction[] = receipts.map((rec) => ({
+      id: `tx-receipt-${rec.id}`,
+      accountId: 'acc-main-1930',
+      bookingDate: rec.invoice_date.split('T')[0],
+      valueDate: rec.invoice_date.split('T')[0],
+      amount: -Number(rec.total_amount),
+      currency: rec.currency || 'SEK',
+      description: `Kortköp ${rec.vendor_name}`,
+      merchantName: rec.vendor_name,
+      category: rec.category,
+      basAccount: rec.raw_ai_response?.bas_account || '5400',
+      matchedReceiptId: rec.id,
+      reconciliationStatus: 'reconciled' as const,
+    }));
+
+    const account: ConnectedBankAccount = {
+      id: 'acc-main-1930',
+      bankId: 'swedbank',
+      bankName: 'Företagskonto (BAS 1930)',
+      accountNumber: 'Bokfört bankkonto',
+      iban: 'BAS 1930',
+      currency: 'SEK',
+      balance: Math.round(-receipts.reduce((sum, r) => sum + Number(r.total_amount), 0) * 100) / 100,
+      lastSyncedAt: new Date().toISOString(),
+      status: 'active',
+    };
+
+    if (onImportCsvTransactions) {
+      onImportCsvTransactions(newTxs, account);
+    }
+
+    setImportNotification(
+      `Bokförde ${newTxs.length} banktransaktioner från dina kvitton. Båda är nu fullständigt avstämda mot banken!`
+    );
+    setTimeout(() => setImportNotification(null), 8000);
+  };
+
   // Quick Receipt Creator State inside the link modal
   const [quickVatRate, setQuickVatRate] = useState<SwedishVatRate>(25);
   const [quickCategory, setQuickCategory] = useState('Programvaror & Molntjänster');
@@ -415,8 +455,68 @@ export function BankReconciliationTab({
         </div>
       )}
 
-      {/* 2. Swedish Tax Deduction Loss Calculator Banner (Skatteavdragsrisk) */}
-      {missingCount > 0 ? (
+      {/* 2. When No Transactions Exist Yet */}
+      {transactions.length === 0 ? (
+        <div className="space-y-4">
+          {receipts.length > 0 && (
+            <div className="rounded-2xl border border-[#e7e2d7] bg-white p-6 shadow-xs space-y-4 animate-in fade-in">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#f7f4ee] border border-[#e7e2d7] flex items-center justify-center text-[#d97706] shrink-0">
+                    <ReceiptIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm sm:text-base text-[#1c1917]">
+                      Dina sparade kvitton ({receipts.length} st) – redo för bankavstämning
+                    </h4>
+                    <p className="text-xs text-stone-500">
+                      Kvittona finns sparade i Klaro. Om köpen betalats med ditt företagskort kan du bokföra dem mot banken (BAS 1930) med ett klick.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleCreateBankTxFromReceipts}
+                  className="px-4 py-2.5 rounded-xl bg-[#1c1917] hover:bg-black text-white text-xs font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer self-start sm:self-center shrink-0"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span>Bokför som betalda via banken (1930)</span>
+                </button>
+              </div>
+
+              {/* Receipt Cards */}
+              <div className="divide-y divide-[#e7e2d7] border border-[#e7e2d7] rounded-xl overflow-hidden">
+                {receipts.map((rec) => (
+                  <div key={rec.id} className="p-3.5 flex items-center justify-between bg-stone-50/40 hover:bg-white transition text-xs">
+                    <div className="flex items-center gap-3">
+                      <ReceiptIcon className="w-4 h-4 text-stone-400" />
+                      <div>
+                        <span className="font-bold text-stone-900">{rec.vendor_name}</span>
+                        <span className="text-stone-500 font-mono ml-2 text-[11px]">({formatDate(rec.invoice_date)})</span>
+                        <span className="ml-2 text-stone-600 bg-stone-100 border border-stone-200 px-1.5 py-0.2 rounded font-mono text-[10px]">
+                          BAS {rec.raw_ai_response?.bas_account || '5400'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono font-bold text-stone-900 tabular-nums text-sm">
+                        -{formatSEK(rec.total_amount)}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200 text-[11px] flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <span>Kvitto sparat</span>
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* 2. Swedish Tax Deduction Loss Calculator Banner (Skatteavdragsrisk) */}
+          {missingCount > 0 ? (
         <div className="rounded-2xl border border-amber-200 bg-linear-to-r from-amber-50/90 via-amber-50/50 to-orange-50/60 p-5 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             
@@ -869,6 +969,8 @@ export function BankReconciliationTab({
           </table>
         </div>
       </div>
+      </>
+      )}
 
       {/* 5. Modal: Connect or Quick Create Receipt for Transaction (Mobile Bottom Sheet) */}
       {selectedTxForLink && (
