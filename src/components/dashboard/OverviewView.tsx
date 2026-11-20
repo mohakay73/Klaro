@@ -96,10 +96,10 @@ export function OverviewView({
           </div>
           <button
             onClick={onNavigateToBank}
-            className="px-4 py-2 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-xs shrink-0 self-start sm:self-center cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-xs shrink-0 self-start sm:self-center cursor-pointer active:scale-95"
           >
             <span>Öppna Avstämning</span>
-            <ArrowRight className="w-3.5 h-3.5 text-[#f59e0b]" />
+            <ArrowRight className="w-3.5 h-3.5 text-[#d97706]" />
           </button>
         </div>
       )}
@@ -169,10 +169,11 @@ export function OverviewView({
               Automatisk BAS-kontoplan & momsavdrag.
             </span>
             <button
-              onClick={onOpenUpload}
-              className="font-bold text-[#1c1917] hover:text-[#b45309] transition"
+              onClick={onNavigateToExpenses}
+              className="font-bold text-[#1c1917] hover:text-[#b45309] transition cursor-pointer flex items-center gap-1 group"
             >
-              + Tolka nytt kvitto
+              <span>Hantera alla ({receipts.length})</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
         </div>

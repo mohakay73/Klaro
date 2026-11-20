@@ -353,13 +353,13 @@ export function BankReconciliationTab({
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <button
               onClick={onOpenConnectBank}
-              className="px-5 py-2.5 rounded-xl bg-[#1c1917] hover:bg-black text-white text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer active:scale-98"
             >
               <Landmark className="w-4 h-4 text-[#d97706]" />
               <span>Koppla bank via BankID</span>
             </button>
 
-            <label className="px-5 py-2.5 rounded-xl border border-[#e7e2d7] bg-[#f7f4ee] hover:bg-[#eee8dc] text-stone-800 text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer">
+            <label className="px-5 py-2.5 rounded-xl border border-[#e7e2d7] bg-[#f7f4ee] hover:bg-[#eee8dc] text-stone-800 text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer active:scale-98">
               <Upload className="w-4 h-4 text-stone-600" />
               <span>Importera kontoutdrag (CSV)</span>
               <input
@@ -369,27 +369,28 @@ export function BankReconciliationTab({
                 onChange={handleCsvFileInput}
               />
             </label>
+          </div>
 
+          <div className="pt-4 border-t border-[#e7e2d7]/60 flex flex-wrap items-center justify-center gap-4 text-xs text-stone-500">
+            {onLoadDemoBankData && (
+              <button
+                onClick={onLoadDemoBankData}
+                className="hover:text-stone-900 underline transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#d97706]" />
+                <span>Testa med exempeltransaktioner</span>
+              </button>
+            )}
+            <span>•</span>
             <button
               onClick={handleDownloadSampleCsv}
-              className="px-4 py-2.5 rounded-xl border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] text-stone-700 text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer"
+              className="hover:text-stone-900 underline transition cursor-pointer flex items-center gap-1.5"
               title="Ladda ner ett förifyllt svenskt bankkontoutdrag (Swedbank CSV) för testning"
             >
-              <Download className="w-4 h-4 text-[#d97706]" />
+              <Download className="w-3.5 h-3.5 text-stone-400" />
               <span>Ladda ner Swedbank exempel-CSV</span>
             </button>
           </div>
-
-          {onLoadDemoBankData && (
-            <div className="pt-4 border-t border-[#e7e2d7]/60 max-w-xs mx-auto">
-              <button
-                onClick={onLoadDemoBankData}
-                className="text-xs text-stone-500 hover:text-stone-800 underline transition cursor-pointer"
-              >
-                Vill du testa först? Ladda exempeltransaktioner
-              </button>
-            </div>
-          )}
         </div>
       ) : (
         /* Connected / Has Transactions Header Card */
@@ -421,10 +422,10 @@ export function BankReconciliationTab({
               <button
                 onClick={handleSync}
                 disabled={isSyncing}
-                className="px-3.5 py-2 rounded-xl border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] text-stone-700 text-xs font-semibold flex items-center gap-2 transition shadow-xs cursor-pointer disabled:opacity-50"
+                className="px-3.5 py-2 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-semibold flex items-center gap-2 transition shadow-xs cursor-pointer disabled:opacity-50 active:scale-98"
                 title="Hämta senaste transaktioner via PSD2 Open Banking"
               >
-                <RefreshCw className={`w-3.5 h-3.5 text-stone-500 ${isSyncing ? 'animate-spin text-[#d97706]' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 text-[#d97706] ${isSyncing ? 'animate-spin' : ''}`} />
                 <span>{isSyncing ? 'Synkroniserar...' : 'Synka bankfeed'}</span>
               </button>
 
@@ -440,28 +441,28 @@ export function BankReconciliationTab({
               </label>
 
               <button
-                onClick={onOpenConnectBank}
-                className="px-3.5 py-2 rounded-xl border border-[#e7e2d7] bg-[#f7f4ee] hover:bg-[#eee8dc] text-stone-700 text-xs font-semibold transition shadow-xs cursor-pointer"
+                onClick={handleDownloadSampleCsv}
+                className="px-2.5 py-2 rounded-xl border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] text-stone-600 text-xs font-medium flex items-center gap-1.5 transition shadow-2xs cursor-pointer"
+                title="Ladda ner Swedbank exempel-CSV för testning"
               >
-                Byt bank
+                <Download className="w-3.5 h-3.5 text-stone-400" />
+                <span>Exempel-CSV</span>
               </button>
 
               <button
-                onClick={handleDownloadSampleCsv}
-                className="px-3 py-2 rounded-xl border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] text-stone-700 text-xs font-semibold flex items-center gap-1.5 transition shadow-xs cursor-pointer"
-                title="Ladda ner Swedbank exempel-CSV för testning"
+                onClick={onOpenConnectBank}
+                className="px-3 py-2 rounded-xl border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] text-stone-600 text-xs font-medium transition cursor-pointer"
               >
-                <Download className="w-3.5 h-3.5 text-[#d97706]" />
-                <span>Exempel-CSV</span>
+                Byt bank
               </button>
 
               {onClearBankData && (
                 <button
                   onClick={onClearBankData}
-                  className="px-3 py-2 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-700 text-xs font-semibold transition shadow-xs cursor-pointer"
+                  className="px-2.5 py-2 rounded-xl text-stone-400 hover:text-rose-600 text-xs font-medium transition cursor-pointer"
                   title="Rensa bankdata och koppla från"
                 >
-                  Rensa bankdata
+                  Koppla från
                 </button>
               )}
             </div>

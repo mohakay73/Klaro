@@ -276,9 +276,9 @@ export function Sidebar({
               onOpenUpload();
               onCloseMobile();
             }}
-            className="w-full flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white font-semibold text-sm transition shadow-xs"
+            className="w-full flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white font-semibold text-sm transition shadow-xs cursor-pointer active:scale-98"
           >
-            <Plus className="w-4 h-4 text-[#f59e0b]" />
+            <Plus className="w-4 h-4 text-[#d97706]" />
             <span>Tolka kvitto</span>
           </button>
 
@@ -410,7 +410,7 @@ export function Sidebar({
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs ${
                 currentUser ? 'bg-[#1c1917] text-white' : 'bg-stone-200 text-stone-600'
               }`}>
-                <User className={`w-4 h-4 ${currentUser ? 'text-[#f59e0b]' : 'text-stone-600'}`} />
+                <User className={`w-4 h-4 ${currentUser ? 'text-[#d97706]' : 'text-stone-600'}`} />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-bold text-[#1c1917] truncate leading-tight">

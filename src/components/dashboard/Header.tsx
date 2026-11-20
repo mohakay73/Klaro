@@ -102,17 +102,6 @@ export function Header({
                 <span className="w-1.5 h-1.5 rounded-full bg-[#d97706] animate-pulse" />
                 Live
               </span>
-              {onOpenDemoTour && (
-                <button
-                  type="button"
-                  onClick={onOpenDemoTour}
-                  className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#f7f4ee] hover:bg-[#eee9df] text-[#1c1917] border border-[#e7e2d7] transition cursor-pointer active:scale-95"
-                  title="Starta interaktiv snabbdemo (60s)"
-                >
-                  <Sparkles className="w-3 h-3 text-[#d97706]" />
-                  <span>Snabbdemo (60s)</span>
-                </button>
-              )}
             </div>
             <p className="hidden md:block text-xs text-stone-500 font-normal truncate max-w-sm mt-0.5">
               {currentViewMeta.subtitle}
@@ -121,12 +110,12 @@ export function Header({
         </div>
 
         {/* Center: Quarter Segmented Filter */}
-        <div className="hidden sm:flex items-center rounded-lg border border-[#e7e2d7] bg-[#f7f4ee]/90 p-1 text-xs font-mono shadow-2xs">
+        <div className="hidden md:flex items-center rounded-lg border border-[#e7e2d7] bg-[#f7f4ee]/90 p-1 text-xs font-mono shadow-2xs">
           {(['Q1', 'Q2', 'Q3', 'Q4', 'ALL'] as QuarterPeriod[]).map((q) => (
             <button
               key={q}
               onClick={() => onSelectPeriod(q)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition cursor-pointer ${
                 selectedPeriod === q
                   ? 'bg-white text-[#1c1917] shadow-xs font-bold'
                   : 'text-stone-600 hover:text-[#1c1917]'
@@ -137,8 +126,8 @@ export function Header({
           ))}
         </div>
 
-        {/* Mobile Quarter Dropdown Pill */}
-        <div className="sm:hidden flex items-center">
+        {/* Mobile / Tablet Quarter Dropdown Pill */}
+        <div className="md:hidden flex items-center">
           <select
             value={selectedPeriod}
             onChange={(e) => onSelectPeriod(e.target.value as QuarterPeriod)}
@@ -153,7 +142,7 @@ export function Header({
         </div>
 
         {/* Right: Contextual Quick Actions */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           
           {/* Action based on view */}
           {activeView === 'overview' && (
@@ -161,58 +150,39 @@ export function Header({
               {netMoms > 0 && (
                 <button
                   onClick={onOpenPayMoms}
-                  className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold text-amber-950 bg-amber-50 hover:bg-amber-100/90 border border-amber-200 shadow-2xs transition"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-950 bg-amber-50 hover:bg-amber-100 border border-amber-200 shadow-2xs transition cursor-pointer"
                 >
-                  <Landmark className="w-4 h-4 text-[#b45309]" />
+                  <Landmark className="w-3.5 h-3.5 text-[#b45309]" />
                   <span>Betala moms ({formatSEK(Math.round(netMoms))})</span>
                 </button>
               )}
               <button
-                onClick={onOpenInvoiceBuilder}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold text-stone-800 hover:text-[#1c1917] bg-white hover:bg-stone-50 border border-[#e7e2d7] hover:border-stone-400 transition shadow-2xs"
-              >
-                <Plus className="w-4 h-4 text-stone-500" />
-                <span>Fakturera</span>
-              </button>
-              <button
                 onClick={onOpenUpload}
-                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95 cursor-pointer"
               >
-                <Upload className="w-4 h-4 text-[#f59e0b]" />
-                <span>Tolka<span className="hidden sm:inline"> kvitto</span></span>
+                <Upload className="w-4 h-4 text-[#d97706]" />
+                <span>Tolka kvitto</span>
               </button>
             </>
           )}
 
           {activeView === 'expenses' && (
-            <>
-              {onExportSIE && (
-                <button
-                  onClick={onExportSIE}
-                  className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-stone-700 hover:text-[#1c1917] bg-white hover:bg-stone-50 border border-[#e7e2d7] transition shadow-2xs active:scale-95"
-                  title="Exportera verifikationer till SIE-4 format för Skatteverket/Bokföring"
-                >
-                  <Download className="w-4 h-4 text-stone-500" />
-                  <span className="hidden sm:inline">Exportera</span> SIE-4
-                </button>
-              )}
-              <button
-                onClick={onOpenUpload}
-                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95"
-              >
-                <Upload className="w-4 h-4 text-[#f59e0b]" />
-                <span>Tolka<span className="hidden sm:inline"> nytt kvitto</span></span>
-              </button>
-            </>
+            <button
+              onClick={onOpenUpload}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95 cursor-pointer"
+            >
+              <Upload className="w-4 h-4 text-[#d97706]" />
+              <span>Tolka kvitto</span>
+            </button>
           )}
 
           {activeView === 'invoices' && (
             <button
               onClick={onOpenInvoiceBuilder}
-              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95 cursor-pointer"
             >
-              <Plus className="w-4 h-4 text-[#f59e0b]" />
-              <span>Ny<span className="hidden sm:inline"> kundfaktura</span></span>
+              <Plus className="w-4 h-4 text-[#d97706]" />
+              <span>Ny kundfaktura</span>
             </button>
           )}
 
@@ -220,41 +190,30 @@ export function Header({
             <>
               <button
                 onClick={onOpenDeclaration}
-                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-stone-700 hover:text-[#1c1917] bg-white hover:bg-stone-50 border border-[#e7e2d7] transition shadow-2xs active:scale-95"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold text-stone-700 hover:text-[#1c1917] bg-white hover:bg-stone-50 border border-[#e7e2d7] transition shadow-2xs active:scale-95 cursor-pointer"
               >
                 <FileText className="w-4 h-4 text-stone-500" />
-                <span className="hidden sm:inline">Skatteverket </span>XML
+                <span>Momsdeklaration</span>
               </button>
-              <button
-                onClick={onOpenPayMoms}
-                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95"
-              >
-                <Landmark className="w-4 h-4 text-[#f59e0b]" />
-                <span>Betala moms</span>
-              </button>
+              {netMoms > 0 && (
+                <button
+                  onClick={onOpenPayMoms}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95 cursor-pointer"
+                >
+                  <Landmark className="w-4 h-4 text-[#d97706]" />
+                  <span>Betala moms</span>
+                </button>
+              )}
             </>
           )}
 
           {activeView === 'bank' && onSyncBank && (
             <button
               onClick={onSyncBank}
-              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#1c1917] hover:bg-[#292524] transition shadow-xs active:scale-95 cursor-pointer"
             >
-              <RefreshCw className="w-4 h-4 text-[#f59e0b]" />
-              <span>Synka<span className="hidden sm:inline"> transaktioner</span></span>
-            </button>
-          )}
-
-          {/* Direct SIE-4 Export Button */}
-          {onExportSIE && (
-            <button
-              type="button"
-              onClick={onExportSIE}
-              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-stone-700 hover:text-[#1c1917] bg-white hover:bg-stone-50 border border-[#e7e2d7] transition shadow-2xs cursor-pointer active:scale-95"
-              title="Ladda ner SIE-4 bokföringsfil för Fortnox, Visma eller Bokio"
-            >
-              <Download className="w-3.5 h-3.5 text-stone-500" />
-              <span>SIE-4</span>
+              <RefreshCw className="w-4 h-4 text-[#d97706]" />
+              <span>Synka bankfeed</span>
             </button>
           )}
 
@@ -263,15 +222,15 @@ export function Header({
             <button
               type="button"
               onClick={onOpenAuth}
-              className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition border cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition border cursor-pointer ${
                 currentUser
                   ? 'bg-[#f7f4ee] hover:bg-[#eee9df] text-[#1c1917] border-[#e7e2d7]'
                   : 'bg-white hover:bg-stone-50 text-stone-700 hover:text-[#1c1917] border-[#e7e2d7]'
               }`}
               title={currentUser ? `Inloggad som ${currentUser.email}` : 'Logga in eller skapa konto'}
             >
-              <User className={`w-4 h-4 ${currentUser ? 'text-[#d97706]' : 'text-stone-400'}`} />
-              <span className="text-xs font-semibold max-w-[120px] truncate">
+              <User className={`w-3.5 h-3.5 ${currentUser ? 'text-[#d97706]' : 'text-stone-400'}`} />
+              <span className="font-semibold max-w-[110px] truncate">
                 {currentUser ? (currentUser.email?.split('@')[0] || 'Konto') : 'Logga in'}
               </span>
               {currentUser && (

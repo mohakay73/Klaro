@@ -77,8 +77,8 @@ export function MobileBottomNav({
               onClick={() => handleAction(onOpenCamera || onOpenUpload)}
               className="w-full flex items-center gap-3 p-3 rounded-xl bg-amber-50/50 hover:bg-amber-50 border border-amber-200/60 text-left transition group active:scale-[0.98]"
             >
-              <div className="w-10 h-10 rounded-xl bg-[#1c1917] text-[#f59e0b] flex items-center justify-center shrink-0 shadow-xs">
-                <Camera className="w-5 h-5 text-[#f59e0b]" />
+              <div className="w-10 h-10 rounded-xl bg-[#1c1917] text-[#d97706] flex items-center justify-center shrink-0 shadow-xs">
+                <Camera className="w-5 h-5 text-[#d97706]" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
@@ -138,8 +138,8 @@ export function MobileBottomNav({
                 onClick={() => handleAction(onOpenDemoTour)}
                 className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#f7f4ee] text-left transition group active:scale-[0.98] border-t border-[#e7e2d7] mt-1"
               >
-                <div className="w-10 h-10 rounded-xl bg-[#1c1917] text-[#f59e0b] flex items-center justify-center shrink-0">
-                  <Sparkles className="w-5 h-5 text-[#f59e0b]" />
+                <div className="w-10 h-10 rounded-xl bg-[#1c1917] text-[#d97706] flex items-center justify-center shrink-0">
+                  <Sparkles className="w-5 h-5 text-[#d97706]" />
                 </div>
                 <div>
                   <div className="font-bold text-sm text-[#1c1917] group-hover:text-[#d97706] transition">Interaktiv snabbdemo (60s)</div>
@@ -203,7 +203,7 @@ export function MobileBottomNav({
           <div className="flex items-center justify-center">
             <button
               onClick={() => setIsFabOpen(!isFabOpen)}
-              className={`w-12 h-12 -mt-5 rounded-2xl bg-[#1c1917] text-[#f59e0b] border border-[#e7e2d7]/50 flex items-center justify-center shadow-[0_8px_16px_rgba(28,25,23,0.35)] active:scale-90 transition-all duration-200 cursor-pointer ${
+              className={`w-12 h-12 -mt-5 rounded-2xl bg-[#1c1917] text-[#d97706] border border-[#e7e2d7]/50 flex items-center justify-center shadow-[0_8px_16px_rgba(28,25,23,0.35)] active:scale-90 transition-all duration-200 cursor-pointer ${
                 isFabOpen ? 'rotate-45 bg-[#292524] text-white' : 'hover:scale-105 hover:bg-[#292524]'
               }`}
               title="Skapa ny händelse eller tolka kvitto"

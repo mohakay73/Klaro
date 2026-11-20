@@ -160,12 +160,12 @@ export function MomsSummaryCard({
           >
             {isSendingEmail ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#f59e0b]" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#d97706]" />
                 <span>Skickar...</span>
               </>
             ) : (
               <>
-                <Mail className="w-3.5 h-3.5 text-[#f59e0b]" />
+                <Mail className="w-3.5 h-3.5 text-[#d97706]" />
                 <span>Skicka momsunderlag till e-post</span>
               </>
             )}

@@ -108,9 +108,9 @@ export function InvoicesTable({
           {/* Primary Action Button */}
           <button
             onClick={onOpenAddInvoice}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-sm font-semibold transition shadow-xs ml-auto md:ml-2 cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1c1917] hover:bg-[#292524] text-white text-xs sm:text-sm font-semibold transition shadow-xs ml-auto md:ml-2 cursor-pointer active:scale-95"
           >
-            <Plus className="w-4 h-4 text-[#f59e0b]" />
+            <Plus className="w-4 h-4 text-[#d97706]" />
             <span>Skapa faktura</span>
           </button>
         </div>
