@@ -63,6 +63,7 @@ export default function DashboardPage() {
 
   // Modals state
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [uploadModalMode, setUploadModalMode] = useState<'default' | 'camera' | 'text'>('default');
   const [isInvoiceBuilderOpen, setIsInvoiceBuilderOpen] = useState(false);
   const [isPayMomsOpen, setIsPayMomsOpen] = useState(false);
   const [isDeclarationOpen, setIsDeclarationOpen] = useState(false);
@@ -251,6 +252,11 @@ export default function DashboardPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, invoice_date: newDate, userId: currentUser?.id }),
     }).catch((err) => console.warn('Receipt date update notice:', err));
+  };
+
+  const handleOpenUpload = (mode: 'default' | 'camera' | 'text' = 'default') => {
+    setUploadModalMode(mode);
+    setIsUploadOpen(true);
   };
 
   const handleExportSIE = () => {
@@ -614,7 +620,7 @@ export default function DashboardPage() {
               onNavigateToInvoices={() => setActiveView('invoices')}
               onNavigateToTax={() => setActiveView('tax')}
               onNavigateToBank={() => setActiveView('bank')}
-              onOpenUpload={() => setIsUploadOpen(true)}
+              onOpenUpload={() => handleOpenUpload('default')}
               onOpenPayMoms={() => setIsPayMomsOpen(true)}
             />
           )}
@@ -629,6 +635,8 @@ export default function DashboardPage() {
                 onUpdateReceiptVatRate={handleUpdateReceiptVatRate}
                 onUpdateReceiptDate={handleUpdateReceiptDate}
                 onExportSIE={handleExportSIE}
+                onOpenUpload={() => handleOpenUpload('default')}
+                onOpenCamera={() => handleOpenUpload('camera')}
               />
             </div>
           )}
@@ -696,7 +704,8 @@ export default function DashboardPage() {
         receiptsCount={filteredReceipts.length}
         invoicesCount={filteredInvoices.length}
         missingBankReceiptsCount={missingBankReceiptsCount}
-        onOpenUpload={() => setIsUploadOpen(true)}
+        onOpenUpload={() => handleOpenUpload('default')}
+        onOpenCamera={() => handleOpenUpload('camera')}
         onOpenInvoiceBuilder={() => setIsInvoiceBuilderOpen(true)}
         onSyncBank={handleSyncTransactions}
         onOpenDemoTour={() => setIsDemoTourOpen(true)}
@@ -707,6 +716,7 @@ export default function DashboardPage() {
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
         onReceiptAdded={handleReceiptAdded}
+        initialMode={uploadModalMode}
       />
 
       <InvoiceBuilderModal

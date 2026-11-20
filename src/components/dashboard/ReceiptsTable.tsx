@@ -21,7 +21,9 @@ import {
   ExternalLink,
   ShieldCheck,
   Eye,
-  FileText
+  FileText,
+  Camera,
+  Upload
 } from 'lucide-react';
 
 interface ReceiptsTableProps {
@@ -31,6 +33,8 @@ interface ReceiptsTableProps {
   onUpdateReceiptVatRate?: (id: string, rate: SwedishVatRate) => void;
   onUpdateReceiptDate?: (id: string, newDate: string) => void;
   onExportSIE?: () => void;
+  onOpenUpload?: () => void;
+  onOpenCamera?: () => void;
 }
 
 export function ReceiptsTable({
@@ -40,6 +44,8 @@ export function ReceiptsTable({
   onUpdateReceiptVatRate,
   onUpdateReceiptDate,
   onExportSIE,
+  onOpenUpload,
+  onOpenCamera,
 }: ReceiptsTableProps) {
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -217,6 +223,30 @@ export function ReceiptsTable({
             >
               <Download className="w-4 h-4 text-stone-500" />
               <span>Exportera SIE-4</span>
+            </button>
+          )}
+
+          {/* Quick Upload / File button */}
+          {onOpenUpload && (
+            <button
+              onClick={onOpenUpload}
+              className="px-3 py-2 rounded-lg border border-[#e7e2d7] bg-white hover:bg-[#f7f4ee] text-[#1c1917] text-sm font-semibold flex items-center gap-1.5 transition shadow-2xs cursor-pointer"
+              title="Välj sparad fil eller PDF-faktura"
+            >
+              <Upload className="w-4 h-4 text-stone-600" />
+              <span className="hidden sm:inline">Ladda upp fil</span>
+            </button>
+          )}
+
+          {/* Direct Camera Scan button */}
+          {onOpenCamera && (
+            <button
+              onClick={onOpenCamera}
+              className="px-3.5 py-2 rounded-lg bg-[#1c1917] hover:bg-[#292524] text-white text-sm font-semibold flex items-center gap-2 transition shadow-xs cursor-pointer"
+              title="Öppna kameran direkt för att fota kvitto"
+            >
+              <Camera className="w-4 h-4 text-[#f59e0b]" />
+              <span>Fota kvitto</span>
             </button>
           )}
         </div>

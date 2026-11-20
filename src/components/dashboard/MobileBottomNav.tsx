@@ -11,7 +11,8 @@ import {
   FileText, 
   RefreshCw,
   X,
-  Sparkles
+  Sparkles,
+  Camera
 } from 'lucide-react';
 import { ActiveView } from './Sidebar';
 
@@ -22,6 +23,7 @@ interface MobileBottomNavProps {
   invoicesCount?: number;
   missingBankReceiptsCount?: number;
   onOpenUpload: () => void;
+  onOpenCamera?: () => void;
   onOpenInvoiceBuilder: () => void;
   onSyncBank?: () => void;
   onOpenDemoTour?: () => void;
@@ -34,6 +36,7 @@ export function MobileBottomNav({
   invoicesCount,
   missingBankReceiptsCount,
   onOpenUpload,
+  onOpenCamera,
   onOpenInvoiceBuilder,
   onSyncBank,
   onOpenDemoTour,
@@ -69,16 +72,36 @@ export function MobileBottomNav({
               </button>
             </div>
 
+            {/* Direct Camera Action */}
+            <button
+              onClick={() => handleAction(onOpenCamera || onOpenUpload)}
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-amber-50/50 hover:bg-amber-50 border border-amber-200/60 text-left transition group active:scale-[0.98]"
+            >
+              <div className="w-10 h-10 rounded-xl bg-[#1c1917] text-[#f59e0b] flex items-center justify-center shrink-0 shadow-xs">
+                <Camera className="w-5 h-5 text-[#f59e0b]" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <div className="font-bold text-sm text-[#1c1917] group-hover:text-[#d97706] transition">Fota kvitto (Kamera)</div>
+                  <span className="text-[10px] font-mono font-bold bg-[#fef3c7] text-[#b45309] px-2 py-0.5 rounded-full border border-[#fde68a]">
+                    Direkt
+                  </span>
+                </div>
+                <div className="text-xs text-stone-500">Öppnar mobilkameran för ögonblicklig tolkning</div>
+              </div>
+            </button>
+
+            {/* Upload File / PDF */}
             <button
               onClick={() => handleAction(onOpenUpload)}
               className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#f7f4ee] text-left transition group active:scale-[0.98]"
             >
-              <div className="w-10 h-10 rounded-xl bg-[#1c1917]/5 border border-[#1c1917]/10 text-[#d97706] flex items-center justify-center shrink-0">
-                <Upload className="w-5 h-5 text-[#d97706]" />
+              <div className="w-10 h-10 rounded-xl bg-[#1c1917]/5 border border-[#1c1917]/10 text-stone-700 flex items-center justify-center shrink-0">
+                <Upload className="w-5 h-5 text-stone-700" />
               </div>
               <div>
-                <div className="font-bold text-sm text-[#1c1917] group-hover:text-[#d97706] transition">Skanna kvitto / underlag</div>
-                <div className="text-xs text-stone-500">Kamera eller bild med AI-tolkning & moms</div>
+                <div className="font-bold text-sm text-[#1c1917] group-hover:text-[#d97706] transition">Välj fil eller PDF</div>
+                <div className="text-xs text-stone-500">Ladda upp från fotogalleri eller sparade dokument</div>
               </div>
             </button>
 

@@ -30,7 +30,13 @@ export function TaxView({
     <div className="space-y-8 animate-in fade-in duration-200">
       
       {/* 1. Official Swedish Skatteverket Momsdeklaration Card */}
-      <MomsSummaryCard moms={taxBuffer.moms} />
+      <MomsSummaryCard 
+        moms={taxBuffer.moms}
+        companyName={businessConfig.companyName}
+        orgNr={businessConfig.orgNr}
+        onOpenDeclaration={onOpenDeclaration}
+        onOpenPayMoms={onOpenPayMoms}
+      />
 
       {/* 2. Interactive Tax Simulator */}
       <TaxSimulatorWidget

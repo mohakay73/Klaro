@@ -26,7 +26,9 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*.local
+.env*
+scratch/
+.local
 .env
 
 # vercel
@@ -38,3 +40,5 @@ next-env.d.ts
 #724463558
 .vercel
 .env*
+scratch/
+

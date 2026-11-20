@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="14" fill="#1c1917" />
+  <!-- Vertical Stem of K -->
+  <rect x="18" y="15" width="8" height="34" rx="2" fill="#ffffff" />
+  <!-- Diagonal upper arm -->
+  <polygon points="26,32 38,16 46,16 32,34" fill="#f59e0b" />
+  <!-- Diagonal lower leg -->
+  <polygon points="28,30 46,49 38,49 24,34" fill="#f59e0b" />
+  <!-- Accent dot -->
+  <circle cx="50" cy="46" r="3" fill="#f59e0b" />
+</svg>

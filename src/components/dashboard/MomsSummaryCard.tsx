@@ -1,46 +1,195 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MomsCalculation } from '@/types/tax';
 import { formatSEK } from '@/lib/utils';
-import { Scale, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { getNextVatDeadline, VatDeadlineInfo } from '@/lib/vat-reminder';
+import { 
+  Scale, 
+  ArrowUpRight, 
+  ArrowDownLeft, 
+  Mail, 
+  Calendar, 
+  Landmark, 
+  FileSpreadsheet, 
+  Check, 
+  Loader2, 
+  Sparkles,
+  AlertCircle
+} from 'lucide-react';
 
 interface MomsSummaryCardProps {
   moms: MomsCalculation;
+  companyName?: string;
+  orgNr?: string;
+  userEmail?: string;
+  onOpenDeclaration?: () => void;
+  onOpenPayMoms?: () => void;
 }
 
-export function MomsSummaryCard({ moms }: MomsSummaryCardProps) {
+export function MomsSummaryCard({ 
+  moms,
+  companyName = 'Lindqvist Digital Design',
+  orgNr = '559123-4567',
+  userEmail = 'mohakay73@gmail.com',
+  onOpenDeclaration,
+  onOpenPayMoms,
+}: MomsSummaryCardProps) {
   const { utgaendeMoms, ingaendeMoms, netMoms, utgaendeBreakdown, ingaendeBreakdown, status } = moms;
+  
+  // Calculate next official Skatteverket deadline
+  const deadlineInfo: VatDeadlineInfo = getNextVatDeadline('quarterly');
+
+  // Email sending state
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const handleSendEmailReminder = async () => {
+    setIsSendingEmail(true);
+    setEmailStatus(null);
+    try {
+      const res = await fetch('/api/vat/reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userEmail,
+          companyName,
+          orgNr,
+          moms,
+          periodType: 'quarterly',
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Kunde inte skicka e-post');
+      }
+
+      setEmailStatus({
+        type: 'success',
+        message: `Momsunderlag skickat till ${userEmail}! Innehåller Skatteverkets rutor & OCR.`,
+      });
+
+      setTimeout(() => setEmailStatus(null), 6000);
+    } catch (err: any) {
+      setEmailStatus({
+        type: 'error',
+        message: err.message || 'Ett fel uppstod vid sändning.',
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
 
   return (
     <div className="rounded-2xl border border-[#e7e2d7] bg-white p-6 space-y-6 shadow-xs">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#e7e2d7]">
-        <div className="flex items-center gap-2.5">
-          <Scale className="w-5 h-5 text-[#d97706]" />
-          <h4 className="text-base font-bold text-[#1c1917]">
-            Momsdeklaration (Skatteverket)
-          </h4>
+      {/* Header & Deadline Notification Banner */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-[#e7e2d7]">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2.5">
+            <Scale className="w-5 h-5 text-[#d97706]" />
+            <h4 className="text-base font-bold text-[#1c1917]">
+              Momsdeklaration (Skatteverket SKV 4700)
+            </h4>
+          </div>
+          <p className="text-xs text-stone-500">
+            Officiellt sammanställt underlag enligt Mervärdesskattelagen baserat på dina godkända fakturor och kvitton.
+          </p>
         </div>
 
-        <div className="flex items-center gap-2.5 text-xs font-mono">
-          <span className="text-stone-500 text-sm font-sans font-medium">Netto moms:</span>
+        {/* Skatteverket Deadline Pill */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50/80 border border-amber-200/80 text-xs">
+            <Calendar className="w-3.5 h-3.5 text-[#b45309]" />
+            <span className="text-stone-600 font-medium">Nästa deklaration:</span>
+            <strong className="text-[#1c1917] font-semibold">{deadlineInfo.formattedDeadline}</strong>
+            <span className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-amber-100 text-[#b45309] font-bold">
+              {deadlineInfo.daysLeft} dagar kvar
+            </span>
+          </div>
+
           {status === 'to_pay' ? (
-            <span className="px-3 py-1 rounded-md text-xs font-bold bg-amber-50 text-[#b45309] border border-amber-200">
+            <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-[#b45309] border border-amber-200">
               Att inbetala: {formatSEK(netMoms)}
             </span>
           ) : status === 'refund' ? (
-            <span className="px-3 py-1 rounded-md text-xs font-bold bg-emerald-50 text-[#15803d] border border-emerald-200">
+            <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-[#15803d] border border-emerald-200">
               Återbetalning: {formatSEK(Math.abs(netMoms))}
             </span>
           ) : (
-            <span className="px-3 py-1 rounded-md text-xs font-semibold bg-[#f7f4ee] text-stone-700 border border-[#e7e2d7]">
+            <span className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#f7f4ee] text-stone-700 border border-[#e7e2d7]">
               I balans (0 kr)
             </span>
           )}
         </div>
       </div>
+
+      {/* Action Row: Email Reminder & Skatteverket Quick Links */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-[#f7f4ee] border border-[#e7e2d7]">
+        <div className="flex items-center gap-2 text-xs text-stone-600">
+          <Sparkles className="w-4 h-4 text-[#d97706] shrink-0" />
+          <span>Få momsrapporten med OCR och rutor levererad till din inkorg:</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {onOpenDeclaration && (
+            <button
+              onClick={onOpenDeclaration}
+              className="px-3 py-1.5 rounded-lg bg-white hover:bg-stone-50 border border-[#e7e2d7] text-stone-700 text-xs font-semibold flex items-center gap-1.5 transition shadow-2xs cursor-pointer"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-stone-500" />
+              <span>Granska rutor (SKV 4700)</span>
+            </button>
+          )}
+
+          {onOpenPayMoms && (
+            <button
+              onClick={onOpenPayMoms}
+              className="px-3 py-1.5 rounded-lg bg-white hover:bg-stone-50 border border-[#e7e2d7] text-stone-700 text-xs font-semibold flex items-center gap-1.5 transition shadow-2xs cursor-pointer"
+            >
+              <Landmark className="w-3.5 h-3.5 text-stone-500" />
+              <span>Inbetalningsuppgifter & OCR</span>
+            </button>
+          )}
+
+          <button
+            onClick={handleSendEmailReminder}
+            disabled={isSendingEmail}
+            className="px-3.5 py-1.5 rounded-lg bg-[#1c1917] hover:bg-[#292524] text-white text-xs font-semibold flex items-center gap-2 transition shadow-xs disabled:opacity-60 cursor-pointer"
+          >
+            {isSendingEmail ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#f59e0b]" />
+                <span>Skickar...</span>
+              </>
+            ) : (
+              <>
+                <Mail className="w-3.5 h-3.5 text-[#f59e0b]" />
+                <span>Skicka momsunderlag till e-post</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Email Status Banner */}
+      {emailStatus && (
+        <div
+          className={`p-3 rounded-xl border text-xs flex items-center gap-2 animate-in fade-in ${
+            emailStatus.type === 'success'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-rose-50 border-rose-200 text-rose-800'
+          }`}
+        >
+          {emailStatus.type === 'success' ? (
+            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+          ) : (
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          )}
+          <span>{emailStatus.message}</span>
+        </div>
+      )}
 
       {/* Top 3 Metric Pillars */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

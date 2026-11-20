@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ParsedReceiptData } from '@/types/tax';
 import { Receipt } from '@/types/database';
 import { formatSEK } from '@/lib/utils';
@@ -12,13 +12,18 @@ import {
   FileText, 
   Loader2,
   FileCheck2,
-  Receipt as ReceiptIcon
+  Receipt as ReceiptIcon,
+  Camera,
+  RotateCcw,
+  Sparkles,
+  ImageIcon
 } from 'lucide-react';
 
 interface ReceiptUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onReceiptAdded: (receipt: Receipt) => void;
+  initialMode?: 'default' | 'camera' | 'text';
 }
 
 const PRESET_RECEIPTS = [
@@ -79,22 +84,58 @@ Momsfri finansiell omsättning enligt ML 3 kap. 9 §`,
   },
 ];
 
-export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptUploadModalProps) {
-  const [activeTab, setActiveTab] = useState<'upload' | 'text'>('upload');
+export function ReceiptUploadModal({ 
+  isOpen, 
+  onClose, 
+  onReceiptAdded,
+  initialMode = 'default' 
+}: ReceiptUploadModalProps) {
+  const [activeTab, setActiveTab] = useState<'upload' | 'text'>(initialMode === 'text' ? 'text' : 'upload');
   const [pastedText, setPastedText] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [parsedPreview, setParsedPreview] = useState<ParsedReceiptData | null>(null);
   const [savedReceiptData, setSavedReceiptData] = useState<Receipt | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto trigger camera when opened in camera mode
+  useEffect(() => {
+    if (isOpen && initialMode === 'camera') {
+      const timer = setTimeout(() => {
+        cameraInputRef.current?.click();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, initialMode]);
+
+  // Clean up object URL when unmounted or changed
+  useEffect(() => {
+    return () => {
+      if (filePreviewUrl) {
+        URL.revokeObjectURL(filePreviewUrl);
+      }
+    };
+  }, [filePreviewUrl]);
 
   if (!isOpen) return null;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setSelectedFile(file);
       setErrorMsg(null);
+
+      // Create preview URL if image
+      if (file.type.startsWith('image/')) {
+        const url = URL.createObjectURL(file);
+        setFilePreviewUrl(url);
+      } else {
+        setFilePreviewUrl(null);
+      }
     }
   };
 
@@ -117,7 +158,7 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
         formData.append('text', pastedText);
         formData.append('source_type', 'web_upload');
       } else {
-        throw new Error('Välj en fil eller klistra in kvittotext först.');
+        throw new Error('Välj en fil, ta ett foto eller klistra in kvittotext först.');
       }
 
       const res = await fetch('/api/receipts/upload', {
@@ -168,6 +209,10 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
 
   const handleReset = () => {
     setSelectedFile(null);
+    if (filePreviewUrl) {
+      URL.revokeObjectURL(filePreviewUrl);
+      setFilePreviewUrl(null);
+    }
     setPastedText('');
     setParsedPreview(null);
     setSavedReceiptData(null);
@@ -176,6 +221,23 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-stone-900/60 backdrop-blur-xs animate-in fade-in">
+      {/* Hidden file inputs: standard picker vs native mobile camera */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*,application/pdf"
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={cameraInputRef}
+        onChange={handleFileChange}
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+      />
+
       <div className="bg-white border border-[#e7e2d7] rounded-t-3xl sm:rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
         
         {/* Mobile Pull Handle */}
@@ -194,13 +256,13 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
               <p className="text-xs text-stone-500">
                 {parsedPreview 
                   ? 'Kontrollera tolkade uppgifter mot originalkvittot' 
-                  : 'Automatisk tolkning av momssats (25%, 12%, 6%, 0%) och BAS-konto'}
+                  : 'Fota med mobilkamera eller ladda upp PDF för automatisk AI-tolkning'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-stone-400 hover:text-stone-700 p-1 rounded-md hover:bg-[#f7f4ee] transition"
+            className="text-stone-400 hover:text-stone-700 p-1 rounded-md hover:bg-[#f7f4ee] transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -244,8 +306,8 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
                     : 'border-transparent text-stone-500 hover:text-[#1c1917]'
                 }`}
               >
-                <Upload className="w-3.5 h-3.5" />
-                <span>Ladda upp fil</span>
+                <Camera className="w-3.5 h-3.5" />
+                <span>Kamera & Fil</span>
               </button>
               <button
                 onClick={() => setActiveTab('text')}
@@ -261,30 +323,97 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
             </div>
 
             {activeTab === 'upload' ? (
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-[#e7e2d7] hover:border-stone-400 rounded-xl p-7 text-center cursor-pointer transition bg-[#f7f4ee]/50 group"
-              >
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept="image/*,application/pdf"
-                  className="hidden"
-                />
-                <div className="w-10 h-10 rounded-full bg-white border border-[#e7e2d7] mx-auto flex items-center justify-center text-stone-500 group-hover:text-[#1c1917] transition shadow-2xs">
-                  <Upload className="w-4 h-4 text-[#d97706]" />
-                </div>
-                <div className="mt-3 text-xs font-semibold text-[#1c1917]">
-                  {selectedFile ? selectedFile.name : 'Välj kvittofil eller dra och släpp här'}
-                </div>
-                <p className="mt-1 text-[11px] text-stone-500">
-                  JPG, PNG, WEBP eller PDF
-                </p>
-                {selectedFile && (
-                  <span className="mt-2 inline-block px-2.5 py-0.5 rounded text-[11px] font-mono bg-[#f7f4ee] text-stone-700 border border-[#e7e2d7]">
-                    {(selectedFile.size / 1024).toFixed(1)} KB vald
-                  </span>
+              <div className="space-y-3">
+                {/* If no file is selected yet, show two big tactile options: Camera vs File Upload */}
+                {!selectedFile ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    
+                    {/* Option 1: Mobile Camera (Direct) */}
+                    <button
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="p-5 rounded-2xl border-2 border-dashed border-[#d97706]/50 bg-amber-50/40 hover:bg-amber-50/80 hover:border-[#d97706] transition flex flex-col items-center text-center group cursor-pointer active:scale-98"
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-[#1c1917] text-[#f59e0b] flex items-center justify-center shadow-xs group-hover:scale-105 transition">
+                        <Camera className="w-6 h-6 stroke-[2.2]" />
+                      </div>
+                      <span className="mt-3 font-bold text-sm text-[#1c1917]">
+                        Fota kvitto (Kamera)
+                      </span>
+                      <span className="mt-1 text-xs text-stone-500">
+                        Öppnar mobilkameran direkt för snabbfotografering
+                      </span>
+                      <span className="mt-2.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#fef3c7] text-[#b45309] border border-[#fde68a]">
+                        Mobilapp-läge
+                      </span>
+                    </button>
+
+                    {/* Option 2: File / PDF Picker */}
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-5 rounded-2xl border-2 border-dashed border-[#e7e2d7] bg-[#f7f4ee]/60 hover:bg-[#f7f4ee] hover:border-stone-400 transition flex flex-col items-center text-center group cursor-pointer active:scale-98"
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-white border border-[#e7e2d7] text-stone-700 flex items-center justify-center shadow-2xs group-hover:scale-105 transition">
+                        <Upload className="w-6 h-6 text-stone-600" />
+                      </div>
+                      <span className="mt-3 font-bold text-sm text-[#1c1917]">
+                        Välj fil eller PDF
+                      </span>
+                      <span className="mt-1 text-xs text-stone-500">
+                        Ladda upp från fotogalleri eller dator (PDF, JPG, PNG)
+                      </span>
+                      <span className="mt-2.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-white text-stone-600 border border-[#e7e2d7]">
+                        Upp till 15 MB
+                      </span>
+                    </button>
+
+                  </div>
+                ) : (
+                  /* Selected File / Captured Photo Preview */
+                  <div className="p-4 rounded-2xl bg-[#f7f4ee] border border-[#e7e2d7] space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-[#e7e2d7]">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-[#1c1917]">Valt kvitto</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-white text-stone-700 border border-[#e7e2d7]">
+                          {(selectedFile.size / 1024).toFixed(1)} KB
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleReset}
+                        className="text-xs text-stone-500 hover:text-stone-800 flex items-center gap-1 transition cursor-pointer"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Ta om foto / Byt fil</span>
+                      </button>
+                    </div>
+
+                    {/* Image Thumbnail Preview if available */}
+                    {filePreviewUrl ? (
+                      <div className="relative w-full h-44 rounded-xl overflow-hidden border border-[#e7e2d7] bg-stone-900 flex items-center justify-center">
+                        <img
+                          src={filePreviewUrl}
+                          alt="Förhandsgranskning av kvitto"
+                          className="w-full h-full object-contain"
+                        />
+                        <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-stone-900/80 backdrop-blur-xs text-[10px] font-mono text-white flex items-center gap-1.5">
+                          <ImageIcon className="w-3 h-3 text-[#f59e0b]" />
+                          <span>{selectedFile.name}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-4 rounded-xl bg-white border border-[#e7e2d7] flex items-center gap-3">
+                        <FileText className="w-6 h-6 text-[#d97706]" />
+                        <div>
+                          <div className="text-xs font-semibold text-[#1c1917] truncate max-w-xs">
+                            {selectedFile.name}
+                          </div>
+                          <div className="text-[11px] text-stone-500">PDF-dokument redo för tolkning</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             ) : (
@@ -318,17 +447,17 @@ export function ReceiptUploadModal({ isOpen, onClose, onReceiptAdded }: ReceiptU
                 type="button"
                 onClick={handleParse}
                 disabled={isLoading || (activeTab === 'upload' && !selectedFile) || (activeTab === 'text' && !pastedText.trim())}
-                className="px-4 py-1.5 rounded-xl bg-[#1c1917] hover:bg-[#292524] disabled:opacity-50 text-white text-xs font-semibold transition flex items-center gap-2 shadow-xs cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#1c1917] hover:bg-[#292524] disabled:opacity-50 text-white text-xs font-semibold transition flex items-center gap-2 shadow-xs cursor-pointer"
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-[#f59e0b]" />
-                    <span>Tolkar underlag...</span>
+                    <span>Tolkar med AI...</span>
                   </>
                 ) : (
                   <>
-                    <FileCheck2 className="w-3.5 h-3.5 text-[#f59e0b]" />
-                    <span>Tolka underlag</span>
+                    <Sparkles className="w-3.5 h-3.5 text-[#f59e0b]" />
+                    <span>Tolka kvitto med AI</span>
                   </>
                 )}
               </button>
